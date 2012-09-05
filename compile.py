@@ -15,93 +15,93 @@ from compiler.ast import *
 DRAWAST_OFFSET = 15
 
 def num_nodes(n):
-    """Function to count number of nodes in ast. Returns (total, row, col)"""
+    """Function to count number of nodes in ast. Returns (total, rows, cols)"""
 
     if isinstance(n, Module):
         t = num_nodes(n.node)
-        return ((1+t[0]))
+        return ((1+t[0]), 1+t[1], t[2])
     elif isinstance(n, Stmt):
-        cnt = 0
+        total = 0
+        col = 0
         for x in n.nodes:
+            col = col + 1;
             t = num_nodes(x)
-            cnt = cnt + t[0]
-        return ((1+cnt))
+            total = total + t[0]
+        return (1+total, 1+t[1], col+t[2])
     elif isinstance(n, Printnl):
-        return 1 + num_nodes(n.nodes[0])
+        t = num_nodes(n.nodes[0])
+        return (1+t[0], 1+t[1], t[2])
     elif isinstance(n, Assign):
-        return 1 + num_nodes(n.nodes[0]) + num_nodes(n.expr)
+        t0 = num_nodes(n.nodes[0])
+        t1 = num_nodes(n.expr)
+        return ((1+t0[0]+t1[0]), 1+max(t0[1], t1[1]), 1+max(t0[2], t1[2]))
     elif isinstance(n, AssName):
-        return 1
+        return (1, 1, 1)
     elif isinstance(n, Discard):
-        return 1 + num_nodes(n.expr)
+        t = num_nodes(n.expr)
+        return ((1+t[0]), 1+t[1], t[2])
     elif isinstance(n, Const):
-        return 1
+        return (1, 1, 1)
     elif isinstance(n, Name):
-        return 1
+        return (1, 1, 1)
     elif isinstance(n, Add):
-        return 1 + num_nodes(n.left) + num_nodes(n.right)
+        t0 = num_nodes(n.left)
+        t1 = num_nodes(n.right)
+        return (1+t0[0]+t1[0], 1+max(t0[1], t1[1]), 1+max(t0[2], t1[2]))
     elif isinstance(n, UnarySub):
-        return 1 + num_nodes(n.expr)
+        t = num_nodes(n.expr)
+        return (1+t[0], 1+t[1], t[2])
     elif isinstance(n, CallFunc):
-        return 1 + num_nodes(n.node)
+        t = num_nodes(n.node)
+        return (1+t[0], 1+t[1], t[2])
     else:
         raise Exception('Error in num_nodes: unrecognized AST node')
 
 def unparse(n):
     raise Exception('Not yet implemented')
 
-def drawast(n, offset=0, row=0, col=0):
+def drawast(n, offset=0, row=0, col=0, output=None):
+    
     if isinstance(n, Module):
-        print("Module".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        drawast(n.node, offset, (row + 1), col)
+        output[row][col] = "Module"
+        drawast(n.node, offset, (row + 1), col, output)
     elif isinstance(n, Stmt):
-        print("Stmt".rjust(offset) + ": " + str(row) + "," + str(col))
+        output[row][col] = "Stmt"
         cnt = 0
         for x in n.nodes:
             cnt = cnt + 1
-            print("|".rjust(offset + cnt*DRAWAST_OFFSET))
         cnt = 0
         for x in n.nodes:
             cnt = cnt + 1
-            drawast(x, (offset + cnt*DRAWAST_OFFSET), (row + 1), (col + cnt))
+            drawast(x, (offset + cnt*DRAWAST_OFFSET), (row + 1), (col + cnt), output)
     elif isinstance(n, Printnl):
-        print("Printnl".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        drawast(n.nodes[0], offset, (row + 1), col)
+        output[row][col] = "Printnl"
+        drawast(n.nodes[0], offset, (row + 1), col, output)
     elif isinstance(n, Assign):
-        print("Assign".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        print("|".rjust(offset + DRAWAST_OFFSET))
-        drawast(n.nodes[0], offset, (row + 1), col)
-        drawast(n.expr, offset + DRAWAST_OFFSET, (row + 1), (col + 1))
+        output[row][col] = "Assign"
+        drawast(n.nodes[0], offset, (row + 1), col, output)
+        drawast(n.expr, offset + DRAWAST_OFFSET, (row + 1), (col + 1), output)
     elif isinstance(n, AssName):
-        print("AssName".rjust(offset) + ": " + str(row) + "," + str(col))
+        output[row][col] = "AssName"
     elif isinstance(n, Discard):
-        print("Discard",rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        drawast(n.expr, offset, (row + 1), col)
+        output[row][col] = "Discard"
+        drawast(n.expr, offset, (row + 1), col, output)
     elif isinstance(n, Const):
-        print("Const".rjust(offset) + ": " + str(row) + "," + str(col))
+        output[row][col] = "Const"
     elif isinstance(n, Name):
-        print("Name".rjust(offset) + ": " + str(row) + "," + str(col))
+        output[row][col] = "Name"
     elif isinstance(n, Add):
-        print("Add".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        print("|".rjust(offset + DRAWAST_OFFSET))
-        drawast(n.left, offset, (row + 1), col)
-        drawast(n.right, offset + DRAWAST_OFFSET, (row + 1), (col + 1))
+        output[row][col] = "Add"
+        drawast(n.left, offset, (row + 1), col, output)
+        drawast(n.right, offset + DRAWAST_OFFSET, (row + 1), (col + 1), output)
     elif isinstance(n, UnarySub):
-        print("UnarySub".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        drawast(n.expr, offset, (row + 1), col)
+        output[row][col] = "UnarySub"
+        drawast(n.expr, offset, (row + 1), col, output)
     elif isinstance(n, CallFunc):
-        print("CallFunc".rjust(offset) + ": " + str(row) + "," + str(col))
-        print("|".rjust(offset))
-        drawast(n.node, offset, (row + 1), col)
+        output[row][col] = "CallFunc"
+        drawast(n.node, offset, (row + 1), col, output)
     else:
         raise Exception('Error in drawast: unrecognized AST node')
-
 
 def main(argv=None):
     """Main Compiler Entry Point Function"""
@@ -120,10 +120,17 @@ def main(argv=None):
     ast = compiler.parseFile(inputFilePath)
     sys.stderr.write(str(argv[0]) + ": ast = " + str(ast) + "\n")
 
-    #num = num_nodes(ast) work in progress to convert to touple-based function
-    #sys.stderr.write(str(argv[0]) + ": num = " + str(num) + "\n")
+    num = num_nodes(ast)
+    sys.stderr.write(str(argv[0]) + ": num = " + str(num) + "\n")
     
-    drawast(ast)
+    # Draw Tree
+    dim = num_nodes(ast);
+    output = [["" for i in range(dim[2])] for j in range(dim[1])]
+    drawast(ast, 0, 0, 0, output)
+    for i in range(dim[1]):
+        for j in range(dim[2]):
+            sys.stderr.write(output[i][j].rjust(DRAWAST_OFFSET))
+        sys.stderr.write("\n")
 
     return 0
 
