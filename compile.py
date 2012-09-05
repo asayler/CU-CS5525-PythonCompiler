@@ -23,11 +23,13 @@ def num_nodes(n):
     elif isinstance(n, Stmt):
         total = 0
         col = 0
+        row = 0;
         for x in n.nodes:
-            col = col + 1;
             t = num_nodes(x)
             total = total + t[0]
-        return (1+total, 1+t[1], col+t[2])
+            col = max(col, t[1])
+            row = max(row, t[1])
+        return (1+total, 1+row, 1+col)
     elif isinstance(n, Printnl):
         t = num_nodes(n.nodes[0])
         return (1+t[0], 1+t[1], t[2])
@@ -70,9 +72,7 @@ def drawast(n, offset=0, row=0, col=0, output=None):
         cnt = 0
         for x in n.nodes:
             cnt = cnt + 1
-        cnt = 0
-        for x in n.nodes:
-            cnt = cnt + 1
+            #TODO: Bug here, does not account for children with more than 1 col...
             drawast(x, (offset + cnt*DRAWAST_OFFSET), (row + 1), (col + cnt), output)
     elif isinstance(n, Printnl):
         output[row][col] = "Printnl"
