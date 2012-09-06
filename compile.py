@@ -254,6 +254,8 @@ stack_map = {}
 def allocate(var, size):
     """A function to add a variable to the stack map"""
     global current_offset, stack_map
+    if var in stack_map:
+        return stack_map[var]
     current_offset = size + current_offset
     stack_map[var] = current_offset
     return current_offset
@@ -333,6 +335,8 @@ def main(argv=None):
     
     # Flatten Tree
     flatast = flattenAst(ast)
+    print(ast)
+    print(flatast)
 
     # Measure Flat Tree
     sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(flatast)) + "\n")
