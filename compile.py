@@ -75,7 +75,10 @@ def astToList(n):
             lsttmp = lsttmp+[astToList(x)]
         return ["Stmt"]+lsttmp
     elif isinstance(n, Printnl):
-        return ["Printnl"]+astToList(n.nodes[0])
+        lsttmp = list()
+        for x in n.nodes:
+            lsttmp = lsttmp+[astToList(x)]
+        return ["Printnl"]+lsttmp
     elif isinstance(n, Assign):
         return ["Assign"]+[astToList(n.nodes[0])]+[astToList(n.expr)]
     elif isinstance(n, AssName):
@@ -98,7 +101,7 @@ def astToList(n):
 def drawAST(tree, offset="", term=0):
     """A Function to generate ASCII images of AST structures"""
 
-    # Check input
+    # Check input and convert to list of strings if necessary
     if isinstance(tree, compiler.ast.Module):
         tree = astToList(tree)
     elif(not(isinstance(tree, list))):
@@ -137,7 +140,7 @@ def drawAST(tree, offset="", term=0):
 
 
 def unparse(n):
-    raise Exception('Not yet implemented')
+    raise Exception('unparse() not yet implemented')
 
 
 def main(argv=None):
