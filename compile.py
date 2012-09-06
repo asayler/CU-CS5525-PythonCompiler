@@ -15,47 +15,43 @@ from compiler.ast import *
 DRAWAST_OFFSET = 15
 
 def dim_nodes(n):
-    """Function to count number of nodes in ast. Returns (total, rows, cols)"""
+    """Function to count number of nodes in ast. Returns (total)"""
     
     if isinstance(n, Module):
         t = dim_nodes(n.node)
-        return ((1+t[0]), 1+t[1], t[2])
+        return (1+t)
     elif isinstance(n, Stmt):
         total = 0
-        col = 0
-        row = 0;
         for x in n.nodes:
             t = dim_nodes(x)
-            total = total + t[0]
-            row = max(row, t[1])
-            col = col + t[2]
-        return (1+total, 1+row, col)
+            total = total + t
+        return (1+total)
     elif isinstance(n, Printnl):
         t = dim_nodes(n.nodes[0])
-        return (1+t[0], 1+t[1], t[2])
+        return (1+t)
     elif isinstance(n, Assign):
         t0 = dim_nodes(n.nodes[0])
         t1 = dim_nodes(n.expr)
-        return ((1+t0[0]+t1[0]), 1+max(t0[1], t1[1]), t0[2]+t1[2])
+        return (1+t0+t1)
     elif isinstance(n, AssName):
-        return (1, 1, 1)
+        return (1)
     elif isinstance(n, Discard):
         t = dim_nodes(n.expr)
-        return ((1+t[0]), 1+t[1], t[2])
+        return (1+t)
     elif isinstance(n, Const):
-        return (1, 1, 1)
+        return (1)
     elif isinstance(n, Name):
-        return (1, 1, 1)
+        return (1)
     elif isinstance(n, Add):
         t0 = dim_nodes(n.left)
         t1 = dim_nodes(n.right)
-        return (1+t0[0]+t1[0], 1+max(t0[1], t1[1]), t0[2]+t1[2])
+        return (1+t0+t1)
     elif isinstance(n, UnarySub):
         t = dim_nodes(n.expr)
-        return (1+t[0], 1+t[1], t[2])
+        return (1+t)
     elif isinstance(n, CallFunc):
         t = dim_nodes(n.node)
-        return (1+t[0], 1+t[1], t[2])
+        return (1+t)
     else:
         raise Exception('Error in dim_nodes: unrecognized AST node')
 
@@ -80,7 +76,10 @@ def astToList(n):
             lsttmp = lsttmp+[astToList(x)]
         return ["Printnl"]+lsttmp
     elif isinstance(n, Assign):
-        return ["Assign"]+[astToList(n.nodes[0])]+[astToList(n.expr)]
+        lsttmp = list()
+        for x in n.nodes:
+            lsttmp = lsttmp+[astToList(x)]
+        return ["Assign"]+lsttmp+[astToList(n.expr)]
     elif isinstance(n, AssName):
         return ["AssName"]
     elif isinstance(n, Discard):
