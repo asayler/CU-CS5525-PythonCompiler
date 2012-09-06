@@ -16,7 +16,7 @@ DRAWAST_OFFSET = 15
 
 def dim_nodes(n):
     """Function to count number of nodes in ast. Returns (total, rows, cols)"""
-
+    
     if isinstance(n, Module):
         t = dim_nodes(n.node)
         return ((1+t[0]), 1+t[1], t[2])
@@ -59,97 +59,86 @@ def dim_nodes(n):
     else:
         raise Exception('Error in dim_nodes: unrecognized AST node')
 
-def unparse(n):
-    raise Exception('Not yet implemented')
-
 def del_dim(A, B):
     dimA = dim_nodes(A);
     dimB = dim_nodes(B);
     return ((dimA[0]-dimB[0]), (dimA[1]-dimB[1]), (dimA[2]-dimB[2]))
 
-def drawast(n, row=0, col=0, output=None):
+def astToList(n):
+    """A Function to convert a standard AST tree to a list of lists of strings"""
 
-    if output is None:
-        dim = dim_nodes(n);
-        output = [["" for i in range(dim[2])] for j in range(dim[1])]
-    
     if isinstance(n, Module):
-        output[row][col] = "Module"
-        return ["Module"]+drawast(n.node, row+1, col, output)
+        return ["Module"]+astToList(n.node)
     elif isinstance(n, Stmt):
-        output[row][col] = "Stmt"
-        cols = 0
         lsttmp = list()
         for x in n.nodes:
-            lsttmp = lsttmp+[drawast(x, row+1, col+cols, output)]
-            dim = dim_nodes(x)
-            cols = cols + dim[2]
+            lsttmp = lsttmp+[astToList(x)]
         return ["Stmt"]+lsttmp
     elif isinstance(n, Printnl):
-        output[row][col] = "Printnl"
-        return ["Printnl"]+drawast(n.nodes[0], row+1, col, output)
+        return ["Printnl"]+astToList(n.nodes[0])
     elif isinstance(n, Assign):
-        output[row][col] = "Assign"
-        dim = dim_nodes(n.nodes[0]);
-        return ["Assign"]+[drawast(n.nodes[0], row+1, col, output)]+[drawast(n.expr, row+1, col+dim[2], output)]
+        return ["Assign"]+[astToList(n.nodes[0])]+[astToList(n.expr)]
     elif isinstance(n, AssName):
-        output[row][col] = "AssName"
         return ["AssName"]
     elif isinstance(n, Discard):
-        output[row][col] = "Discard"
-        return ["Discard"]+drawast(n.expr, row+1, col, output)
+        return ["Discard"]+astToList(n.expr)
     elif isinstance(n, Const):
-        output[row][col] = "Const"
         return ["Const"]
     elif isinstance(n, Name):
-        output[row][col] = "Name"
         return ["Name"]
     elif isinstance(n, Add):
-        output[row][col] = "Add"
-        dim = dim_nodes(n.left);
-        return ["Add"]+[drawast(n.left, row+1, col, output)]+[drawast(n.right, row+1, col+dim[2], output)]
+        return ["Add"]+[astToList(n.left)]+[astToList(n.right)]
     elif isinstance(n, UnarySub):
-        output[row][col] = "UnarySub"
-        return ["UnarySub"]+drawast(n.expr, row+1, col, output)
+        return ["UnarySub"]+astToList(n.expr)
     elif isinstance(n, CallFunc):
-        output[row][col] = "CallFunc"
-        return ["CallFunc"]+drawast(n.node, row+1, col, output)
+        return ["CallFunc"]+astToList(n.node)
     else:
-        raise Exception('Error in drawast: unrecognized AST node')
+        raise Exception('Error in astToList: unrecognized AST node')
 
-def pt(tree, offset=0, term=0):
-    
+def drawAST(tree, offset="", term=0):
+    """A Function to generate ASCII images of AST structures"""
+
+    # Check input
+    if isinstance(tree, compiler.ast.Module):
+        tree = astToList(tree)
+    elif(not(isinstance(tree, list))):
+        raise Exception('Error in drawAST: tree must be a list or a Module')
+
+    # Process list
     for i in range(len(tree)):
         if isinstance(tree[i], list):
             if(i < (len(tree) - 1)):
-                pt(tree[i], offset+1, term+0)
+                #Terminal Branch
+                drawAST(tree[i], (offset + "|".rjust(DRAWAST_OFFSET)))
             else:
-                pt(tree[i], offset+1, term+1)
+                #Normal Branch
+                drawAST(tree[i], (offset + " ".rjust(DRAWAST_OFFSET)))
         else:
-            #Write Offset
-            for j in range(offset):
-                sys.stderr.write((str(offset-term)).rjust(15))
-            
             #Write Node
-            if(i == 0 and offset != 0):
+            sys.stderr.write(offset)
+            if(i == 0 and len(offset) != 0):
                 #First Node
                 line = ""
                 for j in range(15-len(str(tree[i]))):
                     line = line+"-"
-                sys.stderr.write((line+str(tree[i])).rjust(15)+"\n")
+                sys.stderr.write((line+str(tree[i])).rjust(DRAWAST_OFFSET)+"\n")
             else:
-                sys.stderr.write(str(tree[i]).rjust(15)+"\n")
-
-            #Write Offset
-            for j in range(offset):
-                sys.stderr.write((str(offset-term)).rjust(15))
+                #Normal Node
+                sys.stderr.write(str(tree[i]).rjust(DRAWAST_OFFSET)+"\n")
 
             #Write Seperator
+            sys.stderr.write(offset)
             if(i < (len(tree) - 1)):
                 #Last Node
-                sys.stderr.write("|".rjust(15)+"\n")
+                sys.stderr.write("|".rjust(DRAWAST_OFFSET)+"\n")
             else:
-                sys.stderr.write(" ".rjust(15)+"\n")
+                #Normal Node
+                sys.stderr.write(" ".rjust(DRAWAST_OFFSET)+"\n")
+
+
+def unparse(n):
+    raise Exception('Not yet implemented')
+
 
 def main(argv=None):
     """Main Compiler Entry Point Function"""
@@ -173,7 +162,7 @@ def main(argv=None):
     sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(num1) + "\n")
     
     # Draw Tree
-    pt(drawast(ast, 0, 0))
+    drawAST(ast)
     
     return 0
 
