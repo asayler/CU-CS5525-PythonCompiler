@@ -327,23 +327,23 @@ def main(argv=None):
     ast = compiler.parseFile(inputFilePath)
     
     # Measure Tree
-    sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(ast)) + "\n")
-    sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(ast))) + "\n")
+#    sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(ast)) + "\n")
+#    sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(ast))) + "\n")
 
     # Draw Tree
-    drawAST(ast)
+#    drawAST(ast)
     
     # Flatten Tree
     flatast = flattenAst(ast)
-    print(ast)
-    print(flatast)
+#    print(ast)
+#    print(flatast)
 
     # Measure Flat Tree
-    sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(flatast)) + "\n")
-    sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(flatast))) + "\n")
+#   sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(flatast)) + "\n")
+#   sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(flatast))) + "\n")
 
     # Draw Flat Tree
-    drawAST(flatast)
+#    drawAST(flatast)
 
     # Compile flat tree
     assembly = compile_stmt(flatast)
