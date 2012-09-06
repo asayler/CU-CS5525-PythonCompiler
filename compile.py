@@ -289,7 +289,7 @@ def compile_stmt(ast, value_mode='movl'):
     elif isinstance(ast, CallFunc):
         return ['call input']
     elif isinstance(ast, Const):
-        return [('%s %d, %%eax' % (value_mode, ast.value))]
+        return [('%s $%d, %%eax' % (value_mode, ast.value))]
     elif isinstance(ast, Name):
         return [('%s -%d(%%ebp), %%eax' % (value_mode, stack_map[ast.name]))]
     else:
