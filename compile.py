@@ -64,36 +64,36 @@ def astToList(n):
     """A Function to convert a standard AST tree to a list of lists of strings"""
 
     if isinstance(n, Module):
-        return ["Module"]+astToList(n.node)
+        return [n.__class__.__name__]+astToList(n.node)
     elif isinstance(n, Stmt):
         lsttmp = list()
         for x in n.nodes:
             lsttmp = lsttmp+[astToList(x)]
-        return ["Stmt"]+lsttmp
+        return [n.__class__.__name__]+lsttmp
     elif isinstance(n, Printnl):
         lsttmp = list()
         for x in n.nodes:
             lsttmp = lsttmp+[astToList(x)]
-        return ["Printnl"]+lsttmp
+        return [n.__class__.__name__]+lsttmp
     elif isinstance(n, Assign):
         lsttmp = list()
         for x in n.nodes:
             lsttmp = lsttmp+[astToList(x)]
-        return ["Assign"]+lsttmp+[astToList(n.expr)]
+        return [n.__class__.__name__]+lsttmp+[astToList(n.expr)]
     elif isinstance(n, AssName):
-        return ["AssName"]
+        return [n.__class__.__name__]
     elif isinstance(n, Discard):
-        return ["Discard"]+astToList(n.expr)
+        return [n.__class__.__name__]+astToList(n.expr)
     elif isinstance(n, Const):
-        return ["Const"]
+        return [n.__class__.__name__]
     elif isinstance(n, Name):
-        return ["Name"]
+        return [n.__class__.__name__]
     elif isinstance(n, Add):
-        return ["Add"]+[astToList(n.left)]+[astToList(n.right)]
+        return [n.__class__.__name__]+[astToList(n.left)]+[astToList(n.right)]
     elif isinstance(n, UnarySub):
-        return ["UnarySub"]+astToList(n.expr)
+        return [n.__class__.__name__]+astToList(n.expr)
     elif isinstance(n, CallFunc):
-        return ["CallFunc"]+astToList(n.node)
+        return [n.__class__.__name__]+astToList(n.node)
     else:
         raise Exception('Error in astToList: unrecognized AST node')
 
