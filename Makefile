@@ -44,10 +44,10 @@ hashtable_utility.o: helper/hashtable_utility.c helper/hashtable_utility.h
 	$(CC) $(CFLAGS) $< -o $@
 
 submission:
-	$(RM) -r $(SUBMITDIR)
-	mkdir $(SUBMITDIR)
-	$(CP) $(PC) $(SUBMITDIR)
-	$(CP) $(HELPERDIR)* $(SUBMITDIR)
+	$(RM) -r $(SUBMISSIONDIR)
+	mkdir $(SUBMISSIONDIR)
+	$(CP) $(PC) $(SUBMISSIONDIR)
+	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
 
 clean:
 	$(RM) $(TESTCASES)
