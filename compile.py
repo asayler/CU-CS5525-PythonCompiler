@@ -360,8 +360,8 @@ def main(argv=None):
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"
 
-    sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
-    sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
+#    sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
+#    sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
     ast = compiler.parseFile(inputFilePath)

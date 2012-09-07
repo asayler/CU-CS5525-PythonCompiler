@@ -14,7 +14,7 @@ CP = cp
 CFLAGS = -c -m32 -g
 LFLAGS = -m32 -g
 
-SUBMISSIONDIR = ../submit/
+SUBMISSIONDIR = ../submit-compiler/
 HELPERDIR = ./helper/
 
 TESTCASESSOURCE = $(wildcard test/p0/*.py)
