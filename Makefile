@@ -14,11 +14,14 @@ CP = cp
 CFLAGS = -c -m32 -g
 LFLAGS = -m32 -g
 
+SUBMISSIONDIR = ../submit/
+HELPERDIR = ./helper/
+
 TESTCASESSOURCE = $(wildcard test/p0/*.py)
 TESTCASESASSEMB = $(patsubst test/p0/%.py,%.s,$(TESTCASESSOURCE))
 TESTCASES = $(patsubst %.s,%.out,$(TESTCASESASSEMB))
 
-.PHONY: all clean install
+.PHONY: all clean submission
 
 all: $(TESTCASES)
 
@@ -40,9 +43,16 @@ hashtable_itr.o: helper/hashtable_itr.c helper/hashtable_itr.h
 hashtable_utility.o: helper/hashtable_utility.c helper/hashtable_utility.h
 	$(CC) $(CFLAGS) $< -o $@
 
+submission:
+	$(RM) -r $(SUBMITDIR)
+	mkdir $(SUBMITDIR)
+	$(CP) $(PC) $(SUBMITDIR)
+	$(CP) $(HELPERDIR)* $(SUBMITDIR)
+
 clean:
 	$(RM) $(TESTCASES)
 	$(RM) *.o
 	$(RM) *.out
 	$(RM) *.s
 	$(RM) *~
+	$(RM) *.pyc
