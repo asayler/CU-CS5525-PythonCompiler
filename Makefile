@@ -48,6 +48,8 @@ submission:
 	mkdir $(SUBMISSIONDIR)
 	$(CP) $(PC) $(SUBMISSIONDIR)
 	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
+	zip -j submit.zip $(SUBMISSIONDIR)*
+	$(RM) -r $(SUBMISSIONDIR)
 
 clean:
 	$(RM) $(TESTCASES)
@@ -56,3 +58,4 @@ clean:
 	$(RM) *.s
 	$(RM) *~
 	$(RM) *.pyc
+	$(RM) submit.zip
