@@ -19,6 +19,8 @@ import sys
 import compiler
 from compiler.ast import *
 
+from x86ast import *
+
 DRAWAST_OFFSET = 13
 
 def dim_nodes(n):
@@ -267,6 +269,37 @@ def allocate(var, size):
     stack_map[var] = current_offset
     return current_offset
 
+# Mike's Instruction Select
+EAX = Reg86('eax')
+EBP = Reg86('ebp')
+ESP = Reg86('esp')
+def instr_select(ast, value_mode=Move86):
+    global stack_map
+    if isinstance(ast, Module):
+        return [Push86(EBP), Move86(ESP, EBP), Sub86(Const86(len(scan_allocs(ast)) * 4), ESP)] + instr_select(ast.node) + [Move86(Const86(0), EAX), Leave86(), Ret86()]
+    elif isinstance(ast, Stmt):
+        return sum(map(instr_select, ast.nodes),[])
+    elif isinstance(ast, Printnl):
+        return instr_select(ast.nodes[0]) + [Push86(EAX), Call86('print_int_nl'), Add86(Const86(4), ESP)]
+    elif isinstance(ast, Assign):
+        expr_assemb = instr_select(ast.expr)
+        offset = allocate(ast.nodes[0].name, 4)
+        return expr_assemb + [Move86(EAX, Mem86(offset, EBP))]
+    elif isinstance(ast, Discard):
+        return instr_select(ast.expr)
+    elif isinstance(ast, Add):
+        return instr_select(ast.left) + instr_select(ast.right, value_mode=Add86)
+    elif isinstance(ast, UnarySub):
+        return instr_select(ast.expr) + [Neg86(EAX)]
+    elif isinstance(ast, CallFunc):
+        return [Call86('input')]
+    elif isinstance(ast, Const):
+        return [value_mode(Const86(ast.value), EAX)]
+    elif isinstance(ast, Name):
+        return [value_mode(Mem86(stack_map[ast.name], EBP), EAX)]
+    else:
+        raise Exception("Unexpected term: " + str(ast))
+
 word_size = 4
 def compile_stmt(ast, value_mode='movl'):
     """A function to compile an ast to x86"""
@@ -353,10 +386,11 @@ def main(argv=None):
 #    drawAST(flatast)
 
     # Compile flat tree
-    assembly = compile_stmt(flatast)
+    #assembly = compile_stmt(flatast)
+    assembly = instr_select(flatast)
     
     # Write output
-    write_to_file(assembly, outputFileName)
+    write_to_file(map(str, assembly), outputFileName)
 
     return 0
 
