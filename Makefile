@@ -28,8 +28,8 @@ all: $(TESTCASES)
 %.out: %.s runtime.o hashtable.o hashtable_itr.o hashtable_utility.o
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
-%.s: test/p0/%.py
-	$(PC) $^
+%.s: test/p0/%.py *.py
+	$(PC) $<
 
 runtime.o: helper/runtime.c helper/runtime.h
 	$(CC) $(CFLAGS) $< -o $@
