@@ -17,6 +17,7 @@ LFLAGS = -m32 -g
 
 SUBMISSIONDIR = ../submit-compiler/
 HELPERDIR = ./helper/
+PLYDIR = ./ply/
 
 P0TESTDIR = ./test/p0/
 P0TESTCASESSOURCE = $(wildcard $(P0TESTDIR)*.py)
@@ -53,6 +54,7 @@ submission:
 	mkdir $(SUBMISSIONDIR)
 	$(CP) *.py $(SUBMISSIONDIR)
 	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
+	$(CP) -r $(PLYDIR) $(SUBMISSIONDIR)
 	zip -j submit.zip $(SUBMISSIONDIR)*
 	$(RM) -r $(SUBMISSIONDIR)
 
