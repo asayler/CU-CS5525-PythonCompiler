@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Andy Sayler
-# Fal 2012
+# Fall 2012
 # CU CS5525
 # Python Compiler
 #
