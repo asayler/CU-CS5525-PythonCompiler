@@ -23,6 +23,10 @@ from x86ast import *
 
 from astTools import *
 
+debug = True
+
+### Flatten Functions ###
+
 temp_counter = -1
 def new_temp(prefix):
     """A function to genertae unique temp var names"""
@@ -122,6 +126,8 @@ def flattenAst(ast):
     else:
         raise Exception('Error in astToList: unrecognized AST node')
 
+### Instruction Selection ###
+
 def scan_allocs(ast):
     """A function to locate all unique assignments in an ast"""
     if isinstance(ast, Module):
@@ -177,47 +183,14 @@ def instr_select(ast, value_mode=Move86):
     else:
         raise Exception("Unexpected term: " + str(ast))
 
-word_size = 4
-def compile_stmt(ast, value_mode='movl'):
-    """A function to compile an ast to x86"""
-    global stack_map
-    if isinstance(ast, Module):
-        header = ['pushl %ebp',
-                  'movl %esp, %ebp',
-                  ('subl $%d, %%esp' % (len(scan_allocs(ast)) * word_size))]
-        footer = ['movl $0, %eax', 'leave', 'ret']
-        return header + compile_stmt(ast.node) + footer
-    elif isinstance(ast, Stmt):
-        return sum(map(compile_stmt, ast.nodes),[])
-    elif isinstance(ast, Printnl):
-        return compile_stmt(ast.nodes[0]) + ['pushl %eax',
-                                             'call print_int_nl',
-                                             ('addl $%d, %%esp' % word_size)]
-    elif isinstance(ast, Assign):
-        expr_assemb = compile_stmt(ast.expr)
-        offset = allocate(ast.nodes[0].name, word_size)
-        return expr_assemb + [('movl %%eax, -%d(%%ebp)' % offset)]
-    elif isinstance(ast, Discard):
-        return compile_stmt(ast.expr)
-    elif isinstance(ast, Add):
-        return compile_stmt(ast.left) + compile_stmt(ast.right, value_mode='addl')
-    elif isinstance(ast, UnarySub):
-        return ['negl %eax']
-    elif isinstance(ast, CallFunc):
-        return ['call input']
-    elif isinstance(ast, Const):
-        return [('%s $%d, %%eax' % (value_mode, ast.value))]
-    elif isinstance(ast, Name):
-        return [('%s -%d(%%ebp), %%eax' % (value_mode, stack_map[ast.name]))]
-    else:
-        raise Exception("Unexpected term: " + str(ast))
-
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
     assembly = '.globl main\nmain:\n\t' + '\n\t'.join(assembly)
     outputfile = open(outputFileName, 'w+')
     outputfile.write(assembly + '\n')
     outputfile.close()
+
+### Main Function ###
 
 def main(argv=None):
     """Main Compiler Entry Point Function"""
