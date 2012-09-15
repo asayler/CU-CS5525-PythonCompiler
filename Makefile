@@ -18,11 +18,13 @@ LFLAGS = -m32 -g
 SUBMISSIONDIR = ../submit-compiler/
 HELPERDIR = ./helper/
 
-P0TESTCASESSOURCE = $(wildcard test/p0/*.py)
-P0TESTCASESASSEMB = $(patsubst test/p0/%.py, %.s, $(P0TESTCASESSOURCE))
+P0TESTDIR = ./test/p0/
+P0TESTCASESSOURCE = $(wildcard $(P0TESTDIR)*.py)
+P0TESTCASESINPUT  = $(wildcard $(P0TESTDIR)*.in)
+P0TESTCASESASSEMB = $(patsubst $(P0TESTDIR)%.py, %.s, $(P0TESTCASESSOURCE))
 P0TESTCASES = $(patsubst %.s, %.out, $(P0TESTCASESASSEMB))
 
-.PHONY: all clean submission
+.PHONY: all clean submission P0Tests
 
 all: P0Tests
 
@@ -31,7 +33,7 @@ P0Tests: $(P0TESTCASES)
 %.out: %.s runtime.o hashtable.o hashtable_itr.o hashtable_utility.o
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
-%.s: test/p0/%.py *.py
+$(P0TESTCASESASSEMB): %.s: $(P0TESTDIR)%.py *.py
 	$(PC) $<
 
 runtime.o: helper/runtime.c helper/runtime.h
