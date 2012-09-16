@@ -22,15 +22,17 @@ import ply.lex as lex
 
 # Tokens
 
-tokens = ('PRINT', 'INPUT',
-          'INT',
-          'PLUS', 'UMINUS',
-          'NAME', 'ASSIGN',
-          'LPAREN', 'RPAREN')
+reserved = {'print' : 'PRINT',
+            'input' : 'INPUT'}
 
+tokens = ['NAME', 'INT',
+          'PLUS', 'MINUS', 'ASSIGN',
+          'LPAREN', 'RPAREN'] + list(reserved.values())
 
-t_PRINT  = r'print'
-t_INPUT  = r'input'
+def t_NAME(t):
+    r'[a-zA-Z_]\w*'
+    t.type = reserved.get(t.value, 'NAME')
+    return t
 
 def t_INT(t):
     r'\d+'
@@ -42,13 +44,15 @@ def t_INT(t):
     return t
 
 t_PLUS   = r'\+'
-t_UMINUS = r'\-'
-t_NAME   = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_MINUS = r'\-'
 t_ASSIGN = r'='
 t_LPAREN  = r'\('
 t_RPAREN = r'\)'
 
 t_ignore = ' \t'
+t_ignore_COMMENT = r'\#.*'
+
+# Other
 
 def t_newline(t):
     r'\n+'
@@ -58,11 +62,13 @@ def t_error(t):
     sys.stderr.write("Illegal charecter '%s'\n" % t.value[0])
     t.lexer.skip(1)
 
+# Build Lexer
+
 lex.lex()
 
 ### Test Function ###
 
-def main(argv=None):
+def lexer5525_TestMain(argv=None):
     """Lexer Test Cases"""
 
     # Setup and Check Args
@@ -77,12 +83,11 @@ def main(argv=None):
         sys.stderr.write(str(argv[0]) + " input file must be of type *.py\n")
         return 1
 
-    data = '''x=4
--input() + 5
-print x
-'''
+    inputFile = open(inputFilePath)
+    source = inputFile.read()
+    inputFile.close()
 
-    lex.input(data)
+    lex.input(source)
 
     while True:
         tok = lex.token()
@@ -93,4 +98,4 @@ print x
     return 0
     
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(lexer5525_TestMain())
