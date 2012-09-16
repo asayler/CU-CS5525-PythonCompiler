@@ -12,7 +12,7 @@
 #       https://github.com/halloannielala/compiler-5525
 
 """
-TEST USAGE:
+LEXER TEST USAGE:
     lexer5525.py <file path>
 """
 
