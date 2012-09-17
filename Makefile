@@ -11,11 +11,12 @@ CC = gcc
 PC = ./compile.py
 CP = cp
 MV = mv
+CD = cd
 
 CFLAGS = -c -m32 -g
 LFLAGS = -m32 -g
 
-SUBMISSIONDIR = ../submit-compiler/
+SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
 PLYDIR = ./ply/
 
@@ -55,7 +56,7 @@ submission:
 	$(CP) *.py $(SUBMISSIONDIR)
 	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
 	$(CP) -r $(PLYDIR) $(SUBMISSIONDIR)
-	zip -j submit.zip $(SUBMISSIONDIR)*
+	$(CD) $(SUBMISSIONDIR); zip -r ../submit.zip *
 	$(RM) -r $(SUBMISSIONDIR)
 
 clean:
