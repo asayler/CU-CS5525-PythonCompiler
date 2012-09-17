@@ -30,13 +30,27 @@ P0TESTDIR = ./test/p0/
 P0TESTCASESSOURCE = $(wildcard $(P0TESTDIR)*.py)
 P0TESTCASESINPUT  = $(wildcard $(P0TESTDIR)*.in)
 P0TESTCASESASSEMB = $(patsubst $(P0TESTDIR)%.py, %.s, $(P0TESTCASESSOURCE))
-P0TESTCASES = $(patsubst %.s, %.out, $(P0TESTCASESASSEMB))
+P0TESTCASES = $(patsubst %.s, %.out,  $(P0TESTCASESASSEMB))
+P0TESTDIFFS = $(patsubst %.s, %.diff, $(P0TESTCASESASSEMB))
 
-.PHONY: all clean submission P0Tests
+.PHONY: all clean Tests TestsRun P0TestsRun P0Tests 
 
-all: P0Tests
+all: Tests
+
+Tests: P0Tests
+
+TestsRun: P0TestsRun
 
 P0Tests: $(P0TESTCASES)
+
+P0TestsRun: $(P0TESTDIFFS)
+	echo $(P0TESTDIFFS)
+	cat *.diff
+
+$(P0TESTDIFFS): %.diff: $(P0TESTDIR)%.py %.out $(P0TESTDIR)%.in
+	cat $(P0TESTDIR)$*.in | ./$*.out > $*.output
+	cat $(P0TESTDIR)$*.in | $(P0TESTDIR)$*.py > $*.correct
+	diff -B -s -q $*.output $*.correct > $@
 
 %.out: %.s runtime.o hashtable.o hashtable_itr.o hashtable_utility.o
 	$(CC) $(LFLAGS) $^ -lm -o $@
@@ -74,3 +88,6 @@ clean:
 	$(RM) *.pyc
 	$(RM) submit.zip
 	$(RM) parsetab.py
+	$(RM) *.output
+	$(RM) *.correct
+	$(RM) *.diff
