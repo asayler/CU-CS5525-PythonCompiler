@@ -25,13 +25,17 @@ LFLAGS = -m32 -g
 SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
 PLYDIR = ./ply/
+BUILDDIR = ./build/
+TESTDIR = ./test/
 
-P0TESTDIR = ./test/p0/
+P0TESTDIR = $(TESTDIR)p0/
+P0BUILDDIR = $(BUILDDIR)
+
 P0TESTCASESSOURCE = $(wildcard $(P0TESTDIR)*.py)
 P0TESTCASESINPUT  = $(wildcard $(P0TESTDIR)*.in)
-P0TESTCASESASSEMB = $(patsubst $(P0TESTDIR)%.py, %.s, $(P0TESTCASESSOURCE))
-P0TESTCASES = $(patsubst %.s, %.out,  $(P0TESTCASESASSEMB))
-P0TESTDIFFS = $(patsubst %.s, %.diff, $(P0TESTCASESASSEMB))
+P0TESTCASESASSEMB = $(patsubst $(P0TESTDIR)%.py, $(P0BUILDDIR)%.s, $(P0TESTCASESSOURCE))
+P0TESTCASES = $(patsubst $(P0BUILDDIR)%.s, $(P0BUILDDIR)%.out,  $(P0TESTCASESASSEMB))
+P0TESTDIFFS = $(patsubst $(P0BUILDDIR)%.s, $(P0BUILDDIR)%.diff, $(P0TESTCASESASSEMB))
 
 .PHONY: all clean Tests TestsRun P0TestsRun P0Tests 
 
@@ -45,29 +49,30 @@ P0Tests: $(P0TESTCASES)
 
 P0TestsRun: $(P0TESTDIFFS)
 	echo $(P0TESTDIFFS)
-	cat *.diff
+	cat $(P0BUILDDIR)*.diff
 
-$(P0TESTDIFFS): %.diff: $(P0TESTDIR)%.py %.out $(P0TESTDIR)%.in
-	cat $(P0TESTDIR)$*.in | ./$*.out > $*.output
-	cat $(P0TESTDIR)$*.in | $(P0TESTDIR)$*.py > $*.correct
-	diff -B -s -q $*.output $*.correct > $@
+$(P0TESTDIFFS): $(P0BUILDDIR)%.diff: $(P0TESTDIR)%.py $(P0BUILDDIR)%.out $(P0TESTDIR)%.in
+	cat $(P0TESTDIR)$*.in | $(P0BUILDDIR)$*.out > $(P0BUILDDIR)$*.output
+	cat $(P0TESTDIR)$*.in | $(P0TESTDIR)$*.py > $(P0BUILDDIR)$*.correct
+	diff -B -s -q $(P0BUILDDIR)$*.output $(P0BUILDDIR)$*.correct > $@
 
-%.out: %.s runtime.o hashtable.o hashtable_itr.o hashtable_utility.o
+$(P0BUILDDIR)%.out: $(P0BUILDDIR)%.s $(P0BUILDDIR)runtime.o $(P0BUILDDIR)hashtable.o $(P0BUILDDIR)hashtable_itr.o $(P0BUILDDIR)hashtable_utility.o
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
-$(P0TESTCASESASSEMB): %.s: $(P0TESTDIR)%.py *.py
+$(P0TESTCASESASSEMB): $(P0BUILDDIR)%.s: $(P0TESTDIR)%.py *.py
 	$(PC) $<
+	$(MV) $(@F) $(P0BUILDDIR)
 
-runtime.o: helper/runtime.c helper/runtime.h
+$(P0BUILDDIR)runtime.o: helper/runtime.c helper/runtime.h
 	$(CC) $(CFLAGS) $< -o $@
 
-hashtable.o: helper/hashtable.c helper/hashtable.h
+$(P0BUILDDIR)hashtable.o: helper/hashtable.c helper/hashtable.h
 	$(CC) $(CFLAGS) $< -o $@
 
-hashtable_itr.o: helper/hashtable_itr.c helper/hashtable_itr.h 
+$(P0BUILDDIR)hashtable_itr.o: helper/hashtable_itr.c helper/hashtable_itr.h 
 	$(CC) $(CFLAGS) $< -o $@
 
-hashtable_utility.o: helper/hashtable_utility.c helper/hashtable_utility.h
+$(P0BUILDDIR)hashtable_utility.o: helper/hashtable_utility.c helper/hashtable_utility.h
 	$(CC) $(CFLAGS) $< -o $@
 
 submission:
@@ -81,13 +86,14 @@ submission:
 
 clean:
 	$(RM) $(P0TESTCASES)
-	$(RM) *.o
-	$(RM) *.out
-	$(RM) *.s
+	$(RM) $(BUILDDIR)*.o
+	$(RM) $(BUILDDIR)*.out
+	$(RM) $(BUILDDIR)*.s
+	$(RM) $(BUILDDIR)*.output
+	$(RM) $(BUILDDIR)*.correct
+	$(RM) $(BUILDDIR)*.diff	
 	$(RM) *~
 	$(RM) *.pyc
+	$(RM) *.out
 	$(RM) submit.zip
 	$(RM) parsetab.py
-	$(RM) *.output
-	$(RM) *.correct
-	$(RM) *.diff
