@@ -215,7 +215,7 @@ def main(argv=None):
     
     # Parse inputFile
     ast = compiler.parseFile(inputFilePath)
-    sys.stderr.write(str(argv[0]) + ": ast = " + str(ast) + "\n")
+    sys.stderr.write("ast = " + str(ast) + "\n")
     
     # Measure Tree
 #    sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(ast)) + "\n")

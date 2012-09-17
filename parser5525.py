@@ -26,10 +26,12 @@ from lexer5525 import tokens
 # Parsing Rules
 
 precedence = (('nonassoc', 'PRINT'),
+              ('nonassoc', 'FCALL'),
+              ('nonassoc', 'ENAME'),
               ('left', 'PLUS'),
               ('right', 'UMINUS'),
               ('nonassoc', 'LPAREN'))
-              
+
 def p_module(p):
     'module : stmt_list'
     p[0] = Module(None, Stmt(p[1]))
@@ -42,28 +44,20 @@ def p_stmt_list_single(p):
     'stmt_list : stmt'
     p[0] = [p[1]]
 
-#def p_stmt_list_none(p):
-#    'stmt_list : empty'
-#    p[0] = []
-
 def p_stmt_print(p):
     'stmt : PRINT expr' 
     p[0] = Printnl([p[2]], None)
 
 def p_stmt_assign(p):
-    'stmt : assignee ASSIGN expr' 
-    p[0] = Assign([p[1]], p[3])
+    'stmt : NAME ASSIGN expr' 
+    p[0] = Assign([AssName(p[1], 'OP_ASSIGN')], p[3])
 
 def p_stmt_expr(p):
     'stmt : expr' 
     p[0] = Discard(p[1])
 
-def p_assignee(p):
-    'assignee : NAME'
-    p[0] = AssName(p(1), 'OP_ASSIGN')
-
 def p_expr_name(p):
-    'expr : NAME'
+    'expr : NAME %prec ENAME'
     p[0] = Name(p[1])
 
 def p_expr_int(p):
@@ -83,16 +77,8 @@ def p_expr_paren(p):
     p[0] = p[2]
 
 def p_expr_function(p):
-    'expr : expr LPAREN fargs RPAREN'
-    p[0] = CallFunc(p[1], p[3], None, None)
-
-def p_fargs_none(p):
-    'fargs : empty'
-    p[0] = []
-
-def p_empty(p):
-    'empty :'
-    pass
+    'expr : NAME LPAREN RPAREN %prec FCALL'
+    p[0] = CallFunc(Name(p[1]), [], None, None)
 
 # Errors
 
@@ -126,7 +112,7 @@ def parser5525_TestMain(argv=None):
 
     ast = yacc.parse(source)
         
-    sys.stdout.write(str(ast) + "\n")
+    sys.stdout.write("ast = " + str(ast) + "\n")
 
     return 0
     
