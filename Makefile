@@ -48,7 +48,6 @@ TestsRun: P0TestsRun
 P0Tests: $(P0TESTCASES)
 
 P0TestsRun: $(P0TESTDIFFS)
-	echo $(P0TESTDIFFS)
 	cat $(P0BUILDDIR)*.diff
 
 $(P0TESTDIFFS): $(P0BUILDDIR)%.diff: $(P0TESTDIR)%.py $(P0BUILDDIR)%.out $(P0TESTDIR)%.in
