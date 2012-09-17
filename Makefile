@@ -1,11 +1,17 @@
 # File: Makefile
+#
 # By: Andy Sayler <www.andysayler.com>
+# In association with:
+#   Michael (Mike) Vitousek
+#     https://github.com/mvitousek/python-compiler-mmv
+#   Anne Gatchell
+#     https://github.com/halloannielala/compiler-5525
+#
 # CU CS 5525 - Compilers
 # Creation Date: 2012/09/06
-# Modififed Date: 2012/09/06
+#
 # Description:
-#	This is the Makefile for the compiler test files
-
+#     This is the Makefile for the compiler test files
 
 CC = gcc
 PC = ./compile.py
