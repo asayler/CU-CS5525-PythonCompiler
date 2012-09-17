@@ -63,16 +63,16 @@ $(P0TESTCASESASSEMB): $(P0BUILDDIR)%.s: $(P0TESTDIR)%.py *.py
 	$(PC) $<
 	$(MV) $(@F) $(P0BUILDDIR)
 
-$(P0BUILDDIR)runtime.o: helper/runtime.c helper/runtime.h
+$(P0BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable.o: helper/hashtable.c helper/hashtable.h
+$(P0BUILDDIR)hashtable.o: $(HELPERDIR)hashtable.c $(HELPERDIR)hashtable.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable_itr.o: helper/hashtable_itr.c helper/hashtable_itr.h 
+$(P0BUILDDIR)hashtable_itr.o: $(HELPERDIR)hashtable_itr.c $(HELPERDIR)hashtable_itr.h 
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable_utility.o: helper/hashtable_utility.c helper/hashtable_utility.h
+$(P0BUILDDIR)hashtable_utility.o: $(HELPERDIR)hashtable_utility.c $(HELPERDIR)hashtable_utility.h
 	$(CC) $(CFLAGS) $< -o $@
 
 submission:
