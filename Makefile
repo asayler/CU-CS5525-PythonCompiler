@@ -28,50 +28,49 @@ PLYDIR = ./ply/
 BUILDDIR = ./build/
 TESTDIR = ./test/
 
-P0TESTDIR = $(TESTDIR)p0/
-P0BUILDDIR = $(BUILDDIR)
+TESTCASESSOURCE = $(wildcard $(TESTDIR)*.py)
+TESTCASESINPUT  = $(patsubst %.py,           %.in,           $(TESTCASESSOURCE))
+TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py, $(BUILDDIR)%.s, $(TESTCASESSOURCE))
+TESTCASES       = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
+TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
+TESTTEST        = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.test, $(TESTCASESASSEMB))
 
-P0TESTCASESSOURCE = $(wildcard $(P0TESTDIR)*.py)
-P0TESTCASESINPUT  = $(wildcard $(P0TESTDIR)*.in)
-P0TESTCASESASSEMB = $(patsubst $(P0TESTDIR)%.py, $(P0BUILDDIR)%.s, $(P0TESTCASESSOURCE))
-P0TESTCASES = $(patsubst $(P0BUILDDIR)%.s, $(P0BUILDDIR)%.out,  $(P0TESTCASESASSEMB))
-P0TESTDIFFS = $(patsubst $(P0BUILDDIR)%.s, $(P0BUILDDIR)%.diff, $(P0TESTCASESASSEMB))
-
-.PHONY: all clean Tests TestsRun P0TestsRun P0Tests 
+.PHONY: all clean Tests TestsRun
 
 all: Tests
 
-Tests: P0Tests
+Tests: $(TESTCASES)
 
-TestsRun: P0TestsRun
+TestsRun: $(TESTDIFFS)
+	cat $^
 
-P0Tests: $(P0TESTCASES)
+$(TESTTEST): %.test: %.s
+	echo $*
+	echo $(*F)
+	echo $(*)
 
-P0TestsRun: $(P0TESTDIFFS)
-	cat $(P0BUILDDIR)*.diff
+$(TESTDIFFS): $(BUILDDIR)%.diff: $(BUILDDIR)%.out $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.out > $(BUILDDIR)$*.output
+	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
+	diff -B -s -q $(BUILDDIR)$*.output $(BUILDDIR)$*.correct > $@
 
-$(P0TESTDIFFS): $(P0BUILDDIR)%.diff: $(P0TESTDIR)%.py $(P0BUILDDIR)%.out $(P0TESTDIR)%.in
-	cat $(P0TESTDIR)$*.in | $(P0BUILDDIR)$*.out > $(P0BUILDDIR)$*.output
-	cat $(P0TESTDIR)$*.in | $(P0TESTDIR)$*.py > $(P0BUILDDIR)$*.correct
-	diff -B -s -q $(P0BUILDDIR)$*.output $(P0BUILDDIR)$*.correct > $@
-
-$(P0BUILDDIR)%.out: $(P0BUILDDIR)%.s $(P0BUILDDIR)runtime.o $(P0BUILDDIR)hashtable.o $(P0BUILDDIR)hashtable_itr.o $(P0BUILDDIR)hashtable_utility.o
+$(BUILDDIR)%.out: $(BUILDDIR)%.s $(BUILDDIR)runtime.o $(BUILDDIR)hashtable.o $(BUILDDIR)hashtable_utility.o $(BUILDDIR)hashtable_itr.o
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
-$(P0TESTCASESASSEMB): $(P0BUILDDIR)%.s: $(P0TESTDIR)%.py *.py
+$(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(PC) $<
-	$(MV) $(@F) $(P0BUILDDIR)
+	$(MV) $(@F) $(BUILDDIR)
 
-$(P0BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
+$(BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable.o: $(HELPERDIR)hashtable.c $(HELPERDIR)hashtable.h
+$(BUILDDIR)hashtable.o: $(HELPERDIR)hashtable.c $(HELPERDIR)hashtable.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable_itr.o: $(HELPERDIR)hashtable_itr.c $(HELPERDIR)hashtable_itr.h 
+$(BUILDDIR)hashtable_itr.o: $(HELPERDIR)hashtable_itr.c $(HELPERDIR)hashtable_itr.h 
 	$(CC) $(CFLAGS) $< -o $@
 
-$(P0BUILDDIR)hashtable_utility.o: $(HELPERDIR)hashtable_utility.c $(HELPERDIR)hashtable_utility.h
+$(BUILDDIR)hashtable_utility.o: $(HELPERDIR)hashtable_utility.c $(HELPERDIR)hashtable_utility.h
 	$(CC) $(CFLAGS) $< -o $@
 
 submission:
@@ -84,7 +83,7 @@ submission:
 	$(RM) -r $(SUBMISSIONDIR)
 
 clean:
-	$(RM) $(P0TESTCASES)
+	$(RM) $(TESTCASES)
 	$(RM) $(BUILDDIR)*.o
 	$(RM) $(BUILDDIR)*.out
 	$(RM) $(BUILDDIR)*.s
