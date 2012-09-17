@@ -22,8 +22,7 @@ import ply.lex as lex
 
 # Tokens
 
-reserved = {'print' : 'PRINT',
-            'input' : 'INPUT'}
+reserved = {'print' : 'PRINT'}
 
 tokens = ['NAME', 'INT',
           'PLUS', 'MINUS', 'ASSIGN',
@@ -57,6 +56,8 @@ t_ignore_COMMENT = r'\#.*'
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count('\n')
+
+# Errors
 
 def t_error(t):
     sys.stderr.write("Illegal charecter '%s'\n" % t.value[0])
