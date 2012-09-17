@@ -66,3 +66,4 @@ clean:
 	$(RM) *~
 	$(RM) *.pyc
 	$(RM) submit.zip
+	$(RM) parsetab.py
