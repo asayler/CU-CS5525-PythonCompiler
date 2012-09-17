@@ -89,6 +89,16 @@ def p_error(p):
 
 yacc.yacc()
 
+def parseFile(filePath):
+
+    inputFile = open(filePath)
+    source = inputFile.read()
+    inputFile.close()
+
+    ast = yacc.parse(source)
+
+    return ast
+
 # Test Main
 
 def parser5525_TestMain(argv=None):
@@ -106,11 +116,7 @@ def parser5525_TestMain(argv=None):
         sys.stderr.write(str(argv[0]) + " input file must be of type *.py\n")
         return 1
 
-    inputFile = open(inputFilePath)
-    source = inputFile.read()
-    inputFile.close()
-
-    ast = yacc.parse(source)
+    ast = parseFile(inputFilePath)
         
     sys.stdout.write("ast = " + str(ast) + "\n")
 
