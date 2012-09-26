@@ -161,11 +161,20 @@ ESP = Reg86('esp')
 def instr_select(ast, value_mode=Move86):
     global stack_map
     if isinstance(ast, Module):
-        return [Push86(EBP), Move86(ESP, EBP), Sub86(Const86(len(scan_allocs(ast)) * 4), ESP)] + instr_select(ast.node) + [Move86(Const86(0), EAX), Leave86(), Ret86()]
+        return [Push86(EBP),
+                Move86(ESP, EBP),
+                Sub86(Const86(len(scan_allocs(ast)) * 4), ESP)]\
+                + instr_select(ast.node)\
+                + [Move86(Const86(0), EAX),
+                   Leave86(),
+                   Ret86()]
     elif isinstance(ast, Stmt):
         return sum(map(instr_select, ast.nodes),[])
     elif isinstance(ast, Printnl):
-        return instr_select(ast.nodes[0]) + [Push86(EAX), Call86('print_int_nl'), Add86(Const86(4), ESP)]
+        return instr_select(ast.nodes[0])\
+            + [Push86(EAX),
+               Call86('print_int_nl'),
+               Add86(Const86(4), ESP)]
     elif isinstance(ast, Assign):
         expr_assemb = instr_select(ast.expr)
         offset = allocate(ast.nodes[0].name, 4)
@@ -217,7 +226,7 @@ def main(argv=None):
         sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
-#    ast = compiler.parseFile(inputFilePath)
+#   ast = compiler.parseFile(inputFilePath)
     ast = parser5525.parseFile(inputFilePath)
     if(debug):
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
@@ -230,7 +239,7 @@ def main(argv=None):
     # Compile flat tree
     assembly = instr_select(flatast)
     if(debug):
-        sys.stderr.write("instr ast = \n" + str(map(str, assembly)) + "\n")
+        sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
     
     # Write output
     write_to_file(map(str, assembly), outputFileName)
