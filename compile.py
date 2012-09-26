@@ -212,36 +212,25 @@ def main(argv=None):
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"
 
-#    sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
-#    sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
+    if(debug):
+        sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
+        sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
 #    ast = compiler.parseFile(inputFilePath)
     ast = parser5525.parseFile(inputFilePath)
-#    sys.stderr.write("ast = " + str(ast) + "\n")
-    
-    # Measure Tree
-#    sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(ast)) + "\n")
-#    sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(ast))) + "\n")
-
-    # Draw Tree
-#    drawAST(ast)
+    if(debug):
+        sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
     
     # Flatten Tree
     flatast = flattenAst(ast)
-#    print(ast)
-#    print(flatast)
-
-    # Measure Flat Tree
-#   sys.stderr.write(str(argv[0]) + ": dim_nodes(ast) = " + str(dim_nodes(flatast)) + "\n")
-#   sys.stderr.write(str(argv[0]) + ": allocs = " + str(len(scan_allocs(flatast))) + "\n")
-
-    # Draw Flat Tree
-#    drawAST(flatast)
+    if(debug):
+        sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
 
     # Compile flat tree
-    #assembly = compile_stmt(flatast)
     assembly = instr_select(flatast)
+    if(debug):
+        sys.stderr.write("instr ast = \n" + str(map(str, assembly)) + "\n")
     
     # Write output
     write_to_file(map(str, assembly), outputFileName)
