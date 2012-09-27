@@ -197,6 +197,8 @@ def arg_select(ast):
         return Var86(ast.name)
     elif isinstance(ast, Const):
         return Const86(ast.value)
+    else:
+        raise Exception("Invalid argument: " + str(ast))
 
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
@@ -278,6 +280,10 @@ def main(argv=None):
     assembly = instr_select(flatast)
     if(debug):
         sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
+
+    # Reg Alloc
+    if(debug):
+        sys.stderr.write("liveness = \n" + "\n".join(map(str, liveness(assembly))) + "\n")
     
     # Write output
     write_to_file(map(str, assembly), outputFileName)
