@@ -3,6 +3,12 @@
 class X86Arg:
     def __str__(self):
         return self.mnemonic()
+    def __repr__(self):
+        return self.mnemonic()
+    def __hash__(self):
+        return hash(self.__str__())
+    def __eq__(self, that):
+        return self.mnemonic() == that.mnemonic()
     
 class Const86(X86Arg):
     def __init__(self, value):
@@ -17,14 +23,22 @@ class Reg86(X86Arg):
         return '%' + self.register
 
 class Mem86(X86Arg):
-    def __init__(self, offset, register):
+    def __init__(self, offset, arg):
         self.offset = offset
-        self.register = register
+        self.arg = arg
     def mnemonic(self):
-        return ('-%d(%s)' % (self.offset, self.register.mnemonic()))
+        return ('-%d(%s)' % (self.offset, self.arg.mnemonic()))
+
+class Var86(X86Arg):
+    def __init__(self, name):
+        self.name = name
+    def mnemonic(self):
+        return self.name
 
 class X86Inst:
     def __str__(self):
+        return self.mnemonic()
+    def __repr__(self):
         return self.mnemonic()
 
 class Push86(X86Inst):
