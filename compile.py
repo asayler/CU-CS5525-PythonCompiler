@@ -15,15 +15,14 @@
 USAGE:
     compile.py <file path>
 """
-import sys
-import compiler
+import sys, compiler
 from compiler.ast import *
 
-from x86ast import *
-
-from astTools import *
-
 import parser5525
+
+from x86ast import *
+from x86regalloc import *
+from astTools import *
 
 debug = True
 
@@ -31,7 +30,7 @@ debug = True
 
 temp_counter = -1
 def new_temp(prefix):
-    """A function to genertae unique temp var names"""
+    """A function to generate unique temp var names"""
     global temp_counter
     temp_counter = temp_counter + 1
     return prefix + str(temp_counter)
@@ -154,11 +153,10 @@ def allocate(var, size):
     stack_map[var] = current_offset
     return current_offset
 
-# Mike's Instruction Select
-EAX = Reg86('eax')
-EBP = Reg86('ebp')
-ESP = Reg86('esp')
-def instr_select(ast, value_mode=Move86):
+# Instruction Select
+
+WORDLEN = 4
+def instr_select_old(ast, value_mode=Move86):
     global stack_map
     if isinstance(ast, Module):
         return [Push86(EBP),
@@ -191,6 +189,46 @@ def instr_select(ast, value_mode=Move86):
         return [value_mode(Const86(ast.value), EAX)]
     elif isinstance(ast, Name):
         return [value_mode(Mem86(stack_map[ast.name], EBP), EAX)]
+    else:
+        raise Exception("Unexpected term: " + str(ast))
+
+def arg_select(ast):
+    if isinstance(ast, Name):
+        return Var86(ast.name)
+    elif isinstance(ast, Const):
+        return Const86(ast.value)
+
+DISCARDTEMP = "discardtemp"
+NULLTEMP = "nulltemp"
+
+def instr_select(ast, writeTarget=NULLTEMP):
+    if isinstance(ast, Module):
+        return instr_select(ast.node)
+    elif isinstance(ast, Stmt):
+        return sum(map(instr_select, ast.nodes),[])
+    elif isinstance(ast, Printnl):
+        #TODO: Handle Callee Save Registers
+        return [Push86(arg_select(ast.nodes[0])),
+                Call86('print_int_nl'),
+                Add86(Const86(WORDLEN), ESP)]
+    elif isinstance(ast, Assign):
+        return instr_select(ast.expr, Var86(ast.nodes[0].name))
+    elif isinstance(ast, Discard):
+        return instr_select(ast.expr, Var86(DISCARDTEMP))
+    elif isinstance(ast, Add):
+        return [Move86(arg_select(ast.left), writeTarget),
+                Add86(arg_select(ast.right), writeTarget)]
+    elif isinstance(ast, UnarySub):
+        return [Move86(arg_select(ast.expr), writeTarget),
+                Neg86(writeTarget)]
+    elif isinstance(ast, CallFunc):
+        #TODO: Handle Callee Save Registers
+        return [Call86(ast.node.name),
+                Move86(EAX, writeTarget)]
+    elif isinstance(ast, Const):
+        return [Move86(Const86(ast.value), writeTarget)]
+    elif isinstance(ast, Name):
+        return [Move86(Var86(ast.name), writeTarget)]
     else:
         raise Exception("Unexpected term: " + str(ast))
 
