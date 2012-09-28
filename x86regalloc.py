@@ -9,6 +9,8 @@ EDI = Reg86('edi')
 EBP = Reg86('ebp')
 ESP = Reg86('esp')
 
+CALLEESAVE = [EAX, ECX, EDX]
+
 def liveness(instrs):
 
     class instrVars:
@@ -76,17 +78,20 @@ def liveness(instrs):
     return lafter[1:]
 
 def interference(instrs, lafter):
-    # Add callee save register to seed graph
-    # graph = {'eax' : set([]), 'ecx' : set([]), 'edx' : set([])}
+    #Setup Empty Graph
     graph = {}
-
+    
     def validNode(val):
-        return isinstance(val, Var86)
+        return (isinstance(val, Var86) or
+                isinstance(val, Reg86))
 
     def name(val):
-        if isinstance(val, Var86):
+        if(isinstance(val, Var86)):
             return val.name
-        else: raise Exception("Attempting to get name of invalid argument: " + str(val))
+        elif(isinstance(val, Reg86)):
+            return val.register
+        else:
+            raise Exception("Attempting to get name of invalid argument: " + str(val))
 
     def addEdge(x, y):
         graph[x].add(y)
@@ -137,17 +142,30 @@ def interference(instrs, lafter):
                         # Add edge unless v=t
                         if(v != t):
                             addEdge(t, v)
-                            
+        # If call
+        elif(isinstance(instr, Call86)):
+            for v in live:
+                # Add edge for each callee save register
+                for reg in CALLEESAVE:
+                    if(validNode(reg)):
+                        r = name(reg)
+                        if(v != r):
+                            addEdge(r, v)                          
 
+    # Check Length
     if(len(instrs) != len(lafter)):
-        raise Exception("Mismatched lenghts")
+        raise Exception("Mismatched lengths")
 
     # Seed Graph
+    for reg in CALLEESAVE:
+        if(validNode(reg)):
+            graph[name(reg)] = set([])
     for instr in instrs:
         addKey(instr)
 
+    # Add edges
     for n in range(len(instrs)):
-        print str(instrs[n]) + " " + str(lafter[n])
         updateGraph(instrs[n], lafter[n])
 
     return graph
+
