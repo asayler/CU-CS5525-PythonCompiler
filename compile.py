@@ -291,6 +291,9 @@ def main(argv=None):
     colors = color(graph)
     if(debug):
         sys.stderr.write("colors = " + str(colors) + "\n")
+    assembly = regAlloc(assembly)
+    if(debug):
+        sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")
 
     # Write output
     write_to_file(map(str, assembly), outputFileName)

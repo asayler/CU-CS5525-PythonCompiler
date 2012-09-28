@@ -56,7 +56,7 @@ def liveness(instrs):
                 read    += [name(instr.target)]
         
         # Unary read
-        if(isinstance(instr, Push86)):
+        elif(isinstance(instr, Push86)):
             if(validNode(instr.value)):
                 read    += [name(instr.value)]
         
@@ -214,7 +214,6 @@ def color(graph):
         maxkey = ''
         maxsat = -1
         for key in w:
-            print(key + " sat = " + str(saturation(key)))
             sat = saturation(key)
             if(sat > maxsat):
                 maxsat = sat
@@ -235,3 +234,91 @@ def color(graph):
 
     return colors
 
+def varReplace(instrs, colors):
+
+    def validNode(val):
+        return isinstance(val, Var86)
+
+    def name(val):
+        if isinstance(val, Var86):
+            return val.name
+        else:
+            raise Exception("Attempting to get name of invalid argument: " + str(val))
+
+    def replace(node, colormap):
+        color = colors[name(node)]
+        if(color < len(REGCOLORS)):
+            return Reg86(colormap[color])
+
+    #Duplicate
+    instrs = instrs[:]
+
+    #Setup reverse dictionary
+    colormap = {}
+    for key in REGCOLORS:
+        colormap[REGCOLORS[key]] = key
+
+    print(str(colormap))
+
+    #Loop through instructions
+    for instr in instrs:
+
+        # Unary read/write
+        if(isinstance(instr, Neg86)):
+            if(validNode(instr.target)):
+                instr.target = replace(instr.target, colormap)
+            
+        # Unary read
+        elif(isinstance(instr, Push86)):
+            if(validNode(instr.value)):
+                instr.value = replace(instr.value, colormap)
+        
+        # Binary read/write
+        elif(isinstance(instr, Add86) or
+             isinstance(instr, Sub86) or
+             isinstance(instr, Move86)):
+            if(validNode(instr.target)):
+                instr.target = replace(instr.target, colormap)
+            if(validNode(instr.value)):
+                instr.value = replace(instr.value, colormap)
+
+    return instrs
+
+def maxColor(colors):
+    maxcolor = -1
+    for key in colors:
+        color = colors[key]
+        if(color > maxcolor):
+            maxcolor = color
+    return maxcolor
+
+def addPreamble(instrs, colors):
+    stackvars = maxColor(colors) - len(REGCOLORS)
+    preamble = [Push86(EBP),
+                Move86(ESP, EBP)]
+    if(stackvars > 0):
+        preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
+    return preamble + instrs
+
+def addClosing(instrs):
+    closing = [Move86(Const86(0), EAX),
+               Leave86(),
+               Ret86()]
+    return instrs + closing
+
+def regAlloc(instrs):
+    
+    instra = instrs[:]
+    lafter = liveness(instrs)
+    graph = interference(instrs, lafter)
+    colors = color(graph)
+    instrs = varReplace(instrs, colors)
+
+    instrs = addPreamble(instrs, colors)
+    instrs = addClosing(instrs)
+
+    print(str(maxColor(colors)))
+
+    print(instrs)
+
+    return instrs
