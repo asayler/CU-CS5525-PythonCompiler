@@ -24,7 +24,7 @@ from x86ast import *
 from x86regalloc import *
 from astTools import *
 
-debug = True
+debug = False
 
 ### Flatten Functions ###
 

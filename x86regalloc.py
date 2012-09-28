@@ -176,7 +176,6 @@ def interference(instrs, lafter):
     for reg in CALLEESAVE:
         if(validNode(reg)):
             graph[name(reg)] = set([])
-    print graph
     for instr in instrs:
         addKey(instr)
 
@@ -258,8 +257,6 @@ def varReplace(instrs, colors):
     for key in REGCOLORS:
         colormap[REGCOLORS[key]] = key
 
-    print(str(colormap))
-
     #Loop through instructions
     for instr in instrs:
 
@@ -316,9 +313,5 @@ def regAlloc(instrs):
 
     instrs = addPreamble(instrs, colors)
     instrs = addClosing(instrs)
-
-    print(str(maxColor(colors)))
-
-    print(instrs)
 
     return instrs
