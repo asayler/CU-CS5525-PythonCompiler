@@ -282,8 +282,12 @@ def main(argv=None):
         sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
 
     # Reg Alloc
+    lafter = liveness(assembly)
     if(debug):
-        sys.stderr.write("liveness = \n" + "\n".join(map(str, liveness(assembly))) + "\n")
+        sys.stderr.write("lafter = \n" + "\n".join(map(str, lafter)) + "\n")
+    graph = interference(assembly, lafter)
+    if(debug):
+        sys.stderr.write("graph = " + str(graph) + "\n")
     
     # Write output
     write_to_file(map(str, assembly), outputFileName)
