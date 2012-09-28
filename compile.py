@@ -288,7 +288,10 @@ def main(argv=None):
     graph = interference(assembly, lafter)
     if(debug):
         sys.stderr.write("graph = " + str(graph) + "\n")
-    
+    colors = color(graph)
+    if(debug):
+        sys.stderr.write("colors = " + str(colors) + "\n")
+
     # Write output
     write_to_file(map(str, assembly), outputFileName)
 

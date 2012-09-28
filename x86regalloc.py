@@ -10,6 +10,22 @@ EBP = Reg86('ebp')
 ESP = Reg86('esp')
 
 CALLEESAVE = [EAX, ECX, EDX]
+COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
+
+def regname(reg):
+    if(isinstance(reg, Reg86)):
+        return reg.register
+    else:
+        raise Exception("Attempting to get name of invalid argument: " + str(val))
+
+REGCOLORS = {
+    regname(EAX): 0,
+    regname(EBX): 1,
+    regname(ECX): 2,
+    regname(EDX): 3,
+    regname(ESI): 4,
+    regname(EDI): 5
+}
 
 def liveness(instrs):
 
@@ -83,7 +99,7 @@ def interference(instrs, lafter):
     
     def validNode(val):
         return (isinstance(val, Var86) or
-                isinstance(val, Reg86))
+                (isinstance(val, Reg86) and (val in COLOREDREGS)))
 
     def name(val):
         if(isinstance(val, Var86)):
@@ -160,6 +176,7 @@ def interference(instrs, lafter):
     for reg in CALLEESAVE:
         if(validNode(reg)):
             graph[name(reg)] = set([])
+    print graph
     for instr in instrs:
         addKey(instr)
 
@@ -168,4 +185,53 @@ def interference(instrs, lafter):
         updateGraph(instrs[n], lafter[n])
 
     return graph
+
+def color(graph):
+
+    colors = {}
+
+    def saturation(key):
+        sat = 0
+        # Loop through neighbors
+        for n in graph[key]:
+            if(colors[n] != None):
+                sat += 1
+        return sat
+
+    # Seed colors
+    for key in graph.keys():
+        if(not(key in colors)):
+            if(key in REGCOLORS):
+                colors[key] = REGCOLORS[key]
+            else:
+                colors[key] = None
+    
+    # Find all uncolord keys
+    w = filter(lambda u: colors[u] == None, colors.keys())
+    
+    while(len(w) > 0):
+        # Find key with max saturation
+        maxkey = ''
+        maxsat = -1
+        for key in w:
+            print(key + " sat = " + str(saturation(key)))
+            sat = saturation(key)
+            if(sat > maxsat):
+                maxsat = sat
+                maxkey = key
+        # Select color for key with max saturation and remove from w
+        adjcolors = set([])
+        for n in graph[maxkey]:
+            if(colors[n] != None):
+                adjcolors.add(colors[n])
+        color = 0
+        while(1):
+            if(color in adjcolors):
+                color += 1
+            else:
+                colors[maxkey] = color
+                w.remove(maxkey)
+                break
+
+    return colors
 
