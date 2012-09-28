@@ -12,6 +12,8 @@ ESP = Reg86('esp')
 CALLEESAVE = [EAX, ECX, EDX]
 COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
 
+WORDLEN = 4
+
 def regname(reg):
     if(isinstance(reg, Reg86)):
         return reg.register
@@ -247,7 +249,11 @@ def varReplace(instrs, colors):
     def replace(node, colormap):
         color = colors[name(node)]
         if(color < len(REGCOLORS)):
+            # Set Register
             return Reg86(colormap[color])
+        else:
+            # Set stack spill
+            return Mem86((color - len(REGCOLORS) + 1) * WORDLEN, EBP)
 
     #Duplicate
     instrs = instrs[:]
@@ -290,7 +296,7 @@ def maxColor(colors):
     return maxcolor
 
 def addPreamble(instrs, colors):
-    stackvars = maxColor(colors) - len(REGCOLORS)
+    stackvars = maxColor(colors) - len(REGCOLORS) + 1
     preamble = [Push86(EBP),
                 Move86(ESP, EBP)]
     if(stackvars > 0):
@@ -310,7 +316,6 @@ def regAlloc(instrs):
     graph = interference(instrs, lafter)
     colors = color(graph)
     instrs = varReplace(instrs, colors)
-
     instrs = addPreamble(instrs, colors)
     instrs = addClosing(instrs)
 
