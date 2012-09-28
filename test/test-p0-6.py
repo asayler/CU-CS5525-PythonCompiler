@@ -4,7 +4,7 @@
 # CU CS5525
 # Test Program
 # P0
-# Test g
+# Test 6
 
 y = 1
 z = 2
