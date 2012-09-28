@@ -24,7 +24,7 @@ from x86ast import *
 from x86regalloc import *
 from astTools import *
 
-debug = False
+debug = True
 
 ### Flatten Functions ###
 
@@ -282,15 +282,18 @@ def main(argv=None):
         sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
 
     # Reg Alloc
-    lafter = liveness(assembly)
     if(debug):
+        lafter = liveness(assembly)
         sys.stderr.write("lafter = \n" + "\n".join(map(str, lafter)) + "\n")
-    graph = interference(assembly, lafter)
-    if(debug):
+        graph = interference(assembly, lafter)
         sys.stderr.write("graph = " + str(graph) + "\n")
-    colors = color(graph)
-    if(debug):
+        colors = color(graph)
         sys.stderr.write("colors = " + str(colors) + "\n")
+        (instrs, regOnlyVars) = fixMemToMem(assembly, colors)
+        sys.stderr.write("regOnlyVars = " + str(regOnlyVars) + "\n")
+        sys.stderr.write("instrs = \n" + "\n".join(map(str, instrs)) + "\n")
+
+
     assembly = regAlloc(assembly)
     if(debug):
         sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")

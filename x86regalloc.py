@@ -1,3 +1,15 @@
+# Andy Sayler
+# Fall 2012
+# CU CS5525
+# Python Compiler
+# Reg Alloc Mod
+#
+# In conjunction with:
+#    Michael (Mike) Vitousek
+#       https://github.com/mvitousek/python-compiler-mmv
+#    Anne Gatchell
+#       https://github.com/halloannielala/compiler-5525
+
 from x86ast import *
 
 EAX = Reg86('eax')
@@ -49,6 +61,7 @@ def liveness(instrs):
 
     def extractVars(instr):
         written = []
+
         read = []
         
         # Unary read/write
@@ -187,9 +200,7 @@ def interference(instrs, lafter):
 
     return graph
 
-def color(graph):
-
-    colors = {}
+def color(graph, colors = {}, regOnlyVars = []):
 
     def saturation(key):
         sat = 0
@@ -207,18 +218,42 @@ def color(graph):
             else:
                 colors[key] = None
     
+    # Clear Register Assignments from Previous Passes
+    assigned = filter(lambda u: ((colors[u] != None) and
+                                 (not(u in REGCOLORS))), colors.keys())
+    for key in assigned:
+        if(colors[key] < len(REGCOLORS)):
+            colors[key] = None
+            
     # Find all uncolord keys
     w = filter(lambda u: colors[u] == None, colors.keys())
     
     while(len(w) > 0):
-        # Find key with max saturation
-        maxkey = ''
-        maxsat = -1
+        
+        # Find regOnlyKeys in Keys
+        priorityKeys = []
         for key in w:
+            if(key in regOnlyVars):
+               priorityKeys += [key]
+        # Else use all keys
+        if(len(priorityKeys) == 0):
+            priorityKeys = w
+        
+        # Find key with max saturation
+        maxkeys = []
+        maxsat = -1
+        for key in priorityKeys:
             sat = saturation(key)
             if(sat > maxsat):
                 maxsat = sat
-                maxkey = key
+                maxkeys = [key]
+            elif(sat == maxsat):
+                maxkeys += [key]
+        # Break ties
+        # Nothing to break currently
+        # Otherwise use first var
+        maxkey = maxkeys[0]
+        
         # Select color for key with max saturation and remove from w
         adjcolors = set([])
         for n in graph[maxkey]:
@@ -233,7 +268,69 @@ def color(graph):
                 w.remove(maxkey)
                 break
 
+        # Double check reg only var assignment
+        if(maxkey in regOnlyVars):
+            if(colors[maxkey] >= len(REGCOLORS)):
+                raise Exception("Failed to place regOnlyVar in reg: " +
+                                str(maxkey) + "," + str(colors[maxkey]))
+
     return colors
+
+def fixMemToMem(instrs, colors):
+
+    regTempPrefix = "RegTmp"
+
+    def validNode(val):
+        return isinstance(val, Var86)
+
+    def name(val):
+        if isinstance(val, Var86):
+            return val.name
+        else:
+            raise Exception("Attempting to get name of invalid argument: " + str(val))
+
+    def addTemp(instr, tmp):
+        if(isinstance(instr, Add86)):
+            return [Move86(instr.value, tmp),
+                    Add86(tmp, instr.target)]
+        elif(isinstance(instr, Sub86)):
+            return [Move86(instr.value, tmp),
+                    Sub86(tmp, instr.target)]
+        elif(isinstance(instr, Move86)):
+            return [Move86(instr.value, tmp),
+                    Move86(tmp, instr.target)]
+        else:
+            raise Exception("Cannot add temp to node: " + str(instr))
+    
+    tempCnt = 0
+    fixedInstrs = []
+    regOnlyVars = []
+
+    #Loop through instructions
+    for instr in instrs:
+        
+        # Binary read/write
+        if(isinstance(instr, Add86) or
+           isinstance(instr, Sub86) or
+           isinstance(instr, Move86)):
+            if(validNode(instr.target) and 
+               validNode(instr.value)):
+                # Find mem to mem operations
+                if((colors[name(instr.target)] >= len(REGCOLORS)) and
+                   (colors[name(instr.value)] >= len(REGCOLORS))):
+                    # Add temp var
+                    tmp = Var86(regTempPrefix + str(tempCnt))
+                    fixedInstrs += addTemp(instr, tmp)
+                    regOnlyVars += [tmp.name]
+                    tempCnt += 1
+                else:
+                    fixedInstrs += [instr]
+            else:
+                fixedInstrs += [instr]
+        else:
+            fixedInstrs += [instr]
+
+    return (fixedInstrs, regOnlyVars)
 
 def varReplace(instrs, colors):
 
@@ -315,6 +412,10 @@ def regAlloc(instrs):
     lafter = liveness(instrs)
     graph = interference(instrs, lafter)
     colors = color(graph)
+    (instrs, regOnlyVars) = fixMemToMem(instrs, colors)
+    lafter = liveness(instrs)
+    graph = interference(instrs, lafter)
+    colors = color(graph, colors, regOnlyVars)
     instrs = varReplace(instrs, colors)
     instrs = addPreamble(instrs, colors)
     instrs = addClosing(instrs)
