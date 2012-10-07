@@ -57,7 +57,8 @@ def liveness(instrs):
         if isinstance(val, Var86):
             return val.name
         else:
-            raise Exception("Attempting to get name of invalid argument: " + str(val))
+            raise Exception("Attempting to get name of invalid argument: " +
+                            str(val))
 
     def extractVars(instr):
         written = []
@@ -148,31 +149,27 @@ def interference(instrs, lafter):
         if(isinstance(instr, Move86)):
             if(validNode(instr.target)):
                 t = name(instr.target)
-                # If t is in live set
-                if(t in live):
-                    # Loop through set
-                    for v in live:
-                        # Add edge unless v=t or v=s
-                        if(v != t):
-                            if(validNode(instr.value)):
-                                s = name(instr.value)
-                                if(v != s):
-                                    addEdge(t, v)
-                            else:
+                # Loop through set
+                for v in live:
+                    # Add edge unless v=t or v=s
+                    if(v != t):
+                        if(validNode(instr.value)):
+                            s = name(instr.value)
+                            if(v != s):
                                 addEdge(t, v)
+                        else:
+                            addEdge(t, v)
         # If arithmetic
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86) or 
              isinstance(instr, Neg86)):
             if(validNode(instr.target)):
                 t = name(instr.target)
-                # If t is in live set
-                if(t in live):
-                    # Loop through set
-                    for v in live:
-                        # Add edge unless v=t
-                        if(v != t):
-                            addEdge(t, v)
+                # Loop through set
+                for v in live:
+                    # Add edge unless v=t
+                    if(v != t):
+                        addEdge(t, v)
         # If call
         elif(isinstance(instr, Call86)):
             for v in live:
