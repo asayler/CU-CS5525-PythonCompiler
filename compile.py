@@ -18,8 +18,6 @@ USAGE:
 import sys, compiler
 from compiler.ast import *
 
-import parser5525
-
 from x86ast import *
 from x86regalloc import *
 from astTools import *
@@ -266,8 +264,7 @@ def main(argv=None):
         sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
-#   ast = compiler.parseFile(inputFilePath)
-    ast = parser5525.parseFile(inputFilePath)
+    ast = compiler.parseFile(inputFilePath)
     if(debug):
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
     
