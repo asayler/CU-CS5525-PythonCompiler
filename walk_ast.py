@@ -39,6 +39,8 @@ class Walk_ast(Visitor):
 
     def visitAssign(self, n):
         sys.stderr.write("Visited Assign...\n")
+        for node in n.nodes:
+            self.dispatch(node)
         self.dispatch(n.expr)
     
     def visitDiscard(self, n):
@@ -52,6 +54,9 @@ class Walk_ast(Visitor):
 
     def visitName(self, n):
         sys.stderr.write("Visited Name...\n")
+
+    def visitAssName(self, n):
+        sys.stderr.write("Visited AssName...\n")
 
     def visitList(self, n):
         sys.stderr.write("Visited List...\n")
