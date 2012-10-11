@@ -16,16 +16,19 @@ USAGE:
     compile.py <file path>
 """
 import sys, compiler
-from compiler.ast import *
 
+# Data Types
+from compiler.ast import *
 from monoast import *
 from x86ast import *
-from x86regalloc import *
-from astTools import *
 
-from walk_ast import *
-from graph_ast import *
+# Compiler Stages
 from explicate import *
+from x86regalloc import *
+
+# Helper Tools
+from astTools import *
+from graph_ast import *
 
 debug = True
 

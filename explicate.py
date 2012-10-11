@@ -12,10 +12,12 @@
 #       https://github.com/halloannielala/compiler-5525
 
 import sys
-import compiler
 
+# Data Types
 from compiler.ast import *
+from monoast import *
 
+# Helper Tools
 from vis import Visitor
 
 class ExplicateVisitor(Visitor):
@@ -23,8 +25,7 @@ class ExplicateVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        sys.stderr.write("Visited Module...\n")
-        self.dispatch(n.node)
+        return Module(n.doc, self.dispatch(n.node), n.lineno)
 
     # Statements    
 
