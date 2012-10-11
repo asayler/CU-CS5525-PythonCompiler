@@ -23,6 +23,7 @@ from x86ast import *
 from x86regalloc import *
 from astTools import *
 
+from walk_ast import *
 from graph_ast import *
 
 debug = True
@@ -285,9 +286,9 @@ def main(argv=None):
         sys.stderr.write("id(BOOL_t): " + str(id(BOOL_t)) + "\n")
 
     # Test visitor
-        Graph_ast().preorder(ast)
+        Walk_ast().preorder(ast)
+        Graph_ast().drawGraph(ast, "test2.dot")
         
-
     # Exit early since nothing past this point is implemented for p1 yet
     return 0
     
