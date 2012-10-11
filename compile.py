@@ -262,6 +262,8 @@ def main(argv=None):
     outputFilePath = inputFilePath.split('/')
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"
+    debugFileName = (outputFilePath[-1:])[0]
+    debugFileName = debugFileName[:-3] + ".dot"
 
     if(debug):
         sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
@@ -287,7 +289,7 @@ def main(argv=None):
 
     # Test visitor
         Walk_ast().preorder(ast)
-        Graph_ast().drawGraph(ast, "test2.dot")
+        Graph_ast().drawGraph(ast, debugFileName)
         
     # Exit early since nothing past this point is implemented for p1 yet
     return 0

@@ -9,5 +9,7 @@
 *.correct
 *.output
 *.diff
+*.dot
+*.svg
 submit.zip
 parsetab.py

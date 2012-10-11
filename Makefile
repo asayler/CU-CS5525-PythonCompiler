@@ -93,5 +93,7 @@ clean:
 	$(RM) *~
 	$(RM) *.pyc
 	$(RM) *.out
+	$(RM) *.dot
+	$(RM) *.svg
 	$(RM) submit.zip
 	$(RM) parsetab.py
