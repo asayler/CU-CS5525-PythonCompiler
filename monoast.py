@@ -42,34 +42,34 @@ PROJECTBIG_n  = Name("project_big")
 BIGADD_n   = Name("add")
 TERROR_n   = Name("error_pyobj")
 
-def CallISINT(var):
-    return CallFunc(ISINT_n, var)
+def CallISINT(arg):
+    return CallFunc(ISINT_n, arg)
 
-def CallISBOOL(var):
-    return CallFunc(ISBOOL_n, var)
+def CallISBOOL(arg):
+    return CallFunc(ISBOOL_n, arg)
 
-def CallISBIG(var):
-    return CallFunc(ISBIG_n, var)
-
-
-def CallINJECTINT(var):
-    return CallFunc(INJECTINT_n, var)
-
-def CallINJECTBOOL(var):
-    return CallFunc(INJECTBOOL_n, var)
-
-def CallINJECTBIG(var):
-    return CallFunc(INJECTBIG_n, var)
+def CallISBIG(arg):
+    return CallFunc(ISBIG_n, arg)
 
 
-def CallPROJECTINT(var):
-    return CallFunc(PROJECTINT_n, var)
+def CallINJECTINT(arg):
+    return CallFunc(INJECTINT_n, arg)
 
-def CallPROJECTBOOL(var):
-    return CallFunc(PROJECTBOOL_n, var)
+def CallINJECTBOOL(arg):
+    return CallFunc(INJECTBOOL_n, arg)
 
-def CallPROJECTBIG(var):
-    return CallFunc(PROJECTBIG_n, var)
+def CallINJECTBIG(arg):
+    return CallFunc(INJECTBIG_n, arg)
+
+
+def CallPROJECTINT(arg):
+    return CallFunc(PROJECTINT_n, arg)
+
+def CallPROJECTBOOL(arg):
+    return CallFunc(PROJECTBOOL_n, arg)
+
+def CallPROJECTBIG(arg):
+    return CallFunc(PROJECTBIG_n, arg)
 
 
 

@@ -96,13 +96,13 @@ class ExplicateVisitor(Visitor):
                                               CallISBOOL(lhsvar)),
                                            Or(CallISINT(rhsvar),
                                               CallISBOOL(lhsvar))),
-                                       mono_IntAdd((CallPROJECTINT(lhsvar),
-                                                    CallPROJECTINT(rhsvar))),
+                                       CallINJECTINT(mono_IntAdd((CallPROJECTINT(lhsvar),
+                                                                  CallPROJECTINT(rhsvar)))),
                                        IfExp(And(CallISBIG(lhsvar),
                                                  CallISBIG(rhsvar)),
-                                             CallFunc(BIGADD_n,
-                                                      CallPROJECTBIG(lhsvar),
-                                                      CallPROJECTBIG(rhsvar)),
+                                             CallINJECTBIG(CallFunc(BIGADD_n,
+                                                                    CallPROJECTBIG(lhsvar),
+                                                                    CallPROJECTBIG(rhsvar))),
                                              CallFunc(TERROR_n, "Type Error")))))
         return node
         
