@@ -54,6 +54,8 @@ class Graph_ast(Visitor):
         lines = []
         lines += Graphvis_dot().lineLabel(n, "Assign")
         lines += Graphvis_dot().linePair(p, n)
+        for node in n.nodes:
+            lines += self.dispatch(node, n)    
         lines += self.dispatch(n.expr, n)
         return lines
     
@@ -75,6 +77,12 @@ class Graph_ast(Visitor):
     def visitName(self, n, p):
         lines = []
         lines += Graphvis_dot().lineLabel(n, ("Name(%s)" % str(n.name)))
+        lines += Graphvis_dot().linePair(p, n)
+        return lines
+
+    def visitAssName(self, n, p):
+        lines = []
+        lines += Graphvis_dot().lineLabel(n, ("AssName(%s)" % str(n.name)))
         lines += Graphvis_dot().linePair(p, n)
         return lines
 
