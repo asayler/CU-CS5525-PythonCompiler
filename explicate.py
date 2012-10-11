@@ -25,87 +25,95 @@ class ExplicateVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        return Module(n.doc, self.dispatch(n.node), n.lineno)
+        return mono_Module(n.doc, self.dispatch(n.node), n.lineno)
 
     # Statements    
 
     def visitStmt(self, n):
-        sys.stderr.write("Visited Stmt...\n")
+        nodes = []
         for s in n.nodes:
-            self.dispatch(s)
+            nodes += [self.dispatch(s)]
+        return mono_Stmt(nodes, n.lineno)
 
     def visitPrintnl(self, n):
-        sys.stderr.write("Visited Printnl...\n")
+        nodes = []
         for node in n.nodes:
-            self.dispatch(node)
+            nodes += [self.dispatch(node)]
+        return mono_Printnl(nodes, n.dest, n.lineno)
 
     def visitAssign(self, n):
-        sys.stderr.write("Visited Assign...\n")
-        self.dispatch(n.expr)
+        nodes = []
+        for node in n.nodes:
+            nodes += [self.dispatch(node)]
+        return mono_Assign(nodes, self.dispatch(n.expr), n.lineno)
     
     def visitDiscard(self, n):
-        sys.stderr.write("Visited Discard...\n")
-        self.dispatch(n.expr)
+        return mono_Discard(self.dispatch(n.expr), n.lineno)
     
-    # Expressions
+    # Terminal Expressions
 
     def visitConst(self, n):
-        sys.stderr.write("Visited Const...\n")
+        return mono_Const(n.value, n.lineno)
 
     def visitName(self, n):
-        sys.stderr.write("Visited Name...\n")
+        return mono_Name(n.name, n.lineno)
+
+    def visitAssName(self, n):
+        return mono_AssName(n.name, n.flags, n.lineno)
+
+    # Non-Terminal Expressions
 
     def visitList(self, n):
-        sys.stderr.write("Visited List...\n")
+        nodes = []
         for node in n.nodes:
-            self.dispatch(node);
+            nodes += [self.dispatch(node)];
+        return mono_List(nodes, n.lineno)
 
     def visitDict(self, n):
-        sys.stderr.write("Visited Dict...\n")
+        items = []
         for item in n.items:
-            self.dispatch(item);
+            items += [self.dispatch(item)];
+        return mono_Dict(items, n.lineno)
 
     def visitSubscript(self, n):
-        sys.stderr.write("Visited Subscript...\n")
-        self.dispatch(n.expr)
+        return mono_Subscript(self.dispatch(n.expr), n.flags, n.subs, n.lineno)
         
     def visitCompare(self, n):
-        sys.stderr.write("Visited Compare...\n")
-        self.dispatch(n.expr)
+        ops = []
         for op in n.ops:
-            self.dispatch(op[1])
+            newop = (op[0], self.dispatch(op[1]))
+            ops += [newop]
+        return mono_Compare(self.dispatch(n.expr), ops, n.lineno)
 
     def visitAdd(self, n):
-        sys.stderr.write("Visited Add...\n")
-        self.dispatch(n.left)
-        self.dispatch(n.right)
+        return mono_Add(self.dispatch(n.left), self.dispatch(n.right), n.lineno)
         
     def visitOr(self, n):
-        sys.stderr.write("Visited Or...\n")
+        nodes = []
         for node in n.nodes:
-            self.dispatch(node)
+            nodes += [self.dispatch(node)]
+        return mono_Or(nodes, n.lineno)
 
     def visitAnd(self, n):
-        sys.stderr.write("Visited And...\n")
+        nodes = []
         for node in n.nodes:
-            self.dispatch(node)
+            nodes += [self.dispatch(node)]
+        return mono_And(nodes, n.lineno)
 
     def visitNot(self, n):
-        sys.stderr.write("Visited Not...\n")
-        self.dispatch(n.expr)
+        return mono_Not(self.dispatch(n.expr), n.lineno)
 
     def visitUnarySub(self, n):
-        sys.stderr.write("Visited UnarySub...\n")
-        self.dispatch(n.expr)
+        return mono_UnarySub(self.dispatch(n.expr), n.lineno())
 
     def visitIfExp(self, n):
-        sys.stderr.write("Visited IfExp...\n")
-        self.dispatch(n.test)
-        self.dispatch(n.then)
-        self.dispatch(n.else_)
+        return mono_IfExp(self.dispatch(n.test),
+                          self.dispatch(n.then),
+                          self.dispatch(n.else_),
+                          n.lineno)    
 
     def visitCallFunc(self, n):
-        sys.stderr.write("Visited CallFunc...\n")
-        self.dispatch(n.node)
+        args = []
         for arg in n.args:
-            self.dispatch(arg)
+            args += [self.dispatch(arg)]
+        return mono_CallFunc(self.dispatch(n.node), args, n.star_args, n.dstar_args, n.lineno)

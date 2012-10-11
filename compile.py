@@ -277,14 +277,18 @@ def main(argv=None):
     # Parse inputFile
     ast = compiler.parseFile(inputFilePath)
     if(debug):
+        # Print AST
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
-    
-    if(debug):
         # Graph AST
         Graph_ast().writeGraph(ast, debugFileName)
 
     # Explicate
     monoast = ExplicateVisitor().preorder(ast)
+    if(debug):
+        # Print mono_AST
+        sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
+        # Graph mono_AST
+        #Graph_ast().writeGraph(monoast, debugFileName)
         
         
     # Exit early since nothing past this point is implemented for p1 yet
