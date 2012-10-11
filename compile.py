@@ -25,6 +25,7 @@ from astTools import *
 
 from walk_ast import *
 from graph_ast import *
+from explicate import *
 
 debug = True
 
@@ -262,8 +263,9 @@ def main(argv=None):
     outputFilePath = inputFilePath.split('/')
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"
-    debugFileName = (outputFilePath[-1:])[0]
-    debugFileName = debugFileName[:-3] + ".dot"
+    if(debug):
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + ".dot"
 
     if(debug):
         sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
@@ -274,22 +276,13 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
     
-    # Explicate
-        test = mono_IsTag(BIGPYOBJ_t, ast)
-        sys.stderr.write("IsTag test = \n" + str(test) + "\n")
-        test = mono_InjectFrom(BOOL_t, ast)
-        sys.stderr.write("InjectFrom test = \n" + str(test) + "\n")
-        test = mono_ProjectTo(INT_t, ast)
-        sys.stderr.write("ProjectTo test = \n" + str(test) + "\n")
-        test = mono_Let("VAR", ast, ast)
-        sys.stderr.write("Let test = \n" + str(test) + "\n")
-        sys.stderr.write("INT_t == INT_t: " + str(INT_t==INT_t) + "\n")
-        sys.stderr.write("BOOL_t == INT_t: " + str(BOOL_t==INT_t) + "\n")
-        sys.stderr.write("id(BOOL_t): " + str(id(BOOL_t)) + "\n")
+    if(debug):
+        # Graph AST
+        Graph_ast().writeGraph(ast, debugFileName)
 
-    # Test visitor
-        Walk_ast().preorder(ast)
-        Graph_ast().drawGraph(ast, debugFileName)
+    # Explicate
+    monoast = ExplicateVisitor().preorder(ast)
+        
         
     # Exit early since nothing past this point is implemented for p1 yet
     return 0
