@@ -23,6 +23,8 @@ from x86ast import *
 from x86regalloc import *
 from astTools import *
 
+from graph_ast import *
+
 debug = True
 
 ### Flatten Functions ###
@@ -280,6 +282,11 @@ def main(argv=None):
         sys.stderr.write("Let test = \n" + str(test) + "\n")
         sys.stderr.write("INT_t == INT_t: " + str(INT_t==INT_t) + "\n")
         sys.stderr.write("BOOL_t == INT_t: " + str(BOOL_t==INT_t) + "\n")
+        sys.stderr.write("id(BOOL_t): " + str(id(BOOL_t)) + "\n")
+
+    # Test visitor
+        Graph_ast().preorder(ast)
+        
 
     # Exit early since nothing past this point is implemented for p1 yet
     return 0
