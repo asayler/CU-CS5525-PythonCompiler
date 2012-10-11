@@ -2,7 +2,7 @@
 # Fall 2012
 # CU CS5525
 # Python Compiler
-# Reg Alloc Mod
+# Reg Alloc Module
 #
 # In conjunction with:
 #    Michael (Mike) Vitousek

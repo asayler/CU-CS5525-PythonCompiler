@@ -18,11 +18,12 @@ USAGE:
 import sys, compiler
 from compiler.ast import *
 
+from monoast import *
 from x86ast import *
 from x86regalloc import *
 from astTools import *
 
-debug = False
+debug = True
 
 ### Flatten Functions ###
 
@@ -267,6 +268,19 @@ def main(argv=None):
     ast = compiler.parseFile(inputFilePath)
     if(debug):
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
+    
+    # Explicate
+        test = mono_IsTag("INT", ast)
+        sys.stderr.write("IsTag test = \n" + str(test) + "\n")
+        test = mono_InjectFrom("INT", ast)
+        sys.stderr.write("InjectFrom test = \n" + str(test) + "\n")
+        test = mono_ProjectTo("INT", ast)
+        sys.stderr.write("ProjectTo test = \n" + str(test) + "\n")
+        test = mono_Let("VAR", ast, ast)
+        sys.stderr.write("Let test = \n" + str(test) + "\n")
+
+    # Exit early since nothing past this point is implemented for p1 yet
+    return 0
     
     # Flatten Tree
     flatast = flattenAst(ast)
