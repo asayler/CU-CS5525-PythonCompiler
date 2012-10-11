@@ -1054,6 +1054,6 @@ pyobj set_attr(pyobj obj, char* attr, pyobj val)
 }
 
 pyobj error_pyobj(char* string) {
-  printf(string);
+    printf("%s", string);
   exit(-1);
 }
