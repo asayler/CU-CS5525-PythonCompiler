@@ -25,7 +25,7 @@ class mono_Type:
 
 INT_t      = mono_Type('INT')
 BOOL_t     = mono_Type('BOOL')
-BIGPYOBJ_t = mono_Type('BIGPYOBJ')
+BIG_t = mono_Type('BIGPYOBJ')
 
 ISINT_n    = Name("is_int")
 ISBOOL_n   = Name("is_bool")
