@@ -10,6 +10,7 @@
 #    Anne Gatchell
 #       https://github.com/halloannielala/compiler-5525
 
+from compiler.ast import *
 
 class mono_Type:
     """Class to represent type constants"""
@@ -25,6 +26,52 @@ class mono_Type:
 INT_t      = mono_Type('INT')
 BOOL_t     = mono_Type('BOOL')
 BIGPYOBJ_t = mono_Type('BIGPYOBJ')
+
+ISINT_n    = Name("is_int")
+ISBOOL_n   = Name("is_bool")
+ISBIG_n    = Name("is_big")
+
+INJECTINT_n  = Name("inject_int")
+INJECTBOOL_n = Name("inject_bool")
+INJECTBIG_n  = Name("inject_big")
+
+PROJECTINT_n  = Name("project_int")
+PROJECTBOOL_n = Name("project_bool")
+PROJECTBIG_n  = Name("project_big")
+
+BIGADD_n   = Name("add")
+TERROR_n   = Name("error_pyobj")
+
+def CallISINT(var):
+    return CallFunc(ISINT_n, var)
+
+def CallISBOOL(var):
+    return CallFunc(ISBOOL_n, var)
+
+def CallISBIG(var):
+    return CallFunc(ISBIG_n, var)
+
+
+def CallINJECTINT(var):
+    return CallFunc(INJECTINT_n, var)
+
+def CallINJECTBOOL(var):
+    return CallFunc(INJECTBOOL_n, var)
+
+def CallINJECTBIG(var):
+    return CallFunc(INJECTBIG_n, var)
+
+
+def CallPROJECTINT(var):
+    return CallFunc(PROJECTINT_n, var)
+
+def CallPROJECTBOOL(var):
+    return CallFunc(PROJECTBOOL_n, var)
+
+def CallPROJECTBIG(var):
+    return CallFunc(PROJECTBIG_n, var)
+
+
 
 class mono_Node:
     """Abstaract base class for monoast nodes"""
@@ -67,23 +114,6 @@ class mono_Let(mono_Node):
 
 # General AST Nodes
 
-class mono_Module(mono_Node):
-    def __init__(self, doc, node, lineno=None):
-        self.doc = doc
-        self.node = node
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Module(%s, %s)" % (repr(self.doc), repr(self.node))
-
-class mono_Stmt(mono_Node):
-    def __init__(self, nodes, lineno=None):
-        self.nodes = nodes
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Stmt(%s)" % (repr(self.nodes))
-
 class mono_Printnl(mono_Node):
     def __init__(self, nodes, dest, lineno=None):
         self.nodes = nodes
@@ -102,14 +132,6 @@ class mono_Assign(mono_Node):
     def __repr__(self):
         return "mono_Assign(%s, %s)" % (repr(self.nodes), repr(self.expr))
 
-class mono_Discard(mono_Node):
-    def __init__(self, expr, lineno=None):
-        self.expr = expr
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Discard(%s)" % (repr(self.expr))
-
 class mono_Const(mono_Node):
     def __init__(self, value, lineno=None):
         self.value = value
@@ -117,23 +139,6 @@ class mono_Const(mono_Node):
 
     def __repr__(self):
         return "mono_Const(%s)" % (repr(self.value))
-
-class mono_Name(mono_Node):
-    def __init__(self, name, lineno=None):
-        self.name = name
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Name(%s)" % (repr(self.name),)
-
-class mono_AssName(mono_Node):
-    def __init__(self, name, flags, lineno=None):
-        self.name = name
-        self.flags = flags
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_AssName(%s, %s)" % (repr(self.name), repr(self.flags))
 
 class mono_List(mono_Node):
     def __init__(self, nodes, lineno=None):
@@ -170,38 +175,14 @@ class mono_Compare(mono_Node):
     def __repr__(self):
         return "mono_Compare(%s, %s)" % (repr(self.expr), repr(self.ops))
 
-class mono_Add(mono_Node):
+class mono_IntAdd(mono_Node):
     def __init__(self, (left, right), lineno=None):
         self.left = left
         self.right = right
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_Add((%s, %s))" % (repr(self.left), repr(self.right))
-
-class mono_Or(mono_Node):
-    def __init__(self, nodes, lineno=None):
-        self.nodes = nodes
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Or(%s)" % (repr(self.nodes))
-
-class mono_And(mono_Node):
-    def __init__(self, nodes, lineno=None):
-        self.nodes = nodes
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Or(%s)" % (repr(self.nodes))
-
-class mono_Not(mono_Node):
-    def __init__(self, expr, lineno=None):
-        self.expr = expr
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Not(%s)" % (repr(self.expr))
+        return "mono_IntAdd((%s, %s))" % (repr(self.left), repr(self.right))
 
 class mono_UnarySub(mono_Node):
     def __init__(self, expr, lineno=None):
@@ -210,27 +191,3 @@ class mono_UnarySub(mono_Node):
 
     def __repr__(self):
         return "mono_UnarySub(%s)" % (repr(self.expr))
-
-class mono_IfExp(mono_Node):
-    def __init__(self, test, then, else_, lineno=None):
-        self.test = test
-        self.then = then
-        self.else_ = else_
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "IfExp(%s, %s, %s)" % (repr(self.test), repr(self.then), repr(self.else_))
-
-class mono_CallFunc(mono_Node):
-    def __init__(self, node, args, star_args = None, dstar_args = None, lineno=None):
-        self.node = node
-        self.args = args
-        self.star_args = star_args
-        self.dstar_args = dstar_args
-        self.lineno = lineno
-
-    def __repr__(self):
-        return ("CallFunc(%s, %s, %s, %s)" % (repr(self.node),
-                                              repr(self.args),
-                                              repr(self.star_args),
-                                              repr(self.dstar_args)))

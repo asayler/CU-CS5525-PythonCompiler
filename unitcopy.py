@@ -86,7 +86,7 @@ class CopyVisitor(Visitor):
         return mono_Compare(self.dispatch(n.expr), ops, n.lineno)
 
     def visitAdd(self, n):
-        return mono_Add(self.dispatch(n.left), self.dispatch(n.right), n.lineno)
+        return mono_Add((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
         
     def visitOr(self, n):
         nodes = []
