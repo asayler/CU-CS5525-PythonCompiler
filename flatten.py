@@ -101,7 +101,7 @@ class FlattenVisitor(CopyVisitor):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
-            tmp = generate_name('tmp')
+            tmp = generate_name('intaddtmp')
             return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntAdd((left, right)))])
         else:
             return (Add((left, right)), ss1 + ss2)            
@@ -109,7 +109,7 @@ class FlattenVisitor(CopyVisitor):
     def visitUnarySub(self, n, needs_to_be_simple):
         (expr,ss) = self.dispatch(n.expr, True)
         if needs_to_be_simple:
-            tmp = generate_name('tmp')
+            tmp = generate_name('usubtmp')
             return (Name(tmp), ss + [make_assign(tmp, UnarySub(expr))])
         else:
             return (UnarySub(expr), ss)
@@ -120,7 +120,7 @@ class FlattenVisitor(CopyVisitor):
             args = [arg for (arg,ss) in args_sss]
             ss = reduce(lambda a,b: a + b, [ss for (arg,ss) in args_sss], [])
             if needs_to_be_simple:
-                tmp = generate_name('tmp')
+                tmp = generate_name('callfunctmp')
                 return (Name(tmp), ss + [make_assign(tmp, CallFunc(n.node, args))])
             else:
                 return (CallFunc(n.node, args), ss)
@@ -131,4 +131,14 @@ class FlattenVisitor(CopyVisitor):
         (teste, testss) = self.dispatch(n.test, True)
         (thene, thenss) = self.dispatch(n.then, True)
         (elsee, elsess) = self.dispatch(n.else_, True)
-        return (IfExp(teste, flat_InstrSeq(thenss, thene), flat_InstrSeq(elsess, elsee)), testss)
+        simple = IfExp(teste,
+                       flat_InstrSeq(thenss, thene),
+                       flat_InstrSeq(elsess, elsee))
+        if needs_to_be_simple:
+            tmp = generate_name('ifexptmp')
+            myexpr = (Name(tmp))
+            myss = [make_assign(tmp, simple)]
+        else:
+            myexpr = simple
+            myss = []
+        return (myexpr, testss + myss)

@@ -136,6 +136,7 @@ class InstrSelectVisitor(Visitor):
         global IfThenLabelCnt
         ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
         EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
+        IfThenLabelCnt += 1
         # Test Instructions
         test  = []
         test += self.dispatch(n.test, Var86(IFTEMP))
@@ -150,7 +151,6 @@ class InstrSelectVisitor(Visitor):
         else_ += [Label86(ElseLStr)]
         else_ += self.dispatch(n.else_, target)
         else_ += [Label86(EndIfLStr)]
-        IfThenLabelCnt += 1
         return (test + [If86(then, else_)])
 
     def visitCallFunc(self, n, target):
