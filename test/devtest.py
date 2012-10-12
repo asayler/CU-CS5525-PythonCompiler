@@ -3,8 +3,8 @@
 # Andy Sayler
 # CU CS5525
 # Test Program
-# P0
-# Test 7
+# P1
+# Test 1
 
 x = 1
 print(x)

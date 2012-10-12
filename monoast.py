@@ -66,6 +66,13 @@ class mono_Let(mono_Node):
     def __repr__(self):
         return "mono_Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
 
+class mono_TRUE(mono_Node):
+    def __init__(self):
+        pass
+    def __repr__(self):
+        return "mono_TRUE()"
+
+
 # General AST Nodes
 
 class mono_Printnl(mono_Node):

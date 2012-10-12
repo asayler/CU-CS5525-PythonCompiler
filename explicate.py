@@ -24,14 +24,6 @@ from vis import Visitor
 from functionwrappers import *
 
 class ExplicateVisitor(CopyVisitor):
-
-    # Statements    
-
-    def visitPrintnl(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return Printnl(nodes, n.dest, n.lineno)
     
     # Terminal Expressions
 
@@ -116,3 +108,23 @@ class ExplicateVisitor(CopyVisitor):
                           self.dispatch(n.then),
                           self.dispatch(n.else_),
                           n.lineno)    
+
+    # Explicate P1 Pyobj functions
+    def visitCallFunc(self, n):
+        args = []
+        # Verify/Rectify Names
+        if(isinstance(n.node, Name)):
+            name = n.node.name
+            if(name == "input"):
+                name = "input_int"
+            elif(name == "input_int"):
+                pass
+            else:
+                raise Exception("Only input function accepted in p1")
+            newName = Name(name)
+        else:
+            raise Exception("Only named functions accepted in p1")
+        #Copy Function
+        for arg in n.args:
+            args += [self.dispatch(arg)]
+        return CallFunc(newName, args, n.star_args, n.dstar_args, n.lineno)

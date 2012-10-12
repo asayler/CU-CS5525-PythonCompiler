@@ -49,7 +49,6 @@ def liveness(instrs):
         else:
             raise Exception("Attempting to get name of invalid argument: " +
                             str(val))
-
     def extractVars(instr):
         written = []
         read = []
