@@ -14,7 +14,7 @@ import sys
 
 from x86ast import *
 
-debug = True
+debug = False
 
 def regname(reg):
     if(isinstance(reg, Reg86)):
