@@ -19,6 +19,8 @@ from vis import Visitor
 # Helper Tools
 from utilities import generate_name
 
+from unitcopy import CopyVisitor
+
 # Data Types
 from compiler.ast import *
 from monoast import *
@@ -34,10 +36,12 @@ from monoast import *
 def make_assign(lhs, rhs):
     return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
 
-class FlattenVisitor(Visitor):
-    def visitModule(self, n):
-        ss = self.dispatch(n.node)
-        return Module(n.doc, Stmt(ss))
+class FlattenVisitor(CopyVisitor):
+
+    # Banned Nodes
+
+    def visitPrintnl(self, n):
+        raise Exception("AST 'Printnl' node no longer valid at this stage")
 
     # For statements: takes a statement and returns a list of instructions
 
@@ -45,11 +49,7 @@ class FlattenVisitor(Visitor):
         sss  = []
         for s in n.nodes:
             sss += [self.dispatch(s)]
-        return reduce(lambda a,b: a + b, sss, [])
-
-    def visitPrintnl(self, n):
-        (e,ss) = self.dispatch(n.nodes[0], True)
-        return ss + [Printnl([e], n.dest)]
+        return Stmt(reduce(lambda a,b: a + b, sss, []), n.lineno)
 
     def visitAssign(self, n):
         (rhs,ss) = self.dispatch(n.expr, False)

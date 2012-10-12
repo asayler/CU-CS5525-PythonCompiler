@@ -36,38 +36,41 @@ PRINTANY_n = Name("print_any")
 # Function Wrappers
 
 # Is Macros
-def CallISINT(arg):
-    return CallFunc(ISINT_n, [arg])
+def CallISINT(args):
+    return CallFunc(ISINT_n, args)
 
-def CallISBOOL(arg):
-    return CallFunc(ISBOOL_n, [arg])
+def CallISBOOL(args):
+    return CallFunc(ISBOOL_n, args)
 
-def CallISBIG(arg):
-    return CallFunc(ISBIG_n, [arg])
+def CallISBIG(args):
+    return CallFunc(ISBIG_n, args)
 
 # Inject Macros
-def CallINJECTINT(arg):
-    return CallFunc(INJECTINT_n, [arg])
+def CallINJECTINT(args):
+    return CallFunc(INJECTINT_n, args)
 
-def CallINJECTBOOL(arg):
-    return CallFunc(INJECTBOOL_n, [arg])
+def CallINJECTBOOL(args):
+    return CallFunc(INJECTBOOL_n, args)
 
-def CallINJECTBIG(arg):
-    return CallFunc(INJECTBIG_n, [arg])
+def CallINJECTBIG(args):
+    return CallFunc(INJECTBIG_n, args)
 
 # Project Macros
-def CallPROJECTINT(arg):
-    return CallFunc(PROJECTINT_n, [arg])
+def CallPROJECTINT(args):
+    return CallFunc(PROJECTINT_n, args)
 
-def CallPROJECTBOOL(arg):
-    return CallFunc(PROJECTBOOL_n, [arg])
+def CallPROJECTBOOL(args):
+    return CallFunc(PROJECTBOOL_n, args)
 
-def CallPROJECTBIG(arg):
-    return CallFunc(PROJECTBIG_n, [arg])
+def CallPROJECTBIG(args):
+    return CallFunc(PROJECTBIG_n, args)
 
 # Utility Macros
-def CallBIGADD(arg):
-    return CallFunc(BIGADD_n, [arg])
+def CallBIGADD(args):
+    return CallFunc(BIGADD_n, args)
 
-def CallTERROR(arg):
-    return CallFunc(TERROR_n, [arg])
+def CallTERROR(args):
+    return CallFunc(TERROR_n, args)
+
+def CallPRINTANY(args):
+    return CallFunc(PRINTANY_n, args)
