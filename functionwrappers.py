@@ -30,6 +30,7 @@ PROJECTBIG_n  = Name("project_big")
 BIGADD_n   = Name("add")
 TERROR_n   = Name("error_pyobj")
 PRINTANY_n = Name("print_any")
+ISTRUE_n   = Name("is_true")
 
 # Function Wrappers
 
@@ -72,3 +73,6 @@ def CallTERROR(args):
 
 def CallPRINTANY(args):
     return CallFunc(PRINTANY_n, args)
+
+def CallISTRUE(args):
+    return CallFunc(ISTRUE_n, args)

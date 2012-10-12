@@ -18,8 +18,9 @@ from vis import Visitor
 
 # Helper Tools
 from utilities import generate_name
-
 from unitcopy import CopyVisitor
+
+from functionwrappers import *
 
 # Data Types
 from compiler.ast import *
@@ -61,6 +62,9 @@ class FlattenVisitor(CopyVisitor):
 
     def visitOr(self, n):
         raise Exception("'Or' node no longer valid at this stage")
+
+    def mono_IsTrue(self, n):
+        raise Exception("'mono_IsTrue' node no longer valid at this stage")
 
     # For statements: takes a statement and returns a list of instructions
 

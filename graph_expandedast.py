@@ -41,3 +41,6 @@ class Graph_expandedast(Graph_monoast):
 
     def visitOr(self, n, p):
         raise Exception("'Or' node no longer valid at this stage")
+
+    def visitmono_IsTrue(self, n, p):
+        raise Exception("'IsTrue' node no longer valid at this stage")

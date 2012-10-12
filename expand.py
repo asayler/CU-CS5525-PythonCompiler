@@ -76,6 +76,9 @@ class ExpandVisitor(CopyVisitor):
     def visitPrintnl(self, n):
         return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)
 
+    def visitmono_IsTrue(self, n):
+        return CallISTRUE([self.dispatch(n.expr)])
+
     # And/Or
     def AndToIfExp(self, nodes):
         if(len(nodes) < 2):

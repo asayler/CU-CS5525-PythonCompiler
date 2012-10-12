@@ -104,10 +104,10 @@ class ExplicateVisitor(CopyVisitor):
         return UnarySub(self.dispatch(n.expr), n.lineno())
 
     def visitIfExp(self, n):
-        return IfExp(self.dispatch(n.test),
-                          self.dispatch(n.then),
-                          self.dispatch(n.else_),
-                          n.lineno)    
+        return IfExp(mono_IsTrue(self.dispatch(n.test)),
+                     self.dispatch(n.then),
+                     self.dispatch(n.else_),
+                     n.lineno) 
 
     # Explicate P1 Pyobj functions
     def visitCallFunc(self, n):

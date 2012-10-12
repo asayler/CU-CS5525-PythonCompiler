@@ -66,6 +66,13 @@ class mono_Let(mono_Node):
     def __repr__(self):
         return "mono_Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
 
+class mono_IsTrue(mono_Node):
+    """Evaluate if exp is true and return int"""
+    def __init__(self, expr):
+        self.expr  = expr
+    def __repr__(self):
+        return "mono_IsTrue(%s)" % (repr(self.expr))
+
 class mono_TRUE(mono_Node):
     def __init__(self):
         pass

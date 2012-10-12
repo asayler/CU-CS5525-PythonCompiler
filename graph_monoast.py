@@ -66,3 +66,10 @@ class Graph_monoast(Graph_ast):
         lines += self.dispatch(n.rhs, n)
         lines += self.dispatch(n.body, n)
         return lines
+
+    def visitmono_IsTrue(self, n, p):
+        lines = []
+        lines += Graphvis_dot().lineLabel(n, ("mono_IsTrue"))
+        lines += Graphvis_dot().linePair(p, n)
+        lines += self.dispatch(n.expr, n)
+        return lines
