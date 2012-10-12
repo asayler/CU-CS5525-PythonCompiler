@@ -17,43 +17,26 @@ import sys
 from compiler.ast import *
 from monoast import *
 
+from unitcopy import CopyVisitor
+
 # Helper Types
 from vis import Visitor
+from functionwrappers import *
 
-class ExplicateVisitor(Visitor):
-
-    # Modules
-
-    def visitModule(self, n):
-        return Module(n.doc, self.dispatch(n.node), n.lineno)
+class ExplicateVisitor(CopyVisitor):
 
     # Statements    
-
-    def visitStmt(self, n):
-        nodes = []
-        for s in n.nodes:
-            nodes += [self.dispatch(s)]
-        return Stmt(nodes, n.lineno)
 
     def visitPrintnl(self, n):
         nodes = []
         for node in n.nodes:
             nodes += [self.dispatch(node)]
         return Printnl(nodes, n.dest, n.lineno)
-
-    def visitAssign(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return Assign(nodes, self.dispatch(n.expr), n.lineno)
-    
-    def visitDiscard(self, n):
-        return Discard(self.dispatch(n.expr), n.lineno)
     
     # Terminal Expressions
 
     def visitConst(self, n):
-        return Const(n.value, n.lineno)
+        return mono_InjectFrom(INT_t, Const(n.value, n.lineno))
 
     def visitName(self, n):
         return Name(n.name, n.lineno)
@@ -88,27 +71,27 @@ class ExplicateVisitor(Visitor):
     def visitAdd(self, n):
         lhsvar = Name('temp_add_lhs')
         rhsvar = Name('temp_add_rhs')
-        node = mono_Let(lhsvar,
-                        self.dispatch(n.left),
-                        mono_Let(rhsvar,
-                                 self.dispatch(n.right),
-                                 IfExp(And(Or(mono_IsTag(INT_t, lhsvar),
-                                              mono_IsTag(BOOL_t, lhsvar)),
-                                           Or(mono_IsTag(INT_t, rhsvar),
-                                              mono_IsTag(BOOL_t, lhsvar))),
-                                       mono_InjectFrom(INT_t, mono_IntAdd((mono_ProjectTo(INT_t,
-                                                                                          lhsvar),
-                                                                           mono_ProjectTo(INT_t,
-                                                                                          rhsvar)))),
-                                       IfExp(And(mono_IsTag(BIG_t, lhsvar),
-                                                 mono_IsTag(BIG_t, rhsvar)),
-                                             mono_InjectFrom(BIG_t, CallFunc(BIGADD_n,
-                                                                                  mono_ProjectTo(BIG_t,
-                                                                                                 lhsvar),
-                                                                                  mono_ProjectTo(BIG_t,
-                                                                                                 rhsvar))),
-                                             CallFunc(TERROR_n, "Type Error")))))
-        return node
+        t = mono_Let(lhsvar,
+                     self.dispatch(n.left),
+                     mono_Let(rhsvar,
+                              self.dispatch(n.right),
+                              IfExp(And(Or(mono_IsTag(INT_t, lhsvar),
+                                           mono_IsTag(BOOL_t, lhsvar)),
+                                        Or(mono_IsTag(INT_t, rhsvar),
+                                           mono_IsTag(BOOL_t, lhsvar))),
+                                    mono_InjectFrom(INT_t, mono_IntAdd((mono_ProjectTo(INT_t,
+                                                                                       lhsvar),
+                                                                        mono_ProjectTo(INT_t,
+                                                                                       rhsvar)))),
+                                    IfExp(And(mono_IsTag(BIG_t, lhsvar),
+                                              mono_IsTag(BIG_t, rhsvar)),
+                                          mono_InjectFrom(BIG_t, CallFunc(BIGADD_n,
+                                                                          mono_ProjectTo(BIG_t,
+                                                                                         lhsvar),
+                                                                          mono_ProjectTo(BIG_t,
+                                                                                         rhsvar))),
+                                          CallFunc(TERROR_n, "Type Error")))))
+        return t
         
     def visitOr(self, n):
         nodes = []
@@ -133,9 +116,3 @@ class ExplicateVisitor(Visitor):
                           self.dispatch(n.then),
                           self.dispatch(n.else_),
                           n.lineno)    
-
-    def visitCallFunc(self, n):
-        args = []
-        for arg in n.args:
-            args += [self.dispatch(arg)]
-        return CallFunc(self.dispatch(n.node), args, n.star_args, n.dstar_args, n.lineno)

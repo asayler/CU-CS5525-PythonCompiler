@@ -42,7 +42,9 @@ class FlattenVisitor(Visitor):
     # For statements: takes a statement and returns a list of instructions
 
     def visitStmt(self, n):
-        sss  = [self.dispatch(s) for s in n.nodes]
+        sss  = []
+        for s in n.nodes:
+            sss += [self.dispatch(s)]
         return reduce(lambda a,b: a + b, sss, [])
 
     def visitPrintnl(self, n):
@@ -50,7 +52,6 @@ class FlattenVisitor(Visitor):
         return ss + [Printnl([e], n.dest)]
 
     def visitAssign(self, n):
-        lhs = n.nodes[0].name
         (rhs,ss) = self.dispatch(n.expr, False)
         return ss + [Assign(n.nodes, rhs)]
 
@@ -68,7 +69,7 @@ class FlattenVisitor(Visitor):
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
 
-    def visitAdd(self, n, needs_to_be_simple):
+    def visitmono_Add(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:

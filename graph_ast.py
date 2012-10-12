@@ -14,6 +14,7 @@ import sys
 import compiler
 
 from compiler.ast import *
+from monoast import *
 
 from vis import Visitor
 from graphvis_dot import Graphvis_dot
@@ -127,7 +128,7 @@ class Graph_ast(Visitor):
         lines += self.dispatch(n.left, n)
         lines += self.dispatch(n.right, n)
         return lines
-        
+   
     def visitOr(self, n, p):
         lines = []
         lines += Graphvis_dot().lineLabel(n, ("Or"))
@@ -173,5 +174,6 @@ class Graph_ast(Visitor):
         lines += Graphvis_dot().linePair(p, n)
         lines += self.dispatch(n.node, n)
         for arg in n.args:
-            lines += self.dispatch(arg)
+            lines += self.dispatch(arg, n)
         return lines
+

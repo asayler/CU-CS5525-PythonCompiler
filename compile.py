@@ -24,12 +24,14 @@ from x86ast import *
 
 # Compiler Stages
 from explicate import *
+from expand import *
 from flatten import *
 from x86regalloc import *
 
 # Helper Tools
 from astTools import *
 from graph_ast import *
+from graph_monoast import *
 
 debug = True
 
@@ -166,9 +168,6 @@ def main(argv=None):
     outputFilePath = inputFilePath.split('/')
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"
-    if(debug):
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + ".dot"
 
     if(debug):
         sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
@@ -180,6 +179,8 @@ def main(argv=None):
         # Print AST
         sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
         # Graph AST
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(ast, debugFileName)
 
     # Explicate
@@ -188,17 +189,32 @@ def main(argv=None):
         # Print mono_AST
         sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
         # Graph mono_AST
-        #Graph_ast().writeGraph(monoast, debugFileName)        
-        
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-mono.dot"
+        Graph_monoast().writeGraph(monoast, debugFileName)        
+
+    # Type Check
+    # TODO
+
+    # Expand
+    expandedast = ExpandVisitor().preorder(monoast)
+    if(debug):
+        # Print mono_AST
+        sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
+        # Graph mono_AST
+        # Graph AST
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-expanded.dot"
+        Graph_ast().writeGraph(expandedast, debugFileName)
+
     # Exit early since nothing past this point is implemented for p1 yet
-    # return 0
+    return 0
     
     # Flatten Tree
-    flatast = FlattenVisitor().preorder(monoast)
+    flatast = FlattenVisitor().preorder(expandedast)
     if(debug):
         # Print flat_AST
         sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
-
 
     # Compile flat tree
     assembly = instr_select(flatast)

@@ -6,5 +6,6 @@
 # P0
 # Test 7
 
+z = input()
 x = 3
 y = 9
