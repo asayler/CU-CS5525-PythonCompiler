@@ -6,6 +6,7 @@
 # P0
 # Test 7
 
-x = 1 if (11 if 10 else 12) else 2
-z = x
+x = 1
+y = 2
+z = x + y
 print(z)

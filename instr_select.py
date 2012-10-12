@@ -119,8 +119,8 @@ class InstrSelectVisitor(Visitor):
 
     def visitmono_IntAdd(self, n, target):
         instrs = []
-        instrs += [Move86(argselect(n.left), target)]
-        instrs += [Add86(argselect(n.right), target)]
+        instrs += [Move86(arg_select(n.left), target)]
+        instrs += [Add86(arg_select(n.right), target)]
         return instrs
         
     def visitNot(self, n):
