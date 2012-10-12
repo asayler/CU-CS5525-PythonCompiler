@@ -47,6 +47,10 @@ ESP = Reg86('esp')
 CALLEESAVE = [EAX, ECX, EDX]
 COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
 
+WORDLEN = 4
+
+x86FALSE = Const86(0)
+
 class X86Inst:
     def __str__(self):
         return self.mnemonic()
@@ -86,11 +90,90 @@ class Neg86(X86Inst):
     def mnemonic(self):
         return 'negl ' + self.target.mnemonic()
 
+class Not86(X86Inst):
+    def __init__(self, target):
+        self.target = target
+    def mnemonic(self):
+        return 'notl ' + self.target.mnemonic()
+
 class Call86(X86Inst):
     def __init__(self, function):
         self.function = function
     def mnemonic(self):
         return 'call ' + self.function
+
+class LShift86(X86Inst):
+    def __init__(self, value, target):
+        self.value = value
+        self.target = target
+    def mnemonic(self):
+        return ('sall %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
+
+class RShift86(X86Inst):
+    def __init__(self, value, target):
+        self.value = value
+        self.target = target
+    def mnemonic(self):
+        return ('sarl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))    
+
+class Or86(X86Inst):
+    def __init__(self, value, target):
+        self.value = value
+        self.target = target
+    def mnemonic(self):
+        return ('orl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
+
+class And86(X86Inst):
+    def __init__(self, value, target):
+        self.value = value
+        self.target = target
+    def mnemonic(self):
+        return ('andl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
+
+class Comp86(X86Inst):
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+    def mnemonic(self):
+        return ('cmpl %s, %s' % (self.left.mnemonic(), self.right.mnemonic()))
+
+class SetEq86(X86Inst):
+    def __init__(self, target):
+        self.target = target
+    def mnemonic(self):
+        return ('sete %s' % self.target.mnemonic())
+
+class SetNEq86(X86Inst):
+    def __init__(self, target):
+        self.target = target
+    def mnemonic(self):
+        return ('setne %s' % self.target.mnemonic())
+
+class Jump86(X86Inst):
+    def __init__(self, target):
+        self.target = target
+    def mnemonic(self):
+        return ('jmp %s' % self.target)
+
+class JumpEqual86(X86Inst):
+    def __init__(self, target):
+        self.target = target
+    def mnemonic(self):
+        return ('je %s' % self.target)
+
+class Label86(X86Inst):
+    def __init__(self, name):
+        self.name = name
+    def mnemonic(self):
+        return self.name + ':'
+
+class If86(X86Inst):
+    def __init__(self, then, else_):
+        self.then = then
+        self.else_ = else_
+    def mnemonic(self):
+        return ('\n'.join(map(lambda x: x.mnemonic(), self.then)) +
+                '\n' + '\n'.join(map(lambda x: x.mnemonic(), self.else_)))
 
 class Leave86(X86Inst):
     def mnemonic(self):

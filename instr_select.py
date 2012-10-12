@@ -31,9 +31,39 @@ def arg_select(ast):
 
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
-WORDLEN = 4
+IFTEMP = "iftemp"
+
+IfThenLabelCnt = 0
+ELSELABEL  = "else"
+ENDIFLABEL = "endelse"
 
 class InstrSelectVisitor(Visitor):
+
+    # Banned Nodes
+
+    def visitAdd(self, n):
+        raise Exception("'Add' node no longer valid at this stage")
+
+    def visitPrintnl(self, n):
+        raise Exception("'Printnl' node no longer valid at this stage")
+
+    def visitmono_IsTag(self, n):
+        raise Exception("'mono_IsTag' node no longer valid at this stage")
+
+    def visitmono_ProjectTo(self, n):
+        raise Exception("'mono_ProjectTo' node no longer valid at this stage")
+
+    def visitmono_InjectFrom(self, n):
+        raise Exception("'mono_InjectFrom' node no longer valid at this stage")
+
+    def visitAnd(self, n):
+        raise Exception("'And' node no longer valid at this stage")
+
+    def visitOr(self, n):
+        raise Exception("'Or' node no longer valid at this stage")
+
+    def visitmono_Let(self, n):
+        raise Exception("'Let' node no longer valid at this stage")
 
     # Modules
 
@@ -86,24 +116,12 @@ class InstrSelectVisitor(Visitor):
             ops += [newop]
         return 
 
-    def visitAdd(self, n, target):
+    def visitmono_IntAdd(self, n, target):
         instrs = []
         instrs += [Move86(argselect(n.left), target)]
         instrs += [Add86(argselect(n.right), target)]
         return instrs
         
-    def visitOr(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return 
-
-    def visitAnd(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return 
-
     def visitNot(self, n):
         return 
 
@@ -113,8 +131,26 @@ class InstrSelectVisitor(Visitor):
         instrs += [Neg86(target)]
         return instrs
 
-    def visitIfExp(self, n):
-        return 
+    def visitIfExp(self, n, target):
+        global IfThenLabelCnt
+        ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
+        EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
+        # Test Instructions
+        test  = []
+        test += self.dispatch(n.test, Var86(IFTEMP))
+        test += [Comp86(Var86(IFTEMP), x86FALSE)]
+        test += [JumpEqual86(ElseLStr)]
+        # Then Instructions
+        then  = []
+        then += self.dispatch(n.then, target)
+        then += [Jump86(EndIfLStr)]
+        # Else Instructions
+        else_ = []
+        else_ += [Label86(ElseLStr)]
+        else_ += self.dispatch(n.else_, target)
+        else_ += [Label86(EndIfLStr)]
+        IfThenLabelCnt += 1
+        return (test + [If86(then, else_)])
 
     def visitCallFunc(self, n, target):
         instrs = []
@@ -126,4 +162,11 @@ class InstrSelectVisitor(Visitor):
         instrs += [Move86(EAX, target)]
         if(cntargs > 0):
             instrs += [Add86(Const86(WORDLEN * cntargs), ESP)]
+        return instrs
+
+    def visitflat_InstrSeq(self, n, target):
+        instrs = []
+        for node in n.nodes:
+            instrs += self.dispatch(node)
+        instrs += [Move86(Var86(n.expr.name), target)]
         return instrs

@@ -112,13 +112,13 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-flat.dot"
         Graph_flatast().writeGraph(flatast, debugFileName)
 
-    # Exit early since nothing past this point is implemented for p1 yet
-    return 0
-
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
         sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
+
+    # Exit early since nothing past this point is implemented for p1 yet
+    return 0
 
     # Reg Alloc
     if(debug):
