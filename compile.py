@@ -68,21 +68,21 @@ def main(argv=None):
         sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
-    ast = compiler.parseFile(inputFilePath)
+    parsedast = compiler.parseFile(inputFilePath)
     if(debug):
-        # Print AST
-        sys.stderr.write("parsed ast = \n" + str(ast) + "\n")
-        # Graph AST
+        # Print parsedast
+        sys.stderr.write("parsed ast = \n" + str(parsedast) + "\n")
+        # Graph parsedast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-parsed.dot"
-        Graph_ast().writeGraph(ast, debugFileName)
+        Graph_ast().writeGraph(parsedast, debugFileName)
 
     # Explicate
-    monoast = ExplicateVisitor().preorder(ast)
+    monoast = ExplicateVisitor().preorder(parsedast)
     if(debug):
-        # Print mono_AST
+        # Print monoast
         sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
-        # Graph mono_AST
+        # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-mono.dot"
         Graph_monoast().writeGraph(monoast, debugFileName)        
@@ -93,10 +93,9 @@ def main(argv=None):
     # Expand
     expandedast = ExpandVisitor().preorder(monoast)
     if(debug):
-        # Print mono_AST
+        # Print expandedast
         sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
-        # Graph mono_AST
-        # Graph AST
+        # Graph expandedast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-expanded.dot"
         Graph_ast().writeGraph(expandedast, debugFileName)
@@ -107,8 +106,12 @@ def main(argv=None):
     # Flatten Tree
     flatast = FlattenVisitor().preorder(expandedast)
     if(debug):
-        # Print flat_AST
+        # Print flatast
         sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
+        # Graph flatast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-flat.dot"
+        Graph_ast().writeGraph(flatast, debugFileName)
 
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
