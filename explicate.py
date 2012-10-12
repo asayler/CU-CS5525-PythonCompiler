@@ -69,28 +69,28 @@ class ExplicateVisitor(CopyVisitor):
         return Compare(self.dispatch(n.expr), ops, n.lineno)
 
     def visitAdd(self, n):
-        lhsvar = Name('temp_add_lhs')
-        rhsvar = Name('temp_add_rhs')
+        lhsvar = Name('let_add_lhs')
+        rhsvar = Name('let_add_rhs')
         t = mono_Let(lhsvar,
                      self.dispatch(n.left),
                      mono_Let(rhsvar,
                               self.dispatch(n.right),
-                              IfExp(And(Or(mono_IsTag(INT_t, lhsvar),
-                                           mono_IsTag(BOOL_t, lhsvar)),
-                                        Or(mono_IsTag(INT_t, rhsvar),
-                                           mono_IsTag(BOOL_t, lhsvar))),
+                              IfExp(And([Or([mono_IsTag(INT_t, lhsvar),
+                                             mono_IsTag(BOOL_t, lhsvar)]),
+                                         Or([mono_IsTag(INT_t, rhsvar),
+                                             mono_IsTag(BOOL_t, lhsvar)])]),
                                     mono_InjectFrom(INT_t, mono_IntAdd((mono_ProjectTo(INT_t,
                                                                                        lhsvar),
                                                                         mono_ProjectTo(INT_t,
                                                                                        rhsvar)))),
-                                    IfExp(And(mono_IsTag(BIG_t, lhsvar),
-                                              mono_IsTag(BIG_t, rhsvar)),
+                                    IfExp(And([mono_IsTag(BIG_t, lhsvar),
+                                               mono_IsTag(BIG_t, rhsvar)]),
                                           mono_InjectFrom(BIG_t, CallFunc(BIGADD_n,
-                                                                          mono_ProjectTo(BIG_t,
-                                                                                         lhsvar),
-                                                                          mono_ProjectTo(BIG_t,
-                                                                                         rhsvar))),
-                                          CallFunc(TERROR_n, "Type Error")))))
+                                                                          [mono_ProjectTo(BIG_t,
+                                                                                          lhsvar),
+                                                                           mono_ProjectTo(BIG_t,
+                                                                                          rhsvar)])),
+                                          CallFunc(TERROR_n, [])))))
         return t
         
     def visitOr(self, n):

@@ -16,7 +16,6 @@ import compiler
 from compiler.ast import *
 from monoast import *
 
-from vis import Visitor
 from graphvis_dot import Graphvis_dot
 
 from graph_ast import Graph_ast
@@ -30,7 +29,7 @@ class Graph_monoast(Graph_ast):
 
     # New Nodes
 
-    def visitmono_Add(self, n, p):
+    def visitmono_IntAdd(self, n, p):
         lines = []
         lines += Graphvis_dot().lineLabel(n, ("mono_Add"))
         lines += Graphvis_dot().linePair(p, n)

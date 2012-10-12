@@ -6,6 +6,6 @@
 # P0
 # Test 7
 
-x = 3
-y = 9
-print(x)
+x = 1
+y = 2
+z = x + y

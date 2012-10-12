@@ -33,6 +33,8 @@ from x86regalloc import *
 from astTools import *
 from graph_ast import *
 from graph_monoast import *
+from graph_expandedast import *
+from graph_flatast import *
 
 debug = True
 
@@ -98,10 +100,7 @@ def main(argv=None):
         # Graph expandedast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-expanded.dot"
-        Graph_ast().writeGraph(expandedast, debugFileName)
-
-    # Exit early since nothing past this point is implemented for p1 yet
-    #return 0
+        Graph_expandedast().writeGraph(expandedast, debugFileName)
     
     # Flatten Tree
     flatast = FlattenVisitor().preorder(expandedast)
@@ -111,7 +110,10 @@ def main(argv=None):
         # Graph flatast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
-        Graph_ast().writeGraph(flatast, debugFileName)
+        Graph_flatast().writeGraph(flatast, debugFileName)
+
+    # Exit early since nothing past this point is implemented for p1 yet
+    return 0
 
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)

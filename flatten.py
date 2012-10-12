@@ -24,6 +24,7 @@ from unitcopy import CopyVisitor
 # Data Types
 from compiler.ast import *
 from monoast import *
+from flatast import *
 
 # Flatten expressions to 3-address instructions (Remove Complex Operations)
 
@@ -40,8 +41,26 @@ class FlattenVisitor(CopyVisitor):
 
     # Banned Nodes
 
+    def visitAdd(self, n):
+        raise Exception("'Add' node no longer valid at this stage")
+
     def visitPrintnl(self, n):
-        raise Exception("AST 'Printnl' node no longer valid at this stage")
+        raise Exception("'Printnl' node no longer valid at this stage")
+
+    def visitmono_IsTag(self, n):
+        raise Exception("'mono_IsTag' node no longer valid at this stage")
+
+    def visitmono_ProjectTo(self, n):
+        raise Exception("'mono_ProjectTo' node no longer valid at this stage")
+
+    def visitmono_InjectFrom(self, n):
+        raise Exception("'mono_InjectFrom' node no longer valid at this stage")
+
+    def visitAnd(self, n):
+        raise Exception("'And' node no longer valid at this stage")
+
+    def visitOr(self, n):
+        raise Exception("'Or' node no longer valid at this stage")
 
     # For statements: takes a statement and returns a list of instructions
 
@@ -69,12 +88,21 @@ class FlattenVisitor(CopyVisitor):
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
 
-    def visitmono_Add(self, n, needs_to_be_simple):
+    def visitmono_Let(self, n, needs_to_be_simple):
+        (rhs, ss1) = self.dispatch(n.rhs, True)
+        print("let rhs=" + str(rhs))
+        print("let ss1=" + str(ss1))
+        (body, ss2) = self.dispatch(n.body, True)
+        print("let body=" + str(body))
+        print("let ss2=" + str(ss2))
+        return (body, ss1 + [make_assign(n.var.name, rhs)] + ss2)
+
+    def visitmono_IntAdd(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
             tmp = generate_name('tmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, Add((left, right)))])
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntAdd((left, right)))])
         else:
             return (Add((left, right)), ss1 + ss2)            
 
@@ -98,3 +126,9 @@ class FlattenVisitor(CopyVisitor):
                 return (CallFunc(n.node, args), ss)
         else:
             raise Exception('flatten: only calls to named functions allowed')
+
+    def visitIfExp(self, n, needs_to_be_simple):
+        (teste, testss) = self.dispatch(n.test, True)
+        (thene, thenss) = self.dispatch(n.then, True)
+        (elsee, elsess) = self.dispatch(n.else_, True)
+        return (IfExp(teste, flat_InstrSeq(thenss, thene), flat_InstrSeq(elsess, elsee)), testss)

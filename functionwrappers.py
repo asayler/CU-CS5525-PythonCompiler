@@ -31,8 +31,6 @@ BIGADD_n   = Name("add")
 TERROR_n   = Name("error_pyobj")
 PRINTANY_n = Name("print_any")
 
-
-
 # Function Wrappers
 
 # Is Macros

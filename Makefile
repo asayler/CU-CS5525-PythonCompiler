@@ -91,6 +91,7 @@ clean:
 	$(RM) $(BUILDDIR)*.correct
 	$(RM) $(BUILDDIR)*.diff	
 	$(RM) *~
+	$(RM) *.s
 	$(RM) *.pyc
 	$(RM) *.out
 	$(RM) *.dot
