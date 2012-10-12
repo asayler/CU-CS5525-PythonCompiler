@@ -174,7 +174,7 @@ class If86(X86Inst):
     def mnemonic(self):
         return ('\n'.join(map(lambda x: x.mnemonic(), self.then)) +
                 '\n' + '\n'.join(map(lambda x: x.mnemonic(), self.else_)))
-
+    
 class Leave86(X86Inst):
     def mnemonic(self):
         return 'leave'

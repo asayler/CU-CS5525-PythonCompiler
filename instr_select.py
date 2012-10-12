@@ -16,6 +16,7 @@ import sys
 # Data Types
 from compiler.ast import *
 from monoast import *
+from flatast import *
 from x86ast import *
 
 # Helper Tools
@@ -138,7 +139,7 @@ class InstrSelectVisitor(Visitor):
         # Test Instructions
         test  = []
         test += self.dispatch(n.test, Var86(IFTEMP))
-        test += [Comp86(Var86(IFTEMP), x86FALSE)]
+        test += [Comp86(x86FALSE, Var86(IFTEMP))]
         test += [JumpEqual86(ElseLStr)]
         # Then Instructions
         then  = []

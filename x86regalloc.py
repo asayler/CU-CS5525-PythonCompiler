@@ -10,9 +10,11 @@
 #    Anne Gatchell
 #       https://github.com/halloannielala/compiler-5525
 
+import sys
+
 from x86ast import *
 
-WORDLEN = 4
+debug = True
 
 def regname(reg):
     if(isinstance(reg, Reg86)):
@@ -50,7 +52,6 @@ def liveness(instrs):
 
     def extractVars(instr):
         written = []
-
         read = []
         
         # Unary read/write
@@ -64,6 +65,13 @@ def liveness(instrs):
             if(validNode(instr.value)):
                 read    += [name(instr.value)]
         
+        # Binary read + read
+        elif(isinstance(instr, Comp86)):
+            if(validNode(instr.left)):
+                read    += [name(instr.left)]
+            if(validNode(instr.right)):
+                read    += [name(instr.right)]
+
         # Binary read + read/write
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86)):
@@ -79,31 +87,68 @@ def liveness(instrs):
                 written += [name(instr.target)]
             if(validNode(instr.value)):
                 read    += [name(instr.value)]
+
+        # No Action
+        elif(isinstance(instr, Call86),
+             isinstance(instr, Jump86),
+             isinstance(instr, JumpEqual86),
+             isinstance(instr, Label86)):
+            pass
+
+        # Unhandled Error
+        else:
+            raise Exception("regalloc: Un-handled Node liveness")
         
         # Return
         return instrVars(set(written), set(read))
+
+    def livenessSeq(instrseq, lafterbranch=set([])):
         
-    # Copy and reverse instruction list
-    rinstrs = instrs[:]
-    rinstrs.reverse()
+        # Copy and reverse instruction list
+        rinstrs = instrseq[:]
+        rinstrs.reverse()
+        instrs = []
 
-    # Iterate through list and build lafter
-    lafter = [set([])]
-    for n in rinstrs:
-        instrvars = extractVars(n)
-        lafter += [(lafter[-1] - instrvars.written) | instrvars.read]
+        # Iterate through list and build lafter
+        lafter = [lafterbranch]
+        for n in rinstrs:
+            if(isinstance(n, If86)):
+                # Branching Instruction
+                # Pop last item for passing to recursive call
+                previous = lafter.pop()
+                # Else Sequence
+                lafterelse, instrselse = livenessSeq(n.else_, previous)
+                instrselse.reverse()
+                lafterelse.reverse()
+                instrs += instrselse
+                lafter += lafterelse
+                # Then Sequence
+                lafterthen, instrsthen = livenessSeq(n.then, previous)
+                instrsthen.reverse()
+                lafterthen.reverse()
+                instrs += instrsthen
+                lafter += lafterthen
+                # Replace last item with union of last item output from lafters recursive calls
+                lafter += [lafterelse[-1] | lafterthen[-1]]
+            else:
+                # Normal Instruction
+                instrs += [n]
+                instrvars = extractVars(n)
+                lafter += [(lafter[-1] - instrvars.written) | instrvars.read]
+           
+        # Reverse and return lafter
+        instrs.reverse()
+        lafter.reverse()
+        return (lafter[1:], instrs)
 
-    # Reverse and return lafter
-    lafter.reverse()
-    return lafter[1:]
+    return livenessSeq(instrs);
 
 def interference(instrs, lafter):
     #Setup Empty Graph
     graph = {}
     
     def validNode(val):
-        return (isinstance(val, Var86) or
-                (isinstance(val, Reg86) and (val in COLOREDREGS)))
+        return (isinstance(val, Var86) or (isinstance(val, Reg86) and (val in COLOREDREGS)))
 
     def name(val):
         if(isinstance(val, Var86)):
@@ -111,13 +156,15 @@ def interference(instrs, lafter):
         elif(isinstance(val, Reg86)):
             return val.register
         else:
-            raise Exception("Attempting to get name of invalid argument: " + str(val))
+            raise Exception("regalloc: Attempting to get name of invalid argument: " + str(val))
 
     def addEdge(x, y):
         graph[x].add(y)
         graph[y].add(x)
     
     def addKey(instr):
+
+        # value+target nodes
         if(isinstance(instr, Move86) or
            isinstance(instr, Add86) or
            isinstance(instr, Sub86)):
@@ -125,14 +172,37 @@ def interference(instrs, lafter):
                 graph[name(instr.value)] = set([])
             if(validNode(instr.target)):
                 graph[name(instr.target)] = set([])
-        if(isinstance(instr, Push86)):
+        
+        # value only nodes
+        elif(isinstance(instr, Push86)):
             if(validNode(instr.value)):
                 graph[name(instr.value)] = set([])
-        if(isinstance(instr, Neg86)):
+        
+        # target only nodes
+        elif(isinstance(instr, Neg86)):
             if(validNode(instr.target)):
                 graph[name(instr.target)] = set([])
 
+        # left right nodes
+        elif(isinstance(instr, Comp86)):
+            if(validNode(instr.left)):
+                graph[name(instr.left)] = set([])
+            if(validNode(instr.right)):
+                graph[name(instr.right)] = set([])
+
+        # No Action for non-register instructions
+        elif(isinstance(instr, Jump86),
+             isinstance(instr, JumpEqual86),
+             isinstance(instr, Label86),
+             isinstance(instr, Call86)):
+            pass
+
+        # No Key Nodes
+        else:
+            raise Exception("regalloc: Attempting to addkey for invalid instr " + str(instr))
+
     def updateGraph(instr, live):
+
         # If 'move' instruction
         if(isinstance(instr, Move86)):
             if(validNode(instr.target)):
@@ -147,6 +217,7 @@ def interference(instrs, lafter):
                                 addEdge(t, v)
                         else:
                             addEdge(t, v)
+
         # If arithmetic
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86) or 
@@ -158,6 +229,7 @@ def interference(instrs, lafter):
                     # Add edge unless v=t
                     if(v != t):
                         addEdge(t, v)
+
         # If call
         elif(isinstance(instr, Call86)):
             for v in live:
@@ -166,7 +238,20 @@ def interference(instrs, lafter):
                     if(validNode(reg)):
                         r = name(reg)
                         if(v != r):
-                            addEdge(r, v)                          
+                            addEdge(r, v)
+
+        
+        # No Action for read only and non-register instructions
+        elif(isinstance(instr, Jump86),
+             isinstance(instr, JumpEqual86),
+             isinstance(instr, Label86),
+             isinstance(instr, Comp86),
+             isinstance(instr, Push86)):
+            pass
+
+        # Unhandled Error
+        else:
+            raise Exception("regalloc: Un-handled Node %s" % str(instr))
 
     # Check Length
     if(len(instrs) != len(lafter)):
@@ -367,6 +452,24 @@ def varReplace(instrs, colors):
             if(validNode(instr.value)):
                 instr.value = replace(instr.value, colormap)
 
+        # Binary read/read
+        elif(isinstance(instr, Comp86)):
+            if(validNode(instr.left)):
+                instr.left = replace(instr.left, colormap)
+            if(validNode(instr.right)):
+                instr.right = replace(instr.right, colormap)
+
+        # No Action
+        elif(isinstance(instr, Call86),
+             isinstance(instr, Jump86),
+             isinstance(instr, JumpEqual86),
+             isinstance(instr, Label86)):
+            pass
+        
+        # Unhandled Error
+        else:
+            raise Exception("regalloc: Un-handled Node during var replace")
+
     return instrs
 
 def maxColor(colors):
@@ -393,16 +496,25 @@ def addClosing(instrs):
 
 def regAlloc(instrs):
     
-    instra = instrs[:]
-    lafter = liveness(instrs)
-    graph = interference(instrs, lafter)
+    (lafter, instrseq) = liveness(instrs)
+    if(debug):
+        sys.stderr.write("lafter      =\n" + "\n".join(map(str, lafter)) + "\n")
+        sys.stderr.write("instrseq    =\n" + "\n".join(map(str, instrseq)) + "\n")
+    graph = interference(instrseq, lafter)
+    if(debug):
+        sys.stderr.write("graph       =\n" + str(graph) + "\n")
     colors = color(graph)
-    (instrs, regOnlyVars) = fixMemToMem(instrs, colors)
-    lafter = liveness(instrs)
-    graph = interference(instrs, lafter)
+    if(debug):
+        sys.stderr.write("colors      =\n" + str(colors) + "\n")
+    (instrseq, regOnlyVars) = fixMemToMem(instrseq, colors)
+    if(debug):
+        sys.stderr.write("instrseq    =\n" + "\n".join(map(str, instrseq)) + "\n")
+        sys.stderr.write("regOnlyVars =\n" + str(regOnlyVars) + "\n")
+    lafter, instrseq = liveness(instrseq)
+    graph = interference(instrseq, lafter)
     colors = color(graph, colors, regOnlyVars)
-    instrs = varReplace(instrs, colors)
-    instrs = addPreamble(instrs, colors)
-    instrs = addClosing(instrs)
+    instrseq = varReplace(instrseq, colors)
+    instrseq = addPreamble(instrseq, colors)
+    instrseq = addClosing(instrseq)
 
-    return instrs
+    return instrseq

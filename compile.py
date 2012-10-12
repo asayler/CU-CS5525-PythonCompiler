@@ -117,22 +117,7 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
 
-    # Exit early since nothing past this point is implemented for p1 yet
-    return 0
-
     # Reg Alloc
-    if(debug):
-        lafter = liveness(assembly)
-        sys.stderr.write("lafter = \n" + "\n".join(map(str, lafter)) + "\n")
-        graph = interference(assembly, lafter)
-        sys.stderr.write("graph = " + str(graph) + "\n")
-        colors = color(graph)
-        sys.stderr.write("colors = " + str(colors) + "\n")
-        (instrs, regOnlyVars) = fixMemToMem(assembly, colors)
-        sys.stderr.write("regOnlyVars = " + str(regOnlyVars) + "\n")
-        sys.stderr.write("instrs = \n" + "\n".join(map(str, instrs)) + "\n")
-
-
     assembly = regAlloc(assembly)
     if(debug):
         sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")

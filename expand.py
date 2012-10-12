@@ -74,7 +74,7 @@ class ExpandVisitor(CopyVisitor):
         return mono_IntAdd((self.dispatch(n.left),self.dispatch(n.right)), n.lineno)
 
     def visitPrintnl(self, n):
-        return Discard(CallPRINTANY(self.dispatch(n.nodes)), n.lineno)
+        return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)
 
     # And/Or
     def AndToIfExp(self, nodes):
