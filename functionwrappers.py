@@ -11,6 +11,7 @@
 #       https://github.com/halloannielala/compiler-5525
 
 from compiler.ast import *
+from x86ast import *
 
 # Function Names
 
@@ -28,6 +29,9 @@ PROJECTBIG_n  = Name("project_big")
 
 BIGADD_n   = Name("add")
 TERROR_n   = Name("error_pyobj")
+PRINTANY_n = Name("print_any")
+
+
 
 # Function Wrappers
 

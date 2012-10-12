@@ -66,13 +66,13 @@ class CopyVisitor(Visitor):
     def visitList(self, n):
         nodes = []
         for node in n.nodes:
-            nodes += [self.dispatch(node)];
+            nodes += [self.dispatch(node)]
         return List(nodes, n.lineno)
 
     def visitDict(self, n):
         items = []
         for item in n.items:
-            items += [self.dispatch(item)];
+            items += [self.dispatch(item)]
         return Dict(items, n.lineno)
 
     def visitSubscript(self, n):

@@ -35,6 +35,18 @@ class Var86(X86Arg):
     def mnemonic(self):
         return self.name
 
+EAX = Reg86('eax')
+EBX = Reg86('ebx')
+ECX = Reg86('ecx')
+EDX = Reg86('edx')
+ESI = Reg86('esi')
+EDI = Reg86('edi')
+EBP = Reg86('ebp')
+ESP = Reg86('esp')
+
+CALLEESAVE = [EAX, ECX, EDX]
+COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
+
 class X86Inst:
     def __str__(self):
         return self.mnemonic()
