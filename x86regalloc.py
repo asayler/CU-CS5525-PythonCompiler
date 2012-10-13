@@ -68,6 +68,11 @@ def liveness(instrs):
             if(validNode(instr.value)):
                 read    += [name(instr.value)]
         
+        # Unary write
+        elif(isinstance(instr, SetEq86)):
+            if(validNode(instr.target)):
+                written    += [name(instr.target)]
+
         # Binary read + read
         elif(isinstance(instr, Comp86)):
             if(validNode(instr.value)):
@@ -182,7 +187,8 @@ def interference(instrs, lafter):
                 graph[name(instr.value)] = set([])
         
         # target only nodes
-        elif(isinstance(instr, Neg86)):
+        elif(isinstance(instr, Neg86) or
+             isinstance(instr, SetEq86)):
             if(validNode(instr.target)):
                 graph[name(instr.target)] = set([])
 
@@ -225,7 +231,8 @@ def interference(instrs, lafter):
         # If arithmetic
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86) or 
-             isinstance(instr, Neg86)):
+             isinstance(instr, Neg86) or
+             isinstance(instr, SetEq86)):
             if(validNode(instr.target)):
                 t = name(instr.target)
                 # Loop through set
@@ -255,6 +262,7 @@ def interference(instrs, lafter):
 
         # Unhandled Error
         else:
+            #TODO Why Arn't These Being Raised for New Instructions?
             raise Exception("regalloc: Un-handled Node %s" % str(instr))
 
     # Check Length
@@ -449,6 +457,12 @@ def varReplace(instrs, colors):
             if(validNode(instr.value)):
                 instr.value = replace(instr.value, colormap)
         
+        # Unary write
+        # TODO: Combine with unary read/write case above
+        elif(isinstance(instr, SetEq86)):
+            if(validNode(instr.target)):
+                instr.target = replace(instr.target, colormap)
+
         # Binary read/write
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86) or
