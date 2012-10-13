@@ -22,6 +22,7 @@ from unitcopy import CopyVisitor
 # Helper Types
 from vis import Visitor
 from functionwrappers import *
+from utilities import generate_name
 
 #Reserved Names
 TRUENAME   = "True"
@@ -63,8 +64,10 @@ class ExplicateVisitor(CopyVisitor):
         return Compare(self.dispatch(n.expr), ops, n.lineno)
 
     def visitAdd(self, n):
-        lhsvar = Name('let_add_lhs')
-        rhsvar = Name('let_add_rhs')
+        lhsname = generate_name('let_add_lhs')
+        rhsname = generate_name('let_add_rhs')
+        lhsvar = Name(lhsname)
+        rhsvar = Name(rhsname)
         t = mono_Let(lhsvar,
                      self.dispatch(n.left),
                      mono_Let(rhsvar,
@@ -91,7 +94,8 @@ class ExplicateVisitor(CopyVisitor):
         return Not(self.dispatch(n.expr), n.lineno)
 
     def visitUnarySub(self, n):
-        exprvar = Name('let_us_expr')
+        varname = generate_name('let_us_expr')
+        exprvar = Name(varname)
         t = mono_Let(exprvar,
                      self.dispatch(n.expr),
                      IfExp(Or([mono_IsTag(INT_t, exprvar),

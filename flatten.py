@@ -100,11 +100,7 @@ class FlattenVisitor(CopyVisitor):
 
     def visitmono_Let(self, n, needs_to_be_simple):
         (rhs, ss1) = self.dispatch(n.rhs, True)
-        print("let rhs=" + str(rhs))
-        print("let ss1=" + str(ss1))
         (body, ss2) = self.dispatch(n.body, True)
-        print("let body=" + str(body))
-        print("let ss2=" + str(ss2))
         return (body, ss1 + [make_assign(n.var.name, rhs)] + ss2)
 
     def visitmono_IntAdd(self, n, needs_to_be_simple):
