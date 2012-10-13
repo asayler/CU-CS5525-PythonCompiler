@@ -84,22 +84,13 @@ class mono_IfExp(mono_Node):
 
 # General AST Nodes
 
-class mono_Assign(mono_Node):
-    def __init__(self, nodes, expr, lineno=None):
-        self.nodes = nodes
-        self.expr = expr
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Assign(%s, %s)" % (repr(self.nodes), repr(self.expr))
-
-class mono_Const(mono_Node):
+class mono_IntConst(mono_Node):
     def __init__(self, value, lineno=None):
         self.value = value
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_Const(%s)" % (repr(self.value))
+        return "mono_IntConst(%s)" % (repr(self.value))
 
 class mono_List(mono_Node):
     def __init__(self, nodes, lineno=None):
@@ -145,10 +136,10 @@ class mono_IntAdd(mono_Node):
     def __repr__(self):
         return "mono_IntAdd((%s, %s))" % (repr(self.left), repr(self.right))
 
-class mono_UnarySub(mono_Node):
+class mono_IntUnarySub(mono_Node):
     def __init__(self, expr, lineno=None):
         self.expr = expr
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_UnarySub(%s)" % (repr(self.expr))
+        return "mono_IntUnarySub(%s)" % (repr(self.expr))

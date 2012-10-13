@@ -45,6 +45,9 @@ class InstrSelectVisitor(Visitor):
     def visitAdd(self, n):
         raise Exception("'Add' node no longer valid at this stage")
 
+    def visitUnarySub(self, n):
+        raise Exception("AST 'Add' node no longer valid at this stage")
+
     def visitPrintnl(self, n):
         raise Exception("'Printnl' node no longer valid at this stage")
 
@@ -65,6 +68,13 @@ class InstrSelectVisitor(Visitor):
 
     def visitmono_Let(self, n):
         raise Exception("'Let' node no longer valid at this stage")
+
+    def mono_IsTrue(self, n):
+        raise Exception("'mono_IsTrue' node no longer valid at this stage")
+
+    def IfExp(self, n):
+        raise Exception("'IfExp' node no longer valid at this stage")
+
 
     # Modules
 
@@ -126,7 +136,7 @@ class InstrSelectVisitor(Visitor):
     def visitNot(self, n):
         return 
 
-    def visitUnarySub(self, n, target):
+    def visitmono_IntUnarySub(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.expr), target)]
         instrs += [Neg86(target)]

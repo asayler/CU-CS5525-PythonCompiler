@@ -47,20 +47,14 @@ class ExplicateVisitor(CopyVisitor):
     # Non-Terminal Expressions
 
     def visitList(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)];
-        return List(nodes, n.lineno)
+        raise Exception("Lists not yet implemented")
 
     def visitDict(self, n):
-        items = []
-        for item in n.items:
-            items += [self.dispatch(item)];
-        return Dict(items, n.lineno)
+        raise Exception("Dicts not yet implemented")
 
     def visitSubscript(self, n):
-        return Subscript(self.dispatch(n.expr), n.flags, n.subs, n.lineno)
-        
+        raise Exception("Subscript not yet implemented")
+                
     def visitCompare(self, n):
         ops = []
         for op in n.ops:
@@ -97,7 +91,14 @@ class ExplicateVisitor(CopyVisitor):
         return Not(self.dispatch(n.expr), n.lineno)
 
     def visitUnarySub(self, n):
-        return UnarySub(self.dispatch(n.expr), n.lineno())
+        exprvar = Name('let_us_expr')
+        t = mono_Let(exprvar,
+                     self.dispatch(n.expr),
+                     IfExp(Or([mono_IsTag(INT_t, exprvar),
+                               mono_IsTag(BOOL_t, exprvar)]),
+                           mono_InjectFrom(INT_t, mono_IntUnarySub(mono_ProjectTo(INT_t, exprvar))),
+                           CallFunc(TERROR_n, [])))
+        return t
 
     # Explicate P1 Pyobj functions
     def visitCallFunc(self, n):

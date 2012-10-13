@@ -45,6 +45,9 @@ class FlattenVisitor(CopyVisitor):
     def visitAdd(self, n):
         raise Exception("'Add' node no longer valid at this stage")
 
+    def visitUnarySub(self, n):
+        raise Exception("AST 'Add' node no longer valid at this stage")
+
     def visitPrintnl(self, n):
         raise Exception("'Printnl' node no longer valid at this stage")
 
@@ -113,13 +116,13 @@ class FlattenVisitor(CopyVisitor):
         else:
             return (Add((left, right)), ss1 + ss2)            
 
-    def visitUnarySub(self, n, needs_to_be_simple):
+    def visitmono_IntUnarySub(self, n, needs_to_be_simple):
         (expr,ss) = self.dispatch(n.expr, True)
         if needs_to_be_simple:
             tmp = generate_name('usubtmp')
-            return (Name(tmp), ss + [make_assign(tmp, UnarySub(expr))])
+            return (Name(tmp), ss + [make_assign(tmp, mono_IntUnarySub(expr))])
         else:
-            return (UnarySub(expr), ss)
+            return (mono_IntUnarySub(expr), ss)
 
     def visitCallFunc(self, n, needs_to_be_simple):
         if isinstance(n.node, Name):

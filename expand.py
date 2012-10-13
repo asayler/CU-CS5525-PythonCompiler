@@ -30,6 +30,9 @@ class ExpandVisitor(CopyVisitor):
     def visitAdd(self, n):
         raise Exception("AST 'Add' node no longer valid at this stage")
 
+    def visitUnarySub(self, n):
+        raise Exception("AST 'Add' node no longer valid at this stage")
+
     # Mono Type Nodes
 
     def visitmono_IsTag(self, n):
@@ -70,7 +73,10 @@ class ExpandVisitor(CopyVisitor):
     # Mono Expr Nodes
  
     def visitmono_IntAdd(self, n):
-        return mono_IntAdd((self.dispatch(n.left),self.dispatch(n.right)), n.lineno)
+        return mono_IntAdd((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+    def visitmono_IntUnarySub(self, n):
+        return mono_IntUnarySub(self.dispatch(n.expr), n.lineno)
 
     def visitPrintnl(self, n):
         return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)
@@ -78,7 +84,13 @@ class ExpandVisitor(CopyVisitor):
     def visitmono_IsTrue(self, n):
         return CallISTRUE([self.dispatch(n.expr)])
 
-    # And/Or
+    # Explicate If
+    def visitIfExp(self, n):
+        return mono_IfExp(CallISTRUE([self.dispatch(n.test)]),
+                          self.dispatch(n.then),
+                          self.dispatch(n.else_)) 
+
+    # Expand And/Or
     def AndToIfExp(self, nodes):
         if(len(nodes) < 2):
             # Error Condition
@@ -114,8 +126,3 @@ class ExpandVisitor(CopyVisitor):
 
     def visitOr(self, n):
         return self.OrToIfExp(n.nodes)
-        
-    def visitIfExp(self, n):
-        return mono_IfExp(CallISTRUE([self.dispatch(n.test)]),
-                          self.dispatch(n.then),
-                          self.dispatch(n.else_)) 

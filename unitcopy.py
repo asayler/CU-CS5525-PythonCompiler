@@ -104,7 +104,7 @@ class CopyVisitor(Visitor):
         return Not(self.dispatch(n.expr), n.lineno)
 
     def visitUnarySub(self, n):
-        return UnarySub(self.dispatch(n.expr), n.lineno())
+        return UnarySub(self.dispatch(n.expr), n.lineno)
 
     def visitIfExp(self, n):
         return IfExp(self.dispatch(n.test),

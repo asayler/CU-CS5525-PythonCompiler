@@ -27,15 +27,26 @@ class Graph_monoast(Graph_ast):
     def visitAdd(self, n, p):
         raise Exception("AST 'Add' node no longer valid at this stage")
 
+    def UnarySub(self, n, p):
+        raise Exception("AST 'UnarySub' node no longer valid at this stage")
+
     # New Nodes
 
     def visitmono_IntAdd(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("mono_Add"))
+        lines += Graphvis_dot().lineLabel(myid, ("mono_IntAdd"))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.left, myid)
         lines += self.dispatch(n.right, myid)
+        return lines
+
+    def visitmono_IntUnarySub(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_IntUnarySub"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
         return lines
 
     def visitmono_ProjectTo(self, n, p):
@@ -79,3 +90,4 @@ class Graph_monoast(Graph_ast):
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.expr, myid)
         return lines
+
