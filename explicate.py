@@ -23,6 +23,12 @@ from unitcopy import CopyVisitor
 from vis import Visitor
 from functionwrappers import *
 
+#Reserved Names
+TRUENAME   = "True"
+TRUEVALUE  = 1
+FALSENAME  = "False"
+FALSEVALUE = 0
+
 class ExplicateVisitor(CopyVisitor):
     
     # Terminal Expressions
@@ -31,7 +37,12 @@ class ExplicateVisitor(CopyVisitor):
         return mono_InjectFrom(INT_t, Const(n.value, n.lineno))
 
     def visitName(self, n):
-        return Name(n.name, n.lineno)
+        if(n.name == TRUENAME):
+            return mono_InjectFrom(BOOL_t, Const(TRUEVALUE, n.lineno))
+        elif(n.name == FALSENAME):
+            return mono_InjectFrom(BOOL_t, Const(FALSEVALUE, n.lineno))
+        else:
+            return Name(n.name, n.lineno)
 
     def visitAssName(self, n):
         return AssName(n.name, n.flags, n.lineno)
