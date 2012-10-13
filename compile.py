@@ -83,7 +83,7 @@ def main(argv=None):
     monoast = ExplicateVisitor().preorder(parsedast)
     if(debug):
         # Print monoast
-        sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
+        #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-mono.dot"
@@ -96,7 +96,7 @@ def main(argv=None):
     expandedast = ExpandVisitor().preorder(monoast)
     if(debug):
         # Print expandedast
-        sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
+        #sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
         # Graph expandedast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-expanded.dot"
@@ -106,7 +106,7 @@ def main(argv=None):
     flatast = FlattenVisitor().preorder(expandedast)
     if(debug):
         # Print flatast
-        sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
+        #sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
         # Graph flatast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
@@ -115,12 +115,14 @@ def main(argv=None):
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
-        sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
+        pass
+        #sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
 
     # Reg Alloc
     assembly = regAlloc(assembly)
     if(debug):
-        sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")
+        pass
+        #sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")
 
     # Write output
     write_to_file(map(str, assembly), outputFileName)

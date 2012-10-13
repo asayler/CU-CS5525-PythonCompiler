@@ -115,6 +115,15 @@ class InstrSelectVisitor(Visitor):
         instrs += [Add86(arg_select(n.right), target)]
         return instrs
 
+    def visitmono_IntEqual(self, n, target):
+        instrs = []
+        instrs += [Move86(arg_select(n.left), target)]
+        instrs += [Comp86(arg_select(n.right), target)]
+        # prezero register (necessary?)
+        instrs += [Move86(x86ZERO, target)]
+        instrs += [SetEq86(target)]
+        return instrs
+
     def visitmono_IntUnarySub(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.expr), target)]
@@ -129,7 +138,9 @@ class InstrSelectVisitor(Visitor):
         IfThenLabelCnt += 1
         # Test Instructions
         test  = []
-        tmp = Var86(generate_name(IFTEMP))
+        # Switch from tmp to target as is done in add?
+        #tmp = Var86(generate_name(IFTEMP))
+        tmp = target
         test += self.dispatch(n.test, tmp)
         test += [Comp86(x86FALSE, tmp)]
         test += [JumpEqual86(ElseLStr)]

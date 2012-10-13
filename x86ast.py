@@ -50,6 +50,8 @@ COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
 WORDLEN = 4
 
 x86FALSE = Const86(0)
+x86TRUE  = Const86(1)
+x86ZERO  = Const86(0)
 
 class X86Inst:
     def __str__(self):
@@ -131,11 +133,11 @@ class And86(X86Inst):
         return ('andl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
 
 class Comp86(X86Inst):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+    def __init__(self, value, target):
+        self.value = value
+        self.target = target
     def mnemonic(self):
-        return ('cmpl %s, %s' % (self.left.mnemonic(), self.right.mnemonic()))
+        return ('cmpl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
 
 class SetEq86(X86Inst):
     def __init__(self, target):

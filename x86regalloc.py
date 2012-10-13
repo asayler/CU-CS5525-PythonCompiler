@@ -14,7 +14,11 @@ import sys
 
 from x86ast import *
 
+from utilities import generate_name
+
 debug = False
+
+MAXITERATIONS = 9
 
 def regname(reg):
     if(isinstance(reg, Reg86)):
@@ -66,10 +70,10 @@ def liveness(instrs):
         
         # Binary read + read
         elif(isinstance(instr, Comp86)):
-            if(validNode(instr.left)):
-                read    += [name(instr.left)]
-            if(validNode(instr.right)):
-                read    += [name(instr.right)]
+            if(validNode(instr.value)):
+                read    += [name(instr.value)]
+            if(validNode(instr.target)):
+                read    += [name(instr.target)]
 
         # Binary read + read/write
         elif(isinstance(instr, Add86) or
@@ -183,11 +187,12 @@ def interference(instrs, lafter):
                 graph[name(instr.target)] = set([])
 
         # left right nodes
+        # TODO: Combine with target/value
         elif(isinstance(instr, Comp86)):
-            if(validNode(instr.left)):
-                graph[name(instr.left)] = set([])
-            if(validNode(instr.right)):
-                graph[name(instr.right)] = set([])
+            if(validNode(instr.value)):
+                graph[name(instr.value)] = set([])
+            if(validNode(instr.target)):
+                graph[name(instr.target)] = set([])
 
         # No Action for non-register instructions
         elif(isinstance(instr, Jump86),
@@ -368,10 +373,12 @@ def fixMemToMem(instrs, colors):
         elif(isinstance(instr, Move86)):
             return [Move86(instr.value, tmp),
                     Move86(tmp, instr.target)]
+        elif(isinstance(instr, Comp86)):
+            return [Move86(instr.value, tmp),
+                    Comp86(tmp, instr.target)]
         else:
             raise Exception("Cannot add temp to node: " + str(instr))
     
-    tempCnt = 0
     fixedInstrs = []
     regOnlyVars = []
 
@@ -381,17 +388,17 @@ def fixMemToMem(instrs, colors):
         # Binary read/write
         if(isinstance(instr, Add86) or
            isinstance(instr, Sub86) or
-           isinstance(instr, Move86)):
+           isinstance(instr, Move86) or
+           isinstance(instr, Comp86)):
             if(validNode(instr.target) and 
                validNode(instr.value)):
                 # Find mem to mem operations
                 if((colors[name(instr.target)] >= len(REGCOLORS)) and
                    (colors[name(instr.value)] >= len(REGCOLORS))):
                     # Add temp var
-                    tmp = Var86(regTempPrefix + str(tempCnt))
+                    tmp = Var86(generate_name(regTempPrefix))
                     fixedInstrs += addTemp(instr, tmp)
                     regOnlyVars += [tmp.name]
-                    tempCnt += 1
                 else:
                     fixedInstrs += [instr]
             else:
@@ -453,10 +460,10 @@ def varReplace(instrs, colors):
 
         # Binary read/read
         elif(isinstance(instr, Comp86)):
-            if(validNode(instr.left)):
-                instr.left = replace(instr.left, colormap)
-            if(validNode(instr.right)):
-                instr.right = replace(instr.right, colormap)
+            if(validNode(instr.value)):
+                instr.value = replace(instr.value, colormap)
+            if(validNode(instr.target)):
+                instr.target = replace(instr.target, colormap)
 
         # No Action
         elif(isinstance(instr, Call86),
@@ -498,20 +505,36 @@ def regAlloc(instrs):
     (lafter, instrseq) = liveness(instrs)
     if(debug):
         sys.stderr.write("lafter      =\n" + "\n".join(map(str, lafter)) + "\n")
-        sys.stderr.write("instrseq    =\n" + "\n".join(map(str, instrseq)) + "\n")
     graph = interference(instrseq, lafter)
     if(debug):
         sys.stderr.write("graph       =\n" + str(graph) + "\n")
     colors = color(graph)
     if(debug):
         sys.stderr.write("colors      =\n" + str(colors) + "\n")
-    (instrseq, regOnlyVars) = fixMemToMem(instrseq, colors)
-    if(debug):
-        sys.stderr.write("instrseq    =\n" + "\n".join(map(str, instrseq)) + "\n")
-        sys.stderr.write("regOnlyVars =\n" + str(regOnlyVars) + "\n")
-    lafter, instrseq = liveness(instrseq)
-    graph = interference(instrseq, lafter)
-    colors = color(graph, colors, regOnlyVars)
+    iterations = 0
+    regOnlyVars = []
+    while(1):
+
+        (instrseq, newRegOnlyVars) = fixMemToMem(instrseq, colors)
+        fixcnt = len(newRegOnlyVars)
+        regOnlyVars += newRegOnlyVars
+
+        if(debug):
+            sys.stderr.write("regOnlyVars =\n" + str(regOnlyVars) + "\n")
+            sys.stderr.write("fixcnt =\n" + str(fixcnt) + "\n")
+            sys.stderr.write("iterations =\n" + str(iterations) + "\n")
+
+        if(fixcnt == 0):
+            break
+
+        lafter, instrseq = liveness(instrseq)
+        graph = interference(instrseq, lafter)
+        colors = color(graph, colors, regOnlyVars)
+        iterations += 1
+
+        if(iterations > MAXITERATIONS):
+            raise Exception("Could not complete register allocation withen iteration limit")
+        
     instrseq = varReplace(instrseq, colors)
     instrseq = addPreamble(instrseq, colors)
     instrseq = addClosing(instrseq)
