@@ -138,11 +138,8 @@ class InstrSelectVisitor(Visitor):
         IfThenLabelCnt += 1
         # Test Instructions
         test  = []
-        # Switch from tmp to target as is done in add?
-        #tmp = Var86(generate_name(IFTEMP))
-        tmp = target
-        test += self.dispatch(n.test, tmp)
-        test += [Comp86(x86FALSE, tmp)]
+        test += self.dispatch(n.test, target)
+        test += [Comp86(x86FALSE, target)]
         test += [JumpEqual86(ElseLStr)]
         # Then Instructions
         then  = []
