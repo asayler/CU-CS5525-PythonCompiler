@@ -10,7 +10,9 @@
 #    Anne Gatchell
 #       https://github.com/halloannielala/compiler-5525
 
-import sys
+import sys, uuid
+
+nodecnt = 0
 
 class Graphvis_dot():
 
@@ -26,14 +28,17 @@ class Graphvis_dot():
     tb = '\t'
     nltb = nl + tb
 
-    def linePair(self, parent, child):
-        pid = self.qt + str(id(parent)) + self.qt
-        cid = self.qt + str(id(child))  + self.qt
+    def uniqueid(self, node):
+        return uuid.uuid4()
+
+    def linePair(self, pid, cid):
+        pid = self.qt + str(pid) + self.qt
+        cid = self.qt + str(cid)  + self.qt
         return [(pid + self.arrow + cid + self.sc)]
 
-    def lineLabel(self, n, label):
-        nid = self.qt + str(id(n)) + self.qt        
-        return [(nid + " " +
+    def lineLabel(self, myid, label):
+        myid = self.qt + str(myid) + self.qt        
+        return [(myid + " " +
                  self.attrOpen + self.attrLabel +
                  self.qt + label + self.qt +
                  self.attrClose + self.sc)]

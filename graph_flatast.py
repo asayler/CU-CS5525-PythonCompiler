@@ -32,9 +32,10 @@ class Graph_flatast(Graph_expandedast):
 
     def visitflat_InstrSeq(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("flat_InstrSeq"))
-        lines += Graphvis_dot().linePair(p, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("flat_InstrSeq"))
+        lines += Graphvis_dot().linePair(p, myid)
         for node in n.nodes:
-            lines += self.dispatch(node, n)
-        lines += self.dispatch(n.expr, n)
+            lines += self.dispatch(node, myid)
+        lines += self.dispatch(n.expr, myid)
         return lines

@@ -31,45 +31,51 @@ class Graph_monoast(Graph_ast):
 
     def visitmono_IntAdd(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_Add"))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.left, n)
-        lines += self.dispatch(n.right, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_Add"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
         return lines
 
     def visitmono_ProjectTo(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_ProjectTo(%s)" % str(n.typ.typ)))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.arg, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_ProjectTo(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
         return lines
 
     def visitmono_InjectFrom(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_InjectFrom(%s)" % str(n.typ.typ)))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.arg, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_InjectFrom(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
         return lines
 
     def visitmono_IsTag(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_IsTag(%s)" % str(n.typ.typ)))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.arg, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_IsTag(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
         return lines
 
     def visitmono_Let(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_Let"))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.var, n)
-        lines += self.dispatch(n.rhs, n)
-        lines += self.dispatch(n.body, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_Let"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.var, myid)
+        lines += self.dispatch(n.rhs, myid)
+        lines += self.dispatch(n.body, myid)
         return lines
 
     def visitmono_IsTrue(self, n, p):
         lines = []
-        lines += Graphvis_dot().lineLabel(n, ("mono_IsTrue"))
-        lines += Graphvis_dot().linePair(p, n)
-        lines += self.dispatch(n.expr, n)
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_IsTrue"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
         return lines
