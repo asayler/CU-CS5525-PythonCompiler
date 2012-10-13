@@ -73,23 +73,16 @@ class mono_IsTrue(mono_Node):
     def __repr__(self):
         return "mono_IsTrue(%s)" % (repr(self.expr))
 
-class mono_TRUE(mono_Node):
-    def __init__(self):
-        pass
+class mono_IfExp(mono_Node):
+    """Evaluate if exp with explicated test"""
+    def __init__(self, test, then, else_):
+        self.test = test
+        self.then = then
+        self.else_ = else_
     def __repr__(self):
-        return "mono_TRUE()"
-
+        return "mono_IfExp(%s, %s, %s)" % (repr(self.test), repr(self.then), repr(self.else_))
 
 # General AST Nodes
-
-class mono_Printnl(mono_Node):
-    def __init__(self, nodes, dest, lineno=None):
-        self.nodes = nodes
-        self.dest = dest
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Printnl(%s, %s)" % (repr(self.nodes), repr(self.dest))
 
 class mono_Assign(mono_Node):
     def __init__(self, nodes, expr, lineno=None):

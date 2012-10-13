@@ -34,11 +34,11 @@ class ExpandVisitor(CopyVisitor):
 
     def visitmono_IsTag(self, n):
         if(n.typ == INT_t):
-            return CallISINT([self.dispatch(n.arg)])
+            return CallINJECTBOOL([CallISINT([self.dispatch(n.arg)])])
         elif(n.typ == BOOL_t):
-            return CallISBOOL([self.dispatch(n.arg)])
+            return CallINJECTBOOL([CallISBOOL([self.dispatch(n.arg)])])
         elif(n.typ == BIG_t):
-            return CallISBIG([self.dispatch(n.arg)])
+            return CallINJECTBOOL([CallISBIG([self.dispatch(n.arg)])])
         else:
             raise Exception("expand: IsTag - unknown type %s" % str(n.typ))
     
@@ -61,7 +61,6 @@ class ExpandVisitor(CopyVisitor):
             return CallINJECTBIG([self.dispatch(n.arg)])
         else:
             raise Exception("expand: InjectFrom - unknown type %s" % str(n.typ))
-
 
     # Mono Let (Pass Through)
 
@@ -90,10 +89,10 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return IfExp(thisnode, nextnode, thisnode)
+            return mono_IfExp(CallISTRUE([thisnode]), nextnode, thisnode)
         else:
             # Recurse
-            return IfExp(thisnode, self.AndToIfExp(nodes[1:]), thisnode)
+            return mono_IfExp(CallISTRUE([thisnode]), self.AndToIfExp(nodes[1:]), thisnode)
 
     def visitAnd(self, n):
         return self.AndToIfExp(n.nodes)
@@ -108,11 +107,15 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return IfExp(thisnode, thisnode, nextnode)
+            return mono_IfExp(CallISTRUE([thisnode]), thisnode, nextnode)
         else:
             # Recurse
-            return IfExp(thisnode, thisnode, self.AndToIfExp(nodes[1:]))
+            return mono_IfExp(CallISTRUE([thisnode]), thisnode, self.AndToIfExp(nodes[1:]))
 
     def visitOr(self, n):
         return self.OrToIfExp(n.nodes)
         
+    def visitIfExp(self, n):
+        return mono_IfExp(CallISTRUE([self.dispatch(n.test)]),
+                          self.dispatch(n.then),
+                          self.dispatch(n.else_)) 

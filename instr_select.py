@@ -132,7 +132,7 @@ class InstrSelectVisitor(Visitor):
         instrs += [Neg86(target)]
         return instrs
 
-    def visitIfExp(self, n, target):
+    def visitmono_IfExp(self, n, target):
         global IfThenLabelCnt
         ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
         EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)

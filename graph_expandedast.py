@@ -44,3 +44,17 @@ class Graph_expandedast(Graph_monoast):
 
     def visitmono_IsTrue(self, n, p):
         raise Exception("'IsTrue' node no longer valid at this stage")
+
+    def visitIfExp(self, n, p):
+        raise Exception("'IfExp' node no longer valid at this stage")
+
+    # New Nodes
+    def visitmono_IfExp(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IfExp"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.then, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines

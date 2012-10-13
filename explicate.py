@@ -44,9 +44,6 @@ class ExplicateVisitor(CopyVisitor):
         else:
             return Name(n.name, n.lineno)
 
-    def visitAssName(self, n):
-        return AssName(n.name, n.flags, n.lineno)
-
     # Non-Terminal Expressions
 
     def visitList(self, n):
@@ -96,29 +93,11 @@ class ExplicateVisitor(CopyVisitor):
                                           CallFunc(TERROR_n, [])))))
         return t
         
-    def visitOr(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return Or(nodes, n.lineno)
-
-    def visitAnd(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return And(nodes, n.lineno)
-
     def visitNot(self, n):
         return Not(self.dispatch(n.expr), n.lineno)
 
     def visitUnarySub(self, n):
         return UnarySub(self.dispatch(n.expr), n.lineno())
-
-    def visitIfExp(self, n):
-        return IfExp(mono_IsTrue(self.dispatch(n.test)),
-                     self.dispatch(n.then),
-                     self.dispatch(n.else_),
-                     n.lineno) 
 
     # Explicate P1 Pyobj functions
     def visitCallFunc(self, n):

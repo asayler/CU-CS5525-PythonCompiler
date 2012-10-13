@@ -66,6 +66,9 @@ class FlattenVisitor(CopyVisitor):
     def mono_IsTrue(self, n):
         raise Exception("'mono_IsTrue' node no longer valid at this stage")
 
+    def IfExp(self, n):
+        raise Exception("'IfExp' node no longer valid at this stage")
+
     # For statements: takes a statement and returns a list of instructions
 
     def visitStmt(self, n):
@@ -131,13 +134,13 @@ class FlattenVisitor(CopyVisitor):
         else:
             raise Exception('flatten: only calls to named functions allowed')
 
-    def visitIfExp(self, n, needs_to_be_simple):
+    def visitmono_IfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)
         (thene, thenss) = self.dispatch(n.then, True)
         (elsee, elsess) = self.dispatch(n.else_, True)
-        simple = IfExp(teste,
-                       flat_InstrSeq(thenss, thene),
-                       flat_InstrSeq(elsess, elsee))
+        simple = mono_IfExp(teste,
+                            flat_InstrSeq(thenss, thene),
+                            flat_InstrSeq(elsess, elsee))
         if needs_to_be_simple:
             tmp = generate_name('ifexptmp')
             myexpr = (Name(tmp))
