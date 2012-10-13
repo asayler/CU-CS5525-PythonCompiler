@@ -28,10 +28,13 @@ class ExpandVisitor(CopyVisitor):
     # Banned Nodes
 
     def visitAdd(self, n):
-        raise Exception("AST 'Add' node no longer valid at this stage")
+        raise Exception("'Add' node no longer valid at this stage")
 
     def visitUnarySub(self, n):
-        raise Exception("AST 'Add' node no longer valid at this stage")
+        raise Exception("'UnarySub' node no longer valid at this stage")
+
+    def visitCompare(self, n):
+        raise Exception("'Compare' node no longer valid at this stage")
 
     # Mono Type Nodes
 
@@ -77,6 +80,12 @@ class ExpandVisitor(CopyVisitor):
 
     def visitmono_IntUnarySub(self, n):
         return mono_IntUnarySub(self.dispatch(n.expr), n.lineno)
+
+    def visitmono_IntEqual(self, n):
+        return mono_IntEqual((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+    def visitmono_IntNotEqual(self, n):
+        return mono_IntNotEqual((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
 
     def visitPrintnl(self, n):
         return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)

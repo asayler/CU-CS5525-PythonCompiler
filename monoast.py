@@ -66,13 +66,6 @@ class mono_Let(mono_Node):
     def __repr__(self):
         return "mono_Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
 
-class mono_IsTrue(mono_Node):
-    """Evaluate if exp is true and return int"""
-    def __init__(self, expr):
-        self.expr  = expr
-    def __repr__(self):
-        return "mono_IsTrue(%s)" % (repr(self.expr))
-
 class mono_IfExp(mono_Node):
     """Evaluate if exp with explicated test"""
     def __init__(self, test, then, else_):
@@ -118,14 +111,23 @@ class mono_Subscript(mono_Node):
     def __repr__(self):
         return "mono_Subscript(%s, %s, %s)" % (repr(self.expr), repr(self.flags), repr(self.subs))
 
-class mono_Compare(mono_Node):
-    def __init__(self, expr, ops, lineno=None):
-        self.expr = expr
-        self.ops = ops
+class mono_IntEqual(mono_Node):
+    def __init__(self, (left, right), lineno=None):
+        self.left = left
+        self.right = right
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_Compare(%s, %s)" % (repr(self.expr), repr(self.ops))
+        return "mono_IntEqual(%s, %s)" % (repr(self.left), repr(self.right))
+
+class mono_IntNotEqual(mono_Node):
+    def __init__(self, (left, right), lineno=None):
+        self.left = left
+        self.right = right
+        self.lineno = lineno
+
+    def __repr__(self):
+        return "mono_IntNotEqual(%s, %s)" % (repr(self.left), repr(self.right))
 
 class mono_IntAdd(mono_Node):
     def __init__(self, (left, right), lineno=None):

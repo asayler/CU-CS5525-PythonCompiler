@@ -21,6 +21,7 @@ from x86ast import *
 
 # Helper Tools
 from vis import Visitor
+from utilities import generate_name
 
 def arg_select(ast):
     if isinstance(ast, Name):
@@ -46,7 +47,10 @@ class InstrSelectVisitor(Visitor):
         raise Exception("'Add' node no longer valid at this stage")
 
     def visitUnarySub(self, n):
-        raise Exception("AST 'Add' node no longer valid at this stage")
+        raise Exception("'UnarySub' node no longer valid at this stage")
+
+    def visitCompare(self, n):
+        raise Exception("'Compare' node no longer valid at this stage")
 
     def visitPrintnl(self, n):
         raise Exception("'Printnl' node no longer valid at this stage")
@@ -75,7 +79,6 @@ class InstrSelectVisitor(Visitor):
     def IfExp(self, n):
         raise Exception("'IfExp' node no longer valid at this stage")
 
-
     # Modules
 
     def visitModule(self, n):
@@ -93,7 +96,8 @@ class InstrSelectVisitor(Visitor):
         return self.dispatch(n.expr, Var86(n.nodes[0].name))
         
     def visitDiscard(self, n):
-        return self.dispatch(n.expr, Var86(DISCARDTEMP))
+        tmp = Var86(generate_name(DISCARDTEMP))
+        return self.dispatch(n.expr, tmp)
     
     # Terminal Expressions
 
@@ -105,36 +109,11 @@ class InstrSelectVisitor(Visitor):
 
     # Non-Terminal Expressions
 
-    def visitList(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += self.dispatch(node)
-        return
-
-    def visitDict(self, n):
-        items = []
-        for item in n.items:
-            items += self.dispatch(item);
-        return 
-
-    def visitSubscript(self, n):
-        return 
-        
-    def visitCompare(self, n):
-        ops = []
-        for op in n.ops:
-            newop = (op[0], self.dispatch(op[1]))
-            ops += [newop]
-        return 
-
     def visitmono_IntAdd(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Add86(arg_select(n.right), target)]
         return instrs
-        
-    def visitNot(self, n):
-        return 
 
     def visitmono_IntUnarySub(self, n, target):
         instrs = []
@@ -143,14 +122,16 @@ class InstrSelectVisitor(Visitor):
         return instrs
 
     def visitmono_IfExp(self, n, target):
+        #Setup Label
         global IfThenLabelCnt
         ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
         EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
         IfThenLabelCnt += 1
         # Test Instructions
         test  = []
-        test += self.dispatch(n.test, Var86(IFTEMP))
-        test += [Comp86(x86FALSE, Var86(IFTEMP))]
+        tmp = Var86(generate_name(IFTEMP))
+        test += self.dispatch(n.test, tmp)
+        test += [Comp86(x86FALSE, tmp)]
         test += [JumpEqual86(ElseLStr)]
         # Then Instructions
         then  = []

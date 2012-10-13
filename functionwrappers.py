@@ -28,6 +28,8 @@ PROJECTBOOL_n = Name("project_bool")
 PROJECTBIG_n  = Name("project_big")
 
 BIGADD_n   = Name("add")
+BIGEQ_n    = Name("equal")
+BIGNEQ_n   = Name("not_equal")
 TERROR_n   = Name("error_pyobj")
 PRINTANY_n = Name("print_any")
 ISTRUE_n   = Name("is_true")
@@ -67,6 +69,12 @@ def CallPROJECTBIG(args):
 # Utility Macros
 def CallBIGADD(args):
     return CallFunc(BIGADD_n, args)
+
+def CallBIGEQ(args):
+    return CallFunc(BIGEQ_n, args)
+
+def CallBIGNEQ(args):
+    return CallFunc(BIGNEQ_n, args)
 
 def CallTERROR(args):
     return CallFunc(TERROR_n, args)

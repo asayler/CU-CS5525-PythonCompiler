@@ -46,7 +46,10 @@ class FlattenVisitor(CopyVisitor):
         raise Exception("'Add' node no longer valid at this stage")
 
     def visitUnarySub(self, n):
-        raise Exception("AST 'Add' node no longer valid at this stage")
+        raise Exception("'UnarySub' node no longer valid at this stage")
+
+    def visitCompare(self, n):
+        raise Exception("'Compare' node no longer valid at this stage")
 
     def visitPrintnl(self, n):
         raise Exception("'Printnl' node no longer valid at this stage")
@@ -110,7 +113,25 @@ class FlattenVisitor(CopyVisitor):
             tmp = generate_name('intaddtmp')
             return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntAdd((left, right)))])
         else:
-            return (Add((left, right)), ss1 + ss2)            
+            return (mono_IntAdd((left, right)), ss1 + ss2)
+
+    def visitmono_IntEqual(self, n, needs_to_be_simple):
+        (left, ss1) = self.dispatch(n.left, True)
+        (right, ss2) = self.dispatch(n.right, True)
+        if needs_to_be_simple:
+            tmp = generate_name('intequaltmp')
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntEqual((left, right)))])
+        else:
+            return (mono_IntEqual((left, right)), ss1 + ss2)
+
+    def visitmono_IntNotEqual(self, n, needs_to_be_simple):
+        (left, ss1) = self.dispatch(n.left, True)
+        (right, ss2) = self.dispatch(n.right, True)
+        if needs_to_be_simple:
+            tmp = generate_name('intequaltmp')
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntEqual((left, right)))])
+        else:
+            return (mono_IntNotEqual((left, right)), ss1 + ss2)
 
     def visitmono_IntUnarySub(self, n, needs_to_be_simple):
         (expr,ss) = self.dispatch(n.expr, True)
