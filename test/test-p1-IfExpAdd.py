@@ -4,7 +4,8 @@
 # CU CS5525
 # Test Program
 # P1
-# Test 1
+# Test IfExpAdd
+# Known good output should count from 1 to 6
 
 x = 1
 print(x)
