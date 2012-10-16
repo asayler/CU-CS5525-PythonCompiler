@@ -36,6 +36,14 @@ COMPNOTEQUAL = '!='
 class ExplicateVisitor(CopyVisitor):
   
     # Helper Functions
+
+    def projectType(self, expr):
+        return IfExp(mono_IsTag(BOOL_t, expr),
+                     mono_ProjectTo(BOOL_t, expr),
+                     IfExp(mono_IsTag(INT_t, expr),
+                           mono_ProjectTo(INT_t, expr),
+                           mono_ProjectTo(BIG_t, expr)))
+                     
     def explicateBinary(self, lhsexpr, rhsexpr, smallFunc, smallType, bigFunc, bigType):
         lhsname = generate_name('let_binexp_lhs')
         rhsname = generate_name('let_binexp_rhs')
@@ -45,29 +53,23 @@ class ExplicateVisitor(CopyVisitor):
                      self.dispatch(lhsexpr),
                      mono_Let(rhsvar,
                               self.dispatch(rhsexpr),
-                              # Bool Case
-                              IfExp(mono_IsTag(BOOL_t, lhsvar),
+                              # Small-Small Case
+                              IfExp(And([Or([mono_IsTag(BOOL_t, lhsvar),
+                                             mono_IsTag(INT_t, lhsvar)]),
+                                         Or([mono_IsTag(BOOL_t, rhsvar),
+                                             mono_IsTag(INT_t, rhsvar)])]),
                                     mono_InjectFrom(smallType,
-                                                    smallFunc((mono_ProjectTo(BOOL_t, lhsvar),
-                                                               mono_ProjectTo(BOOL_t, rhsvar))
-                                                              )
-                                                    ),
-                                    # Int Case
-                                    IfExp(mono_IsTag(INT_t, lhsvar),
-                                          mono_InjectFrom(smallType,
-                                                          smallFunc((mono_ProjectTo(INT_t, lhsvar),
-                                                                     mono_ProjectTo(INT_t, rhsvar))
-                                                                    )
-                                                          ),
-                                          # Big Case
+                                                    smallFunc((self.projectType(lhsvar),
+                                                               self.projectType(rhsvar)))),
+                                    # Big-Big Case
+                                    IfExp(And([mono_IsTag(BIG_t, lhsvar),
+                                               mono_IsTag(BIG_t, rhsvar)]),
                                           mono_InjectFrom(bigType,
-                                                          bigFunc([mono_ProjectTo(BIG_t, lhsvar),
-                                                                   mono_ProjectTo(BIG_t, rhsvar)])
-                                                          )
-                                          )
-                                    )
-                              )
-                     )
+                                                          bigFunc([self.projectType(lhsvar),
+                                                                   self.projectType(rhsvar)])),
+                                          # Mixed Case
+                                          # TODO: Add mixed case logic
+                                          CallTERROR([])))))
         return t
 
     # Terminal Expressions
@@ -107,7 +109,7 @@ class ExplicateVisitor(CopyVisitor):
             t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
         # Error case
         else:
-            raise Exception("explicate:unrecognized operation %s" % str(n.ops[0][0]))
+            raise Exception("explicate:unrecognized operation %s" % str(op))
         return t
   
     def visitAdd(self, n):
