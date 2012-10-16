@@ -231,8 +231,7 @@ def interference(instrs, lafter):
         # If arithmetic
         elif(isinstance(instr, Add86) or
              isinstance(instr, Sub86) or 
-             isinstance(instr, Neg86) or
-             isinstance(instr, SetEq86)):
+             isinstance(instr, Neg86)):
             if(validNode(instr.target)):
                 t = name(instr.target)
                 # Loop through set
@@ -251,13 +250,29 @@ def interference(instrs, lafter):
                         if(v != r):
                             addEdge(r, v)
 
-        
+
+        # If small reg
+        elif(isinstance(instr, SetEq86)):
+            if(validNode(instr.target)):
+                t = name(instr.target)
+                # Add edge for each string (none GP) register
+                for reg in STRINGREGS:
+                    if(validNode(reg)):
+                        r = name(reg)
+                        if(t != r):
+                            addEdge(r, t)
+                # Loop through live set
+                for v in live:
+                    # Add edge unless v=t
+                    if(v != t):
+                        addEdge(t, v)
+
         # No Action for read only and non-register instructions
         elif(isinstance(instr, Jump86),
              isinstance(instr, JumpEqual86),
              isinstance(instr, Label86),
-             isinstance(instr, Comp86),
-             isinstance(instr, Push86)):
+             isinstance(instr, Push86),
+             isinstance(instr, Comp86)):
             pass
 
         # Unhandled Error
@@ -270,7 +285,11 @@ def interference(instrs, lafter):
         raise Exception("Mismatched lengths")
 
     # Seed Graph
+
     for reg in CALLEESAVE:
+        if(validNode(reg)):
+            graph[name(reg)] = set([])
+    for reg in STRINGREGS:
         if(validNode(reg)):
             graph[name(reg)] = set([])
     for instr in instrs:
@@ -492,6 +511,31 @@ def varReplace(instrs, colors):
 
     return instrs
 
+def fixSmallRegs(instrs):
+
+    def validNode(val):
+        return isinstance(val, Reg86)
+
+    def replaceReg(reg):
+        return ONEBYTELOWREGS[reg]
+
+    #Duplicate
+    instrs = instrs[:]
+
+    #Loop through instructions
+    for instr in instrs:
+
+        # Single Byte Instructions
+        if(isinstance(instr, SetEq86)):
+            if(validNode(instr.target)):
+                instr.target = replaceReg(instr.target)
+
+        # No CHnage Necessary
+        else:
+            pass
+
+    return instrs
+
 def maxColor(colors):
     maxcolor = -1
     for key in colors:
@@ -550,6 +594,7 @@ def regAlloc(instrs):
             raise Exception("Could not complete register allocation withen iteration limit")
         
     instrseq = varReplace(instrseq, colors)
+    instrseq = fixSmallRegs(instrseq)
     instrseq = addPreamble(instrseq, colors)
     instrseq = addClosing(instrseq)
 

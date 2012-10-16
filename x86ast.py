@@ -44,8 +44,26 @@ EDI = Reg86('edi')
 EBP = Reg86('ebp')
 ESP = Reg86('esp')
 
+AL = Reg86('al')
+AH = Reg86('ah')
+AX = Reg86('ax')
+BL = Reg86('bl')
+BH = Reg86('bh')
+BX = Reg86('bx')
+CL = Reg86('cl')
+CH = Reg86('ch')
+CX = Reg86('cx')
+DL = Reg86('dl')
+DH = Reg86('dh')
+DX = Reg86('dx')
+
 CALLEESAVE = [EAX, ECX, EDX]
 COLOREDREGS = [EAX, EBX, ECX, EDX, ESI, EDI]
+STRINGREGS = [ESI, EDI]
+
+ONEBYTELOWREGS = {EAX: AL, EBX: BL, ECX: CL, EDX: DL}
+ONEBYTEHIREGS  = {EAX: AH, EBX: BH, ECX: CH, EDX: DH}
+TWOBYTEREGS    = {EAX: AX, EBX: BX, ECX: CX, EDX: DX}
 
 WORDLEN = 4
 
