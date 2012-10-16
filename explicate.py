@@ -34,7 +34,42 @@ COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
 
 class ExplicateVisitor(CopyVisitor):
-    
+  
+    # Helper Functions
+    def explicateBinary(self, lhsexpr, rhsexpr, smallFunc, smallType, bigFunc, bigType):
+        lhsname = generate_name('let_binexp_lhs')
+        rhsname = generate_name('let_binexp_rhs')
+        lhsvar = Name(lhsname)
+        rhsvar = Name(rhsname)
+        t = mono_Let(lhsvar,
+                     self.dispatch(lhsexpr),
+                     mono_Let(rhsvar,
+                              self.dispatch(rhsexpr),
+                              # Bool Case
+                              IfExp(mono_IsTag(BOOL_t, lhsvar),
+                                    mono_InjectFrom(smallType,
+                                                    smallFunc((mono_ProjectTo(BOOL_t, lhsvar),
+                                                               mono_ProjectTo(BOOL_t, rhsvar))
+                                                              )
+                                                    ),
+                                    # Int Case
+                                    IfExp(mono_IsTag(INT_t, lhsvar),
+                                          mono_InjectFrom(smallType,
+                                                          smallFunc((mono_ProjectTo(INT_t, lhsvar),
+                                                                     mono_ProjectTo(INT_t, rhsvar))
+                                                                    )
+                                                          ),
+                                          # Big Case
+                                          mono_InjectFrom(bigType,
+                                                          bigFunc([mono_ProjectTo(BIG_t, lhsvar),
+                                                                   mono_ProjectTo(BIG_t, rhsvar)])
+                                                          )
+                                          )
+                                    )
+                              )
+                     )
+        return t
+
     # Terminal Expressions
 
     def visitConst(self, n):
@@ -58,102 +93,31 @@ class ExplicateVisitor(CopyVisitor):
 
     def visitSubscript(self, n):
         raise Exception("Subscript not yet implemented")
-                
+
     def visitCompare(self, n):
         # Process Single Pair
-        lhsname = generate_name('let_cmp_lhs')
-        rhsname = generate_name('let_cmp_rhs')
-        lhsvar = Name(lhsname)
-        rhsvar = Name(rhsname)
+        lhsexpr = n.expr
+        op      = n.ops[0][0]
+        rhsexpr = n.ops[0][1]
         # Equal Compare
-        if(n.ops[0][0] == COMPEQUAL):
-            t = mono_Let(lhsvar,
-                         self.dispatch(n.expr),
-                         mono_Let(rhsvar,
-                                  self.dispatch(n.ops[0][1]),
-                                  IfExp(And([mono_IsTag(BOOL_t, lhsvar),
-                                             mono_IsTag(BOOL_t, lhsvar)]),
-                                        mono_InjectFrom(BOOL_t,
-                                                        mono_IntEqual((mono_ProjectTo(BOOL_t,
-                                                                                      lhsvar),
-                                                                       mono_ProjectTo(BOOL_t,
-                                                                                      rhsvar)))),
-                                        IfExp(And([mono_IsTag(INT_t, lhsvar),
-                                                   mono_IsTag(INT_t, rhsvar)]),
-                                              mono_InjectFrom(BOOL_t,
-                                                              mono_IntEqual((mono_ProjectTo(INT_t,
-                                                                                            lhsvar),
-                                                                             mono_ProjectTo(INT_t,
-                                                                                            rhsvar)))),
-                                              IfExp(And([mono_IsTag(BIG_t, lhsvar),
-                                                         mono_IsTag(BIG_t, rhsvar)]),
-                                                    mono_InjectFrom(BOOL_t,
-                                                                    CallBIGEQ([mono_ProjectTo(BIG_t,
-                                                                                              lhsvar),
-                                                                               mono_ProjectTo(BIG_t,
-                                                                                              rhsvar)])),
-                                                    CallTERROR([]))))))
+        if(op == COMPEQUAL):
+            t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntEqual, BOOL_t, CallBIGEQ, BOOL_t)
         # Not Equal Compare
-        elif(n.ops[0][0] == COMPNOTEQUAL):
-            t = mono_Let(lhsvar,
-                         self.dispatch(n.expr),
-                         mono_Let(rhsvar,
-                                  self.dispatch(n.ops[0][1]),
-                                  IfExp(And([mono_IsTag(BOOL_t, lhsvar),
-                                             mono_IsTag(BOOL_t, lhsvar)]),
-                                        mono_InjectFrom(BOOL_t,
-                                                        mono_IntNotEqual((mono_ProjectTo(BOOL_t,
-                                                                                         lhsvar),
-                                                                          mono_ProjectTo(BOOL_t,
-                                                                                         rhsvar)))),
-                                        IfExp(And([mono_IsTag(INT_t, lhsvar),
-                                                   mono_IsTag(INT_t, rhsvar)]),
-                                              mono_InjectFrom(BOOL_t,
-                                                              mono_IntNotEqual((mono_ProjectTo(INT_t,
-                                                                                               lhsvar),
-                                                                                mono_ProjectTo(INT_t,
-                                                                                               rhsvar)))),
-                                              IfExp(And([mono_IsTag(BIG_t, lhsvar),
-                                                         mono_IsTag(BIG_t, rhsvar)]),
-                                                    mono_InjectFrom(BOOL_t,
-                                                                    CallBIGNEQ([mono_ProjectTo(BIG_t,
-                                                                                               lhsvar),
-                                                                                mono_ProjectTo(BIG_t,
-                                                                                               rhsvar)])),
-                                                    CallTERROR([]))))))
+        elif(op == COMPNOTEQUAL):
+            t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
         # Error case
         else:
             raise Exception("explicate:unrecognized operation %s" % str(n.ops[0][0]))
         return t
-
+  
     def visitAdd(self, n):
-        lhsname = generate_name('let_add_lhs')
-        rhsname = generate_name('let_add_rhs')
-        lhsvar = Name(lhsname)
-        rhsvar = Name(rhsname)
-        t = mono_Let(lhsvar,
-                     self.dispatch(n.left),
-                     mono_Let(rhsvar,
-                              self.dispatch(n.right),
-                              IfExp(And([Or([mono_IsTag(INT_t, lhsvar),
-                                             mono_IsTag(BOOL_t, lhsvar)]),
-                                         Or([mono_IsTag(INT_t, rhsvar),
-                                             mono_IsTag(BOOL_t, lhsvar)])]),
-                                    mono_InjectFrom(INT_t, mono_IntAdd((mono_ProjectTo(INT_t,
-                                                                                       lhsvar),
-                                                                        mono_ProjectTo(INT_t,
-                                                                                       rhsvar)))),
-                                    IfExp(And([mono_IsTag(BIG_t, lhsvar),
-                                               mono_IsTag(BIG_t, rhsvar)]),
-                                          mono_InjectFrom(BIG_t, CallBIGADD([mono_ProjectTo(BIG_t,
-                                                                                            lhsvar),
-                                                                             mono_ProjectTo(BIG_t,
-                                                                                            rhsvar)])),
-                                          CallTERROR([])))))
+        lhsexpr = n.left
+        rhsexpr = n.right
+        t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntAdd, INT_t, CallBIGADD, BIG_t)
         return t
         
     def visitNot(self, n):
-        return Not(self.dispatch(n.expr), n.lineno)
+        raise Exception("Not not yet implemented")
 
     def visitUnarySub(self, n):
         varname = generate_name('let_us_expr')
