@@ -32,6 +32,7 @@ FALSEVALUE = 0
 
 COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
+COMPIS       = 'is'
 
 class ExplicateVisitor(CopyVisitor):
   
@@ -107,6 +108,8 @@ class ExplicateVisitor(CopyVisitor):
         # Not Equal Compare
         elif(op == COMPNOTEQUAL):
             t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
+        elif(op == COMPIS):
+            raise Exception("Compare('is') not yet implemented")
         # Error case
         else:
             raise Exception("explicate:unrecognized operation %s" % str(op))
