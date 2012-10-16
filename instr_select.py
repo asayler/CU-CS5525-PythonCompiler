@@ -119,9 +119,18 @@ class InstrSelectVisitor(Visitor):
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
-        # prezero register (necessary?)
+        # prezero register (avoids call to movebzl)
         instrs += [Move86(x86ZERO, target)]
         instrs += [SetEq86(target)]
+        return instrs
+
+    def visitmono_IntNotEqual(self, n, target):
+        instrs = []
+        instrs += [Move86(arg_select(n.left), target)]
+        instrs += [Comp86(arg_select(n.right), target)]
+        # prezero register (avoids call to movebzl)
+        instrs += [Move86(x86ZERO, target)]
+        instrs += [SetNEq86(target)]
         return instrs
 
     def visitmono_IntUnarySub(self, n, target):

@@ -69,7 +69,8 @@ def liveness(instrs):
                 read    += [name(instr.value)]
         
         # Unary write
-        elif(isinstance(instr, SetEq86)):
+        elif(isinstance(instr, SetEq86) or
+             isinstance(instr, SetNEq86)):
             if(validNode(instr.target)):
                 written    += [name(instr.target)]
 
@@ -188,7 +189,8 @@ def interference(instrs, lafter):
         
         # target only nodes
         elif(isinstance(instr, Neg86) or
-             isinstance(instr, SetEq86)):
+             isinstance(instr, SetEq86) or
+             isinstance(instr, SetNEq86)):
             if(validNode(instr.target)):
                 graph[name(instr.target)] = set([])
 
@@ -252,7 +254,8 @@ def interference(instrs, lafter):
 
 
         # If small reg
-        elif(isinstance(instr, SetEq86)):
+        elif(isinstance(instr, SetEq86) or
+             isinstance(instr, SetNEq86)):
             if(validNode(instr.target)):
                 t = name(instr.target)
                 # Add edge for each string (none GP) register
@@ -478,7 +481,8 @@ def varReplace(instrs, colors):
         
         # Unary write
         # TODO: Combine with unary read/write case above
-        elif(isinstance(instr, SetEq86)):
+        elif(isinstance(instr, SetEq86) or
+             isinstance(instr, SetNEq86)):
             if(validNode(instr.target)):
                 instr.target = replace(instr.target, colormap)
 
@@ -526,7 +530,8 @@ def fixSmallRegs(instrs):
     for instr in instrs:
 
         # Single Byte Instructions
-        if(isinstance(instr, SetEq86)):
+        if(isinstance(instr, SetEq86) or
+           isinstance(instr, SetNEq86)):
             if(validNode(instr.target)):
                 instr.target = replaceReg(instr.target)
 

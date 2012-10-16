@@ -128,8 +128,8 @@ class FlattenVisitor(CopyVisitor):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
-            tmp = generate_name('intequaltmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntEqual((left, right)))])
+            tmp = generate_name('intnotequaltmp')
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntNotEqual((left, right)))])
         else:
             return (mono_IntNotEqual((left, right)), ss1 + ss2)
 
