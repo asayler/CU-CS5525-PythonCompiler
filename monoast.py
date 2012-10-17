@@ -77,14 +77,6 @@ class mono_IfExp(mono_Node):
 
 # General AST Nodes
 
-class mono_IntConst(mono_Node):
-    def __init__(self, value, lineno=None):
-        self.value = value
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_IntConst(%s)" % (repr(self.value))
-
 class mono_List(mono_Node):
     def __init__(self, nodes, lineno=None):
         self.nodes = nodes

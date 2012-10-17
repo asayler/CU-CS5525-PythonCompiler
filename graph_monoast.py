@@ -27,6 +27,9 @@ class Graph_monoast(Graph_ast):
     def visitAdd(self, n, p):
         raise Exception("'Add' node no longer valid at this stage")
 
+    def visitNot(self, n, p):
+        raise Exception("'Not' node no longer valid at this stage")
+
     def visitUnarySub(self, n, p):
         raise Exception("'UnarySub' node no longer valid at this stage")
 

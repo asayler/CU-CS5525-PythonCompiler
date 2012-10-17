@@ -29,6 +29,8 @@ TRUENAME   = "True"
 TRUEVALUE  = 1
 FALSENAME  = "False"
 FALSEVALUE = 0
+TRUENODE   = mono_InjectFrom(BOOL_t, Const(TRUEVALUE))
+FALSENODE  = mono_InjectFrom(BOOL_t, Const(FALSEVALUE))
 
 COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
@@ -76,13 +78,14 @@ class ExplicateVisitor(CopyVisitor):
     # Terminal Expressions
 
     def visitConst(self, n):
+        # ToDo: Create IntConst type for use after explicate
         return mono_InjectFrom(INT_t, Const(n.value, n.lineno))
 
     def visitName(self, n):
         if(n.name == TRUENAME):
-            return mono_InjectFrom(BOOL_t, Const(TRUEVALUE, n.lineno))
+            return TRUENODE
         elif(n.name == FALSENAME):
-            return mono_InjectFrom(BOOL_t, Const(FALSEVALUE, n.lineno))
+            return FALSENODE
         else:
             return Name(n.name, n.lineno)
 
@@ -123,7 +126,7 @@ class ExplicateVisitor(CopyVisitor):
         return t
         
     def visitNot(self, n):
-        raise Exception("Not not yet implemented")
+        return IfExp(self.dispatch(n.expr), FALSENODE, TRUENODE)
 
     def visitUnarySub(self, n):
         varname = generate_name('let_us_expr')

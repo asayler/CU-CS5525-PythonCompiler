@@ -49,6 +49,9 @@ class InstrSelectVisitor(Visitor):
     def visitUnarySub(self, n):
         raise Exception("'UnarySub' node no longer valid at this stage")
 
+    def visitNot(self, n):
+        raise Exception("'Not' node no longer valid at this stage")
+
     def visitCompare(self, n):
         raise Exception("'Compare' node no longer valid at this stage")
 
