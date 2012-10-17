@@ -109,7 +109,8 @@ class ExplicateVisitor(CopyVisitor):
         elif(op == COMPNOTEQUAL):
             t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
         elif(op == COMPIS):
-            raise Exception("Compare('is') not yet implemented")
+            t = mono_InjectFrom(BOOL_t, mono_IntEqual((self.dispatch(lhsexpr),
+                                                       self.dispatch(rhsexpr))))
         # Error case
         else:
             raise Exception("explicate:unrecognized operation %s" % str(op))

@@ -4,7 +4,7 @@
 # CU CS5525
 # Test Program
 # P1
-# Test 2
+# Compare Bool Test
 
 print(True == False)
 print(False == True)
