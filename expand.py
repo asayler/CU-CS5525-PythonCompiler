@@ -96,6 +96,9 @@ class ExpandVisitor(CopyVisitor):
     def visitmono_IsTrue(self, n):
         return CallISTRUE([self.dispatch(n.expr)])
 
+    def visitmono_Subscript(self, n):
+        return CallGETSUB([self.dispatch(n.expr)] + map(self.dispatch, n.subs))
+
     # Explicate If
     def visitIfExp(self, n):
         return mono_IfExp(CallISTRUE([self.dispatch(n.test)]),
