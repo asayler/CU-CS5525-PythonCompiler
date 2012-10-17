@@ -1,4 +1,3 @@
-#woo
 # Andy Sayler
 # Fall 2012
 # CU CS5525
