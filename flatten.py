@@ -101,7 +101,7 @@ class FlattenVisitor(CopyVisitor):
         (lhs, ss1) = self.dispatch(n.target, True)
         (sub, ss2) = self.dispatch(n.sub, True)
         (rhs, ss3) = self.dispatch(n.value, True)
-        return ss1 + ss2 + ss3 + self.dispatch(Discard(CallSETSUB([lhs, sub, rhs])))
+        return ss1 + ss2 + ss3 + [mono_SubscriptAssign(lhs, sub, rhs)]
 
     # For expressions: takes an expression and a bool saying whether the
     # expression needs to be simple, and returns an expression
