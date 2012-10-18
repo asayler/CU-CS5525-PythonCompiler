@@ -27,6 +27,13 @@ INT_t      = mono_Type('INT')
 BOOL_t     = mono_Type('BOOL')
 BIG_t      = mono_Type('BIGPYOBJ')
 
+class mono_SubscriptAssign:
+    '''Assignment statement for subscription'''
+    def __init__(self, target, sub, value):
+        self.target = target
+        self.sub = sub
+        self.value = value
+
 class mono_Node:
     """Abstaract base class for monoast nodes"""
     # Do nothing, just a placeholder in case we want to add to it later
@@ -92,6 +99,19 @@ class mono_Dict(mono_Node):
 
     def __repr__(self):
         return "mono_Dict(%s)" % (repr(self.items))
+
+class mono_EmptyList(mono_Node):
+    def __init__(self, length, lineno=None):
+        self.length = length
+        self.lineno = lineno
+    def __repr__(self):
+        return 'mono_EmptyList(%s)' % (repr(self.length))
+
+class mono_EmptyDict(mono_Node):
+    def __init__(self, lineno=None):
+        self.lineno = lineno
+    def __repr__(self):
+        return 'mono_EmptyDict()'
 
 class mono_Subscript(mono_Node):
     def __init__(self, expr, flags, subs, lineno=None):

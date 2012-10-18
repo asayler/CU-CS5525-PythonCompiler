@@ -72,10 +72,13 @@ class FlattenVisitor(CopyVisitor):
     def visitOr(self, n):
         raise Exception("'Or' node no longer valid at this stage")
 
-    def mono_IsTrue(self, n):
+    def visitmono_IsTrue(self, n):
         raise Exception("'mono_IsTrue' node no longer valid at this stage")
 
-    def IfExp(self, n):
+    def visitmono_Subscript(self, n):
+        raise Exception("'mono_IsTrue' node no longer valid at this stage")
+
+    def visitIfExp(self, n):
         raise Exception("'IfExp' node no longer valid at this stage")
 
     # For statements: takes a statement and returns a list of instructions
@@ -94,6 +97,12 @@ class FlattenVisitor(CopyVisitor):
         (e, ss) = self.dispatch(n.expr, True)
         return ss
 
+    def visitmono_SubscriptAssign(self, n):
+        (lhs, ss1) = self.dispatch(n.target, True)
+        (sub, ss2) = self.dispatch(n.sub, True)
+        (rhs, ss3) = self.dispatch(n.value, True)
+        return ss1 + ss2 + ss3 + self.dispatch(Discard(CallSETSUB([lhs, sub, rhs])))
+
     # For expressions: takes an expression and a bool saying whether the
     # expression needs to be simple, and returns an expression
     # (a Name or Const if it needs to be simple) and a list of instructions.
@@ -103,6 +112,38 @@ class FlattenVisitor(CopyVisitor):
 
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
+
+    def visitmono_EmptyList(self, n, needs_to_be_simple):
+        (l, ss) = self.dispatch(n.length, True)
+        if needs_to_be_simple:
+            tmp = generate_name('emptylist')
+            return (Name(tmp), ss + [make_assign(tmp, mono_EmptyList(l))])            
+        return (mono_EmptyList(l), ss)
+
+    def visitmono_EmptyDict(self, n, needs_to_be_simple):
+        if needs_to_be_simple:
+            tmp = generate_name('emptylist')
+            return (Name(tmp), [make_assign(tmp, mono_EmptyDict())])            
+        return (mono_EmptyDict(),[])
+
+    def visitmono_List(self, n, needs_to_be_simple):
+        list_size = len(n.nodes)
+        list_tmp = generate_name('list')
+        list_stmts = self.dispatch(Assign([AssName(list_tmp, 'OP_ASSIGN')], CallINJECTBIG([mono_EmptyList(CallINJECTINT([Const(list_size)]))])))
+        for i in xrange(0, list_size):
+            node = n.nodes[i]
+            (node, ss) = self.dispatch(node, True)
+            list_stmts += ss + self.dispatch(mono_SubscriptAssign(Name(list_tmp), CallINJECTINT([Const(i)]), node))
+        return (Name(list_tmp), list_stmts)
+
+    def visitmono_Dict(self, n, needs_to_be_simple):
+        dict_tmp = generate_name('dict')
+        dict_stmts = self.dispatch(Assign([AssName(dict_tmp, 'OP_ASSIGN')], CallINJECTBIG([mono_EmptyDict()])))
+        for (k,v) in n.items:
+            (k, ss1) = self.dispatch(k, True)
+            (v, ss2) = self.dispatch(v, True)
+            dict_stmts += ss1 + ss2 + [mono_SubscriptAssign(Name(dict_tmp), k, v)]
+        return (Name(dict_tmp), dict_stmts)
 
     def visitmono_Let(self, n, needs_to_be_simple):
         (rhs, ss1) = self.dispatch(n.rhs, True)

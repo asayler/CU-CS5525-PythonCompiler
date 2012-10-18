@@ -33,6 +33,10 @@ BIGNEQ_n   = Name("not_equal")
 TERROR_n   = Name("error_pyobj")
 PRINTANY_n = Name("print_any")
 ISTRUE_n   = Name("is_true")
+GETSUB_n   = Name('get_subscript')
+SETSUB_n   = Name('set_subscript')
+MAKELIST_n = Name('create_list')
+MAKEDICT_n = Name('create_dict')
 
 # Function Wrappers
 
@@ -84,3 +88,15 @@ def CallPRINTANY(args):
 
 def CallISTRUE(args):
     return CallFunc(ISTRUE_n, args)
+
+def CallGETSUB(args):
+    return CallFunc(GETSUB_n, args)
+
+def CallSETSUB(args):
+    return CallFunc(SETSUB_n, args)
+
+def CallMAKEDICT(args):
+    return CallFunc(MAKEDICT_n, args)
+
+def CallMAKELIST(args):
+    return CallFunc(MAKELIST_n, args)

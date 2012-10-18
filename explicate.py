@@ -75,6 +75,19 @@ class ExplicateVisitor(CopyVisitor):
                                           CallTERROR([])))))
         return t
 
+    # Statements
+
+    def visitAssign(self, n):
+        # Separate out variable assignment from subscript assignment?
+        nodes = []
+        for node in n.nodes:
+            nodes += [self.dispatch(node)]
+        # Only worrying about first assignee
+        if isinstance(nodes[0], mono_Subscript):
+            return mono_SubscriptAssign(nodes[0].expr, nodes[0].subs[0], self.dispatch(n.expr))
+        else:
+            return Assign(nodes, self.dispatch(n.expr), n.lineno)
+
     # Terminal Expressions
 
     def visitConst(self, n):
@@ -91,31 +104,22 @@ class ExplicateVisitor(CopyVisitor):
 
     # Non-Terminal Expressions
 
-    def visitAssign(self, n):
-        # Separate out variable assignment from subscript assignment?
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return Assign(nodes, self.dispatch(n.expr), n.lineno)
         
     def visitList(self, n):
         # Explicate members
         nodes = map(self.dispatch, n.nodes)
-        #return mono_List(nodes)
-        raise Exception("Lists not yet implemented")
+        return mono_List(nodes)
 
     def visitDict(self, n):
         # Explicate values
-        items = map(lambda (k,v): (k, self.dispatch(v)), 
+        items = map(lambda (k,v): (self.dispatch(k), self.dispatch(v)), 
                     n.items)
-        #return mono_Dict(items)
-        raise Exception("Dicts not yet implemented")
+        return mono_Dict(items)
 
     def visitSubscript(self, n):
         expr = self.dispatch(n.expr)
         subs = map(self.dispatch, n.subs)
-        #return mono_Subscript(expr, n.flags, subs)
-        raise Exception("Subscript not yet implemented")
+        return mono_Subscript(expr, n.flags, subs)
 
     def visitCompare(self, n):
         # Process Single Pair

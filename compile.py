@@ -26,6 +26,7 @@ from x86ast import *
 from explicate import *
 from expand import *
 from flatten import *
+from flat_expand import *
 from instr_select import *
 from x86regalloc import *
 
@@ -111,9 +112,19 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
         Graph_flatast().writeGraph(flatast, debugFileName)
+    
+    # Expand again
+    finalast = FlatExpandVisitor().preorder(flatast)
+    if(debug):
+        # Print expandedast
+        #sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
+        # Graph expandedast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-final.dot"
+        Graph_finalast().writeGraph(finalast, debugFileName)
 
     # Compile flat tree
-    assembly = InstrSelectVisitor().preorder(flatast)
+    assembly = InstrSelectVisitor().preorder(finalast)
     if(debug):
         pass
         #sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")

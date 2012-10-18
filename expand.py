@@ -71,11 +71,14 @@ class ExpandVisitor(CopyVisitor):
         else:
             raise Exception("expand: InjectFrom - unknown type %s" % str(n.typ))
 
-    # Mono Let (Pass Through)
+    # Mono Let and Subscript Assignment (Pass Through)
 
     def visitmono_Let(self, n):
-        return mono_Let(self.dispatch(n.var), self.dispatch(n.rhs), self.dispatch(n.body));
-        
+        return mono_Let(self.dispatch(n.var), self.dispatch(n.rhs), self.dispatch(n.body))
+
+    def visitmono_SubscriptAssign(self, n):
+        return mono_SubscriptAssign(self.dispatch(n.target), self.dispatch(n.sub), self.dispatch(n.value))
+    
     # Mono Expr Nodes
  
     def visitmono_IntAdd(self, n):
@@ -89,6 +92,12 @@ class ExpandVisitor(CopyVisitor):
 
     def visitmono_IntNotEqual(self, n):
         return mono_IntNotEqual((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+    def visitmono_Dict(self, n):
+        return mono_Dict(map(lambda (k,v): (self.dispatch(k), self.dispatch(v)), n.items), n.lineno)
+
+    def visitmono_List(self, n):
+        return mono_List(map(self.dispatch, n.nodes), n.lineno)
 
     def visitPrintnl(self, n):
         return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)
