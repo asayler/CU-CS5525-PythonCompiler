@@ -34,6 +34,11 @@ TERROR_n   = Name("error_pyobj")
 PRINTANY_n = Name("print_any")
 ISTRUE_n   = Name("is_true")
 
+MAKELIST_n = Name("create_list")
+MAKEDICT_n = Name("create_dict")
+SETSUB_n   = Name("set_subscript")
+GETSUB_n   = Name("get_subscript")
+
 # Function Wrappers
 
 # Is Macros
@@ -84,3 +89,17 @@ def CallPRINTANY(args):
 
 def CallISTRUE(args):
     return CallFunc(ISTRUE_n, args)
+
+#List/Dict Macros
+
+def CallMAKELIST(args):
+    return CallFunc(MAKELIST_n, args)
+
+def CallMAKEDICT(args):
+    return CallFunc(MAKEDICT_n, args)
+
+def CallSETSUB(args):
+    return CallFunc(SETSUB_n, args)
+
+def CallGETSUB(args):
+    return CallFunc(GET_n, args)
