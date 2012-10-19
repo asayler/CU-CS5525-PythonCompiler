@@ -36,7 +36,7 @@ from graph_monoast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = False
+debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
