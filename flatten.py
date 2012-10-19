@@ -87,8 +87,17 @@ class FlattenVisitor(CopyVisitor):
         return Stmt(reduce(lambda a,b: a + b, sss, []), n.lineno)
 
     def visitAssign(self, n):
-        (rhs,ss) = self.dispatch(n.expr, False)
-        return ss + [Assign(n.nodes, rhs)]
+        myss = []
+        if(isinstance(n.nodes[0], Subscript)):
+            (e, ss) = self.dispatch(n.expr, False)
+            myss += ss
+            (sube, subss) = self.dispatch(n.nodes[0], False, e)
+            myss += subss
+        else:
+            (rhs, ss) = self.dispatch(n.expr, False)
+            myss += ss
+            myss += [Assign(n.nodes, rhs)]
+        return myss
 
     def visitDiscard(self, n):
         (e, ss) = self.dispatch(n.expr, True)
@@ -172,6 +181,37 @@ class FlattenVisitor(CopyVisitor):
             myexpr = simple
             myss = []
         return (myexpr, testss + myss)
+
+    def visitSubscript(self, n, needs_to_be_simple, value = None):
+        myss = []
+        (e, ss) = self.dispatch(n.expr, True)
+        myss += ss
+        (sube, subss) = self.dispatch(n.subs[0], True)
+        myss += subss
+
+        if(len(n.subs) != 1):
+            raise Exception("flatten: Only subs of length 1 currently supported")
+        
+        # LHS Subscript
+        if(n.flags == 'OP_APPLY'):
+            (calle, callss) = self.dispatch(CallGETSUB([e, sube]), True)
+            
+        # RHS Subscript
+        elif(n.flags == 'OP_ASSIGN'):
+            if(value == None):
+                raise Exception("flatten: rhs subs require a value")
+            
+            (ve, vss) = self.dispatch(value, True)
+            myss += vss
+
+            (calle, callss) = self.dispatch(CallSETSUB([e, sube, ve]), True)
+            
+        # Other Subscript
+        else:
+            raise Exception("flatten: Unrecognized subscript type: %s" % n.flags)
+        
+        myss += callss
+        return (calle, myss)
 
     def visitList(self, n, needs_to_be_simple):
         myss = []

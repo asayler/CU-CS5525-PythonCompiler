@@ -101,8 +101,12 @@ class ExplicateVisitor(CopyVisitor):
         raise Exception("Dicts not yet implemented")
 
     def visitSubscript(self, n):
-        raise Exception("Subscript not yet implemented")
-
+        expr = self.dispatch(n.expr)
+        subs = []
+        for sub in n.subs:
+            subs += [self.dispatch(sub)]
+        return Subscript(expr, n.flags, subs, n.lineno)
+        
     def visitCompare(self, n):
         # Process Single Pair
         lhsexpr = n.expr
