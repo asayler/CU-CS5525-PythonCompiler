@@ -90,27 +90,6 @@ class ExplicateVisitor(CopyVisitor):
             return Name(n.name, n.lineno)
 
     # Non-Terminal Expressions
-
-    def visitList(self, n):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        return List(nodes, n.lineno)
-        
-    def visitDict(self, n):
-        items = []
-        for item in n.items:
-            key = self.dispatch(item[0])
-            value = self.dispatch(item[1])
-            items += [(key, value)]
-        return Dict(items, n.lineno)
-        
-    def visitSubscript(self, n):
-        expr = self.dispatch(n.expr)
-        subs = []
-        for sub in n.subs:
-            subs += [self.dispatch(sub)]
-        return Subscript(expr, n.flags, subs, n.lineno)
         
     def visitCompare(self, n):
         # Process Single Pair
