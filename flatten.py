@@ -78,6 +78,13 @@ class FlattenVisitor(CopyVisitor):
     def IfExp(self, n):
         raise Exception("'IfExp' node no longer valid at this stage")
 
+    def visitSubscript(self, n):
+        raise Exception("'Subscript' node no longer valid at this stage")
+
+    def visitmono_SubscriptAssign(self, n):
+        raise Exception("'mono_SubscriptAssign' node no longer valid at this stage")
+
+
     # For statements: takes a statement and returns a list of instructions
 
     def visitStmt(self, n):
@@ -88,15 +95,9 @@ class FlattenVisitor(CopyVisitor):
 
     def visitAssign(self, n):
         myss = []
-        if(isinstance(n.nodes[0], Subscript)):
-            (e, ss) = self.dispatch(n.expr, False)
-            myss += ss
-            (sube, subss) = self.dispatch(n.nodes[0], False, e)
-            myss += subss
-        else:
-            (rhs, ss) = self.dispatch(n.expr, False)
-            myss += ss
-            myss += [Assign(n.nodes, rhs)]
+        (rhs, ss) = self.dispatch(n.expr, False)
+        myss += ss
+        myss += [Assign(n.nodes, rhs)]
         return myss
 
     def visitDiscard(self, n):
@@ -181,37 +182,6 @@ class FlattenVisitor(CopyVisitor):
             myexpr = simple
             myss = []
         return (myexpr, testss + myss)
-
-    def visitSubscript(self, n, needs_to_be_simple, value = None):
-        myss = []
-        (e, ss) = self.dispatch(n.expr, True)
-        myss += ss
-        (sube, subss) = self.dispatch(n.subs[0], True)
-        myss += subss
-
-        if(len(n.subs) != 1):
-            raise Exception("flatten: Only subs of length 1 currently supported")
-        
-        # LHS Subscript
-        if(n.flags == 'OP_APPLY'):
-            (calle, callss) = self.dispatch(CallGETSUB([e, sube]), True)
-            
-        # RHS Subscript
-        elif(n.flags == 'OP_ASSIGN'):
-            if(value == None):
-                raise Exception("flatten: rhs subs require a value")
-            
-            (ve, vss) = self.dispatch(value, True)
-            myss += vss
-
-            (calle, callss) = self.dispatch(CallSETSUB([e, sube, ve]), True)
-            
-        # Other Subscript
-        else:
-            raise Exception("flatten: Unrecognized subscript type: %s" % n.flags)
-        
-        myss += callss
-        return (calle, myss)
 
     def visitList(self, n, needs_to_be_simple):
         myss = []

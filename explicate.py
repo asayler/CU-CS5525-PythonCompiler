@@ -75,6 +75,23 @@ class ExplicateVisitor(CopyVisitor):
                                           CallTERROR([])))))
         return t
 
+
+    # Top Level Expressions
+
+    def visitAssign(self, n):
+        # Separate out variable assignment from subscript assignment?
+        nodes = []
+        for node in n.nodes:
+            nodes += [self.dispatch(node)]
+        # Only worrying about first assignee
+        if isinstance(nodes[0], Subscript):
+            return mono_SubscriptAssign(nodes[0].expr,
+                                        nodes[0].subs[0],
+                                        self.dispatch(n.expr))
+        else:
+            return Assign(nodes, self.dispatch(n.expr), n.lineno)
+
+
     # Terminal Expressions
 
     def visitConst(self, n):

@@ -48,6 +48,12 @@ class Graph_expandedast(Graph_monoast):
     def visitIfExp(self, n, p):
         raise Exception("'IfExp' node no longer valid at this stage")
 
+    def visitSubscript(self, n, p):
+        raise Exception("'Subscript' node no longer valid at this stage")
+
+    def visitmono_SubscriptAssign(self, n, p):
+        raise Exception("'mono_SubscriptAssign' node no longer valid at this stage")
+
     # New Nodes
     def visitmono_IfExp(self, n, p):
         lines = []

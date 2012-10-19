@@ -76,32 +76,15 @@ class mono_IfExp(mono_Node):
         return "mono_IfExp(%s, %s, %s)" % (repr(self.test), repr(self.then), repr(self.else_))
 
 # General AST Nodes
-
-class mono_List(mono_Node):
-    def __init__(self, nodes, lineno=None):
-        self.nodes = nodes
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_List(%s)" % (repr(self.nodes))
-
-class mono_Dict(mono_Node):
-    def __init__(self, items, lineno=None):
-        self.items = items
-        self.lineno = lineno
+class mono_SubscriptAssign:
+    '''Assignment statement for subscription'''
+    def __init__(self, target, sub, value):
+        self.target = target
+        self.sub = sub
+        self.value = value
 
     def __repr__(self):
-        return "mono_Dict(%s)" % (repr(self.items))
-
-class mono_Subscript(mono_Node):
-    def __init__(self, expr, flags, subs, lineno=None):
-        self.expr = expr
-        self.flags = flags
-        self.subs = subs
-        self.lineno = lineno
-
-    def __repr__(self):
-        return "mono_Subscript(%s, %s, %s)" % (repr(self.expr), repr(self.flags), repr(self.subs))
+        return "mono_SubscriptAssign(%s, %s, %s)" % (repr(self.target), repr(self.sub), repr(self.value))
 
 class mono_IntEqual(mono_Node):
     def __init__(self, (left, right), lineno=None):

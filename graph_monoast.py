@@ -106,3 +106,13 @@ class Graph_monoast(Graph_ast):
         lines += self.dispatch(n.rhs, myid)
         lines += self.dispatch(n.body, myid)
         return lines
+
+    def visitmono_SubscriptAssign(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("mono_SubscriptAssing"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.target, myid)
+        lines += self.dispatch(n.sub, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
