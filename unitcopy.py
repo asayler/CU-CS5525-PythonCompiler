@@ -76,7 +76,11 @@ class CopyVisitor(Visitor):
         return Dict(items, n.lineno)
 
     def visitSubscript(self, n):
-        return Subscript(self.dispatch(n.expr), n.flags, n.subs, n.lineno)
+        expr = self.dispatch(n.expr)
+        subs = []
+        for sub in n.subs:
+            subs += [self.dispatch(sub)]
+        return Subscript(expr, n.flags, subs, n.lineno)
         
     def visitCompare(self, n):
         ops = []
