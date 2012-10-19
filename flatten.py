@@ -84,7 +84,6 @@ class FlattenVisitor(CopyVisitor):
     def visitmono_SubscriptAssign(self, n):
         raise Exception("'mono_SubscriptAssign' node no longer valid at this stage")
 
-
     # For statements: takes a statement and returns a list of instructions
 
     def visitStmt(self, n):
