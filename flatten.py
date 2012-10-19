@@ -172,3 +172,21 @@ class FlattenVisitor(CopyVisitor):
             myexpr = simple
             myss = []
         return (myexpr, testss + myss)
+
+    def visitList(self, n, needs_to_be_simple):
+        myss = []
+        # Create new list
+        ll = len(n.nodes)
+        (expr, ss) = self.dispatch(CallINJECTBIG([CallMAKELIST([CallINJECTINT([Const(ll)])])]),
+                                   True)
+        myss += ss
+        # Add each list memeber
+        cnt = 0
+        for node in n.nodes:
+            (ne, nss) = self.dispatch(node, True)
+            myss += nss
+            (ve, vss) = self.dispatch(CallSETSUB([expr, CallINJECTINT([Const(cnt)]), ne]), True)
+            myss += vss
+            cnt += 1
+
+        return (expr, myss)

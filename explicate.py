@@ -92,8 +92,11 @@ class ExplicateVisitor(CopyVisitor):
     # Non-Terminal Expressions
 
     def visitList(self, n):
-        raise Exception("Lists not yet implemented")
-
+        nodes = []
+        for node in n.nodes:
+            nodes += [self.dispatch(node)]
+        return List(nodes, n.lineno)
+        
     def visitDict(self, n):
         raise Exception("Dicts not yet implemented")
 
