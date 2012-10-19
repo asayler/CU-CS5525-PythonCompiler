@@ -102,4 +102,4 @@ def CallSETSUB(args):
     return CallFunc(SETSUB_n, args)
 
 def CallGETSUB(args):
-    return CallFunc(GET_n, args)
+    return CallFunc(GETSUB_n, args)
