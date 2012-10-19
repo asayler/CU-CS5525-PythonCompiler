@@ -24,7 +24,6 @@ LFLAGS = -m32 -g
 
 SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
-PLYDIR = ./ply/
 BUILDDIR = ./build/
 TESTDIR = ./test/
 
@@ -78,7 +77,6 @@ submission:
 	mkdir $(SUBMISSIONDIR)
 	$(CP) *.py $(SUBMISSIONDIR)
 	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
-	$(CP) -r $(PLYDIR) $(SUBMISSIONDIR)
 	$(CD) $(SUBMISSIONDIR); zip -r ../submit.zip *
 	$(RM) -r $(SUBMISSIONDIR)
 
@@ -98,3 +96,4 @@ clean:
 	$(RM) *.svg
 	$(RM) submit.zip
 	$(RM) parsetab.py
+	$(RM) -r $(SUBMISSIONDIR)
