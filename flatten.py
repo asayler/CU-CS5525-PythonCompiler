@@ -230,3 +230,19 @@ class FlattenVisitor(CopyVisitor):
             cnt += 1
 
         return (expr, myss)
+
+    def visitDict(self, n, needs_to_be_simple):
+        myss = []
+        # Create new Dict
+        (expr, ss) = self.dispatch(CallINJECTBIG([CallMAKEDICT([])]), True)
+        myss += ss
+        # Add each dict memeber
+        for item in n.items:
+            (keye, keyss) = self.dispatch(item[0], True)
+            myss += keyss
+            (vale, valss) = self.dispatch(item[1], True)
+            myss += valss
+            (ve, vss) = self.dispatch(CallSETSUB([expr, keye, vale]), True)
+            myss += vss
+            
+        return (expr, myss)

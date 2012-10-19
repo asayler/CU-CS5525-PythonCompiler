@@ -72,7 +72,9 @@ class CopyVisitor(Visitor):
     def visitDict(self, n):
         items = []
         for item in n.items:
-            items += [self.dispatch(item)]
+            key = self.dispatch(item[0])
+            value = self.dispatch(item[1])
+            items += [(key, value)]
         return Dict(items, n.lineno)
 
     def visitSubscript(self, n):

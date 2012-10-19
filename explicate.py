@@ -98,8 +98,13 @@ class ExplicateVisitor(CopyVisitor):
         return List(nodes, n.lineno)
         
     def visitDict(self, n):
-        raise Exception("Dicts not yet implemented")
-
+        items = []
+        for item in n.items:
+            key = self.dispatch(item[0])
+            value = self.dispatch(item[1])
+            items += [(key, value)]
+        return Dict(items, n.lineno)
+        
     def visitSubscript(self, n):
         expr = self.dispatch(n.expr)
         subs = []

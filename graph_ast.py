@@ -110,7 +110,7 @@ class Graph_ast(Visitor):
         lines += Graphvis_dot().lineLabel(myid, ("Dict"))
         lines += Graphvis_dot().linePair(p, myid)
         for item in n.items:
-            lines += self.dispatch(item, myid);
+            lines += self.dispatch(item[1], myid);
         return lines
 
     def visitSubscript(self, n, p):
