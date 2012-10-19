@@ -167,6 +167,7 @@ class InstrSelectVisitor(Visitor):
     def visitCallFunc(self, n, target):
         instrs = []
         cntargs = 0
+        n.args.reverse()
         for arg in n.args:
             cntargs += 1
             instrs += [Push86(arg_select(arg))]
