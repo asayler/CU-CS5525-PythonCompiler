@@ -188,15 +188,12 @@ class FlattenVisitor(CopyVisitor):
         # Create new list
         ll = len(n.nodes)
         (expr, ss) = self.dispatch(CallINJECTBIG([CallMAKELIST([CallINJECTINT([Const(ll)])])]),
-                                   True)
+                                   needs_to_be_simple)
         myss += ss
         # Add each list memeber
         cnt = 0
         for node in n.nodes:
-            (ne, nss) = self.dispatch(node, True)
-            myss += nss
-            (ve, vss) = self.dispatch(CallSETSUB([expr, CallINJECTINT([Const(cnt)]), ne]), True)
-            myss += vss
+            myss += self.dispatch(Discard(CallSETSUB([expr, CallINJECTINT([Const(cnt)]), node])))
             cnt += 1
 
         return (expr, myss)
@@ -204,15 +201,10 @@ class FlattenVisitor(CopyVisitor):
     def visitDict(self, n, needs_to_be_simple):
         myss = []
         # Create new Dict
-        (expr, ss) = self.dispatch(CallINJECTBIG([CallMAKEDICT([])]), True)
+        (expr, ss) = self.dispatch(CallINJECTBIG([CallMAKEDICT([])]), needs_to_be_simple)
         myss += ss
         # Add each dict memeber
         for item in n.items:
-            (keye, keyss) = self.dispatch(item[0], True)
-            myss += keyss
-            (vale, valss) = self.dispatch(item[1], True)
-            myss += valss
-            (ve, vss) = self.dispatch(CallSETSUB([expr, keye, vale]), True)
-            myss += vss
-            
+            myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))
+                        
         return (expr, myss)
