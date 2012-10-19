@@ -1,10 +1,25 @@
 #!/usr/bin/python
 
-# Andy Sayler
 # CU CS5525
-# Test Program
-# P0
-# Test assign_lhs_stack
+# Fall 2012
+# Python Compiler
+#
+# test-p0-assign_lhs_stack.py
+# Test Case
+# Subset: p0
+# Type: Official
+# Tesing: LHS Stack Assignment
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 x = 1 + input()
 y = x + x

@@ -1,10 +1,25 @@
 #!/usr/bin/python
 
-# Andy Sayler
 # CU CS5525
-# Test Program
-# P0
-# Test spill
+# Fall 2012
+# Python Compiler
+#
+# test-p0-spill.py
+# Test Case
+# Subset: p0
+# Type: Official
+# Tesing: Reg Alloc Spill Code
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 xi = 1
 x = xi

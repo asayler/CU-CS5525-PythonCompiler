@@ -1,10 +1,25 @@
 #!/usr/bin/python
 
-# Andy Sayler
 # CU CS5525
-# Test Program
-# P0
-# Test Liveness1
+# Fall 2012
+# Python Compiler
+#
+# test-p0-liveness1.py
+# Test Case
+# Subset: p0
+# Type: Student
+# Tesing: Reg Alloc Liveness Analysis
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 z = 4
 w = 0

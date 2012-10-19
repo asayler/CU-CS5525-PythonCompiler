@@ -1,11 +1,25 @@
 #!/usr/bin/python
 
-# Andy Sayler
 # CU CS5525
-# Test Program
-# P1
-# Test IfExpAdd
-# Known good output should count from 1 to 6
+# Fall 2012
+# Python Compiler
+#
+# test-p1-IfExpAdd.py
+# Test Case
+# Subset: p1
+# Type: Student
+# Tesing: IfExp/Add
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 x = 1
 print(x)
