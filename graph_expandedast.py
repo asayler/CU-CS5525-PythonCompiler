@@ -1,14 +1,20 @@
-# Andy Sayler
-# Fall 2012
 # CU CS5525
+# Fall 2012
 # Python Compiler
-# Visitor to graph an expandedAST
 #
-# In conjunction with:
-#    Michael (Mike) Vitousek
-#       https://github.com/mvitousek/python-compiler-mmv
+# graph_expandedast.py
+# Visitor to graph an expanded AST
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
 #    Anne Gatchell
-#       https://github.com/halloannielala/compiler-5525
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 import sys
 import compiler

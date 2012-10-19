@@ -1,15 +1,20 @@
-#!/usr/bin/python
-
-# Andy Sayler
-# Fall 2012
 # CU CS5525
-# Visitor functions for instruction selection
+# Fall 2012
+# Python Compiler
 #
-# In conjunction with:
-#    Michael (Mike) Vitousek
-#       https://github.com/mvitousek/python-compiler-mmv
+# instr_select.py
+# Visitor Funcations for x86 Instruction Selection
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
 #    Anne Gatchell
-#       https://github.com/halloannielala/compiler-5525
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 import sys
 

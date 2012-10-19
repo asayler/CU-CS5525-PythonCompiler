@@ -1,16 +1,22 @@
-# Andy Sayler
-# Fall 2012
 # CU CS5525
+# Fall 2012
 # Python Compiler
-# Generic Visitor Class via Introspection
 #
-# Borrowed from Jeremy Siek, Fall 2012
+# vis.py
+# Generic Visitor Implmentation
 #
-# In conjunction with:
-#    Michael (Mike) Vitousek
-#       https://github.com/mvitousek/python-compiler-mmv
+# Adopted from code by Jeremy Siek, Fall 2012
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
 #    Anne Gatchell
-#       https://github.com/halloannielala/compiler-5525
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 debug = False
 

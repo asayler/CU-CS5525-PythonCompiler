@@ -1,14 +1,20 @@
-# Andy Sayler
-# Fall 2012
 # CU CS5525
+# Fall 2012
 # Python Compiler
-# Visitor to graph a flatAST
 #
-# In conjunction with:
-#    Michael (Mike) Vitousek
-#       https://github.com/mvitousek/python-compiler-mmv
+# graph_flatast.py
+# Visitor to graph a flat AST
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
 #    Anne Gatchell
-#       https://github.com/halloannielala/compiler-5525
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 import sys
 import compiler

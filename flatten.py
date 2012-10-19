@@ -1,17 +1,22 @@
-#!/usr/bin/python
-
-# Andy Sayler
-# Fall 2012
 # CU CS5525
-# flatten visitor functions
+# Fall 2012
+# Python Compiler
 #
-# Adopted from Jeremy Siek, Fall 2012
+# flatten.py
+# Visitor Funstions to Flatten AST
 #
-# In conjunction with:
-#    Michael (Mike) Vitousek
-#       https://github.com/mvitousek/python-compiler-mmv
+# Adopted from code by Jeremy Siek, Fall 2012
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
 #    Anne Gatchell
-#       https://github.com/halloannielala/compiler-5525
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 # Helper Types
 from vis import Visitor

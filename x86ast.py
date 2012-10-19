@@ -1,3 +1,21 @@
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# x86ast.py
+# x86 Instruction AST Nodes
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
+
 """Mike's x86 AST tree nodes"""
 
 class X86Arg:
