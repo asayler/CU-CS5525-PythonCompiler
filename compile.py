@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # CU CS5525
 # Fall 2012
 # Python Compiler
@@ -20,6 +22,7 @@
 USAGE:
     compile.py <file path>
 """
+
 import sys, compiler
 
 # Data Types
