@@ -560,6 +560,8 @@ def addPreamble(instrs, colors):
     preamble = [Push86(EBP),
                 Move86(ESP, EBP)]
     if(stackvars > 0):
+        stackvars += (STACKALIGN - (stackvars % STACKALIGN))
+        stackvars += 2
         preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
     return preamble + instrs
 

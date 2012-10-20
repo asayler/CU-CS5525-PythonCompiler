@@ -130,7 +130,7 @@ class InstrSelectVisitor(Visitor):
     def visitCallFunc(self, n, target):
         instrs = []
         cntargs = 0
-        align = (STACKALIGN * len(n.args)) % STACKALIGN
+        align = (STACKALIGN - (len(n.args) % STACKALIGN))
         offset = 0
         if align != 0:
             offset += WORDLEN * align
