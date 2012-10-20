@@ -45,8 +45,6 @@ class ExpandVisitor(CopyVisitor):
         CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
         CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
 
-    # Mono Type Nodes
-
     def visitIsTag(self, n):
         if(n.typ == INT_t):
             return CallINJECTBOOL([CallISINT([self.dispatch(n.arg)])])
@@ -84,7 +82,7 @@ class ExpandVisitor(CopyVisitor):
         return Discard(CallSETSUB([self.dispatch(n.target),
                                    self.dispatch(n.sub),
                                    self.dispatch(n.value)]))
-        
+    
     def visitSubscript(self, n):
         return CallGETSUB([self.dispatch(n.expr),
                            self.dispatch(n.subs[0])])
@@ -92,8 +90,8 @@ class ExpandVisitor(CopyVisitor):
     # Explicate If
     def visitIfExp(self, n):
         return IfExp(CallISTRUE([self.dispatch(n.test)]),
-                          self.dispatch(n.then),
-                          self.dispatch(n.else_)) 
+                     self.dispatch(n.then),
+                     self.dispatch(n.else_)) 
 
     # Expand And/Or
     def AndToIfExp(self, nodes):
@@ -113,7 +111,7 @@ class ExpandVisitor(CopyVisitor):
 
     def visitAnd(self, n):
         return self.AndToIfExp(n.nodes)
-        
+    
     def OrToIfExp(self, nodes):
         if(len(nodes) < 2):
             # Error Condition

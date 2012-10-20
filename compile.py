@@ -61,14 +61,18 @@ def main(argv=None):
     # Setup and Check Args
     if argv is None:
         argv = sys.argv
+
     if len(argv) != 2:
         sys.stderr.write(str(argv[0]) + " requires two arguments\n")
         sys.stderr.write(__doc__ + "\n")
         return 1
+
     inputFilePath = str(argv[1])
+
     if(inputFilePath[-3:] != ".py"):
         sys.stderr.write(str(argv[0]) + " input file must be of type *.py\n")
         return 1
+
     outputFilePath = inputFilePath.split('/')
     outputFileName = (outputFilePath[-1:])[0]
     outputFileName = outputFileName[:-3] + ".s"

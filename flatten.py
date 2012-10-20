@@ -141,8 +141,8 @@ class FlattenVisitor(CopyVisitor):
         (thene, thenss) = self.dispatch(n.then, True)
         (elsee, elsess) = self.dispatch(n.else_, True)
         simple = IfExp(teste,
-                            InstrSeq(thenss, thene),
-                            InstrSeq(elsess, elsee))
+                       InstrSeq(thenss, thene),
+                       InstrSeq(elsess, elsee))
         if needs_to_be_simple:
             tmp = generate_name('ifexptmp')
             myexpr = (Name(tmp))
@@ -175,5 +175,5 @@ class FlattenVisitor(CopyVisitor):
         # Add each dict memeber
         for item in n.items:
             myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))
-                        
+            
         return (expr, myss)

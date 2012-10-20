@@ -117,7 +117,6 @@ class Let(PyNode):
     def visitLet(self, n):
         return Let(self.dispatch(n.var), self.dispatch(n.rhs), self.dispatch(n.body))
 
-# General AST Nodes
 class SubscriptAssign:
     '''Assignment statement for subscription'''
     def __init__(self, target, sub, value):

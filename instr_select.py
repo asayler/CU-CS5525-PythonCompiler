@@ -60,7 +60,7 @@ class InstrSelectVisitor(Visitor):
 
     def visitAssign(self, n):
         return self.dispatch(n.expr, Var86(n.nodes[0].name))
-        
+    
     def visitDiscard(self, n):
         tmp = Var86(generate_name(DISCARDTEMP))
         return self.dispatch(n.expr, tmp)
