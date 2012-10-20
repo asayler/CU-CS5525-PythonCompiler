@@ -35,10 +35,8 @@ BOOL_t     = PyType('BOOL')
 BIG_t      = PyType('BIGPYOBJ')
 
 class PyNode(object):
-    """Abstaract base class for monoast nodes"""
+    """Abstract base class for monoast nodes"""
     # Do nothing, just a placeholder in case we want to add to it later
-
-# New Mono Nodes
 
 class InstrSeq(PyNode):
     def __init__(self, nodes, expr):
@@ -95,7 +93,6 @@ class Let(PyNode):
     def visitLet(self, n):
         return Let(self.dispatch(n.var), self.dispatch(n.rhs), self.dispatch(n.body))
 
-# General AST Nodes
 class SubscriptAssign:
     '''Assignment statement for subscription'''
     def __init__(self, target, sub, value):

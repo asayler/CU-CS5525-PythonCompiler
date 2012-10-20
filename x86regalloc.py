@@ -39,7 +39,7 @@ REGCOLORS = {
     regname(EDX): 3,
     regname(ESI): 4,
     regname(EDI): 5
-}
+    }
 
 def liveness(instrs):
 
@@ -150,7 +150,7 @@ def liveness(instrs):
                 instrs += [n]
                 instrvars = extractVars(n)
                 lafter += [(lafter[-1] - instrvars.written) | instrvars.read]
-           
+                
         # Reverse and return lafter
         instrs.reverse()
         lafter.reverse()
@@ -344,7 +344,7 @@ def color(graph, colors = {}, regOnlyVars = []):
         priorityKeys = []
         for key in w:
             if(key in regOnlyVars):
-               priorityKeys += [key]
+                priorityKeys += [key]
         # Else use all keys
         if(len(priorityKeys) == 0):
             priorityKeys = w

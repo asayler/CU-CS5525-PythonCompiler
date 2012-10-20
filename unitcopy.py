@@ -89,7 +89,7 @@ class CopyVisitor(Visitor):
         for sub in n.subs:
             subs += [self.dispatch(sub)]
         return Subscript(expr, n.flags, subs, n.lineno)
-        
+    
     def visitCompare(self, n):
         ops = []
         for op in n.ops:
@@ -99,7 +99,7 @@ class CopyVisitor(Visitor):
 
     def visitAdd(self, n):
         return Add((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
-        
+    
     def visitOr(self, n):
         nodes = []
         for node in n.nodes:
@@ -120,9 +120,9 @@ class CopyVisitor(Visitor):
 
     def visitIfExp(self, n):
         return IfExp(self.dispatch(n.test),
-                          self.dispatch(n.then),
-                          self.dispatch(n.else_),
-                          n.lineno)    
+                     self.dispatch(n.then),
+                     self.dispatch(n.else_),
+                     n.lineno)    
 
     def visitCallFunc(self, n):
         args = []
