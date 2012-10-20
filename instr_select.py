@@ -130,14 +130,20 @@ class InstrSelectVisitor(Visitor):
     def visitCallFunc(self, n, target):
         instrs = []
         cntargs = 0
+        align = (STACKALIGN * len(n.args)) % STACKALIGN
+        offset = 0
+        if align != 0:
+            offset += WORDLEN * align
+            instrs += [Sub86(Const86(offset), ESP)]
         n.args.reverse()
         for arg in n.args:
             cntargs += 1
             instrs += [Push86(arg_select(arg))]
+            offset += WORDLEN
         instrs += [Call86(n.node.name)]
         instrs += [Move86(EAX, target)]
         if(cntargs > 0):
-            instrs += [Add86(Const86(WORDLEN * cntargs), ESP)]
+            instrs += [Add86(Const86(offset), ESP)]
         return instrs
 
     def visitInstrSeq(self, n, target):
