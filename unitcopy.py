@@ -56,6 +56,10 @@ class CopyVisitor(Visitor):
     def visitDiscard(self, n):
         return Discard(self.dispatch(n.expr), n.lineno)
     
+    def visitFunction(self, n):
+        return Function(n.decorators, n.name, n.argnames, n.defaults,
+                        n.flags, n.doc, self.dispatch(n.code))
+
     # Terminal Expressions
 
     def visitConst(self, n):
@@ -68,6 +72,12 @@ class CopyVisitor(Visitor):
         return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
+
+    def visitLambda(self, n):
+        return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code))
+
+    def visitReturn(self, n):
+        return Return(self.visit(n.value))
 
     def visitList(self, n):
         nodes = []
