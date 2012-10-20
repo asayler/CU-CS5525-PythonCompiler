@@ -48,7 +48,10 @@ debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
-    assembly = '.globl main\nmain:\n\t' + '\n\t'.join(assembly)
+    if(sys.platform == 'darwin'):
+        assembly = '.globl _main\n_main:\n\t' + '\n\t'.join(assembly)
+    else:
+        assembly = '.globl main\nmain:\n\t' + '\n\t'.join(assembly)
     outputfile = open(outputFileName, 'w+')
     outputfile.write(assembly + '\n')
     outputfile.close()
