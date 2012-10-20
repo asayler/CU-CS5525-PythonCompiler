@@ -42,15 +42,15 @@ class PyNode(object):
 # New Mono Nodes
 
 class SLambda(PyNode):
-    def __init__(self, params, body):
+    def __init__(self, params, code):
         self.params = params
-        self.body = body
+        self.code = code
 
     def __repr__(self):
-        return 'SLambda(%s, %s)' % (self.params, self.body) 
+        return 'SLambda(%s, %s)' % (self.params, self.code) 
     @staticmethod
     def visitSLambda(self, n):
-        return SLambda(map(self.dispatch, n.params), self.dispatch(n.body))
+        return SLambda(map(self.dispatch, n.params), self.dispatch(n.code))
 
 class IndirectCallFunc(PyNode):
     def __init__(self, name, args):
