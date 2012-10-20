@@ -30,7 +30,6 @@ from functionwrappers import *
 # Data Types
 from compiler.ast import *
 from monoast import *
-from flatast import *
 
 # Flatten expressions to 3-address instructions (Remove Complex Operations)
 
@@ -44,50 +43,16 @@ def make_assign(lhs, rhs):
     return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
 
 class FlattenVisitor(CopyVisitor):
-
-    # Banned Nodes
-
-    def visitAdd(self, n):
-        raise Exception("'Add' node no longer valid at this stage")
-
-    def visitUnarySub(self, n):
-        raise Exception("'UnarySub' node no longer valid at this stage")
-
-    def visitNot(self, n):
-        raise Exception("'Not' node no longer valid at this stage")
-
-    def visitCompare(self, n):
-        raise Exception("'Compare' node no longer valid at this stage")
-
-    def visitPrintnl(self, n):
-        raise Exception("'Printnl' node no longer valid at this stage")
-
-    def visitmono_IsTag(self, n):
-        raise Exception("'mono_IsTag' node no longer valid at this stage")
-
-    def visitmono_ProjectTo(self, n):
-        raise Exception("'mono_ProjectTo' node no longer valid at this stage")
-
-    def visitmono_InjectFrom(self, n):
-        raise Exception("'mono_InjectFrom' node no longer valid at this stage")
-
-    def visitAnd(self, n):
-        raise Exception("'And' node no longer valid at this stage")
-
-    def visitOr(self, n):
-        raise Exception("'Or' node no longer valid at this stage")
-
-    def mono_IsTrue(self, n):
-        raise Exception("'mono_IsTrue' node no longer valid at this stage")
-
-    def IfExp(self, n):
-        raise Exception("'IfExp' node no longer valid at this stage")
-
-    def visitSubscript(self, n):
-        raise Exception("'Subscript' node no longer valid at this stage")
-
-    def visitmono_SubscriptAssign(self, n):
-        raise Exception("'mono_SubscriptAssign' node no longer valid at this stage")
+    def __init__(self):
+        super(FlattenVisitor,self).__init__()
+        del CopyVisitor.visitPrintnl
+        del CopyVisitor.visitIsTag
+        del CopyVisitor.visitProjectTo
+        del CopyVisitor.visitInjectFrom
+        del CopyVisitor.visitAnd
+        del CopyVisitor.visitOr
+        del CopyVisitor.visitSubscript
+        del CopyVisitor.visitSubscriptAssign
 
     # For statements: takes a statement and returns a list of instructions
 
@@ -118,45 +83,45 @@ class FlattenVisitor(CopyVisitor):
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
 
-    def visitmono_Let(self, n, needs_to_be_simple):
+    def visitLet(self, n, needs_to_be_simple):
         (rhs, ss1) = self.dispatch(n.rhs, True)
         (body, ss2) = self.dispatch(n.body, True)
         return (body, ss1 + [make_assign(n.var.name, rhs)] + ss2)
 
-    def visitmono_IntAdd(self, n, needs_to_be_simple):
+    def visitIntAdd(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
             tmp = generate_name('intaddtmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntAdd((left, right)))])
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntAdd((left, right)))])
         else:
-            return (mono_IntAdd((left, right)), ss1 + ss2)
+            return (IntAdd((left, right)), ss1 + ss2)
 
-    def visitmono_IntEqual(self, n, needs_to_be_simple):
+    def visitIntEqual(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
             tmp = generate_name('intequaltmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntEqual((left, right)))])
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntEqual((left, right)))])
         else:
-            return (mono_IntEqual((left, right)), ss1 + ss2)
+            return (IntEqual((left, right)), ss1 + ss2)
 
-    def visitmono_IntNotEqual(self, n, needs_to_be_simple):
+    def visitIntNotEqual(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
             tmp = generate_name('intnotequaltmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, mono_IntNotEqual((left, right)))])
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntNotEqual((left, right)))])
         else:
-            return (mono_IntNotEqual((left, right)), ss1 + ss2)
+            return (IntNotEqual((left, right)), ss1 + ss2)
 
-    def visitmono_IntUnarySub(self, n, needs_to_be_simple):
+    def visitIntUnarySub(self, n, needs_to_be_simple):
         (expr,ss) = self.dispatch(n.expr, True)
         if needs_to_be_simple:
             tmp = generate_name('usubtmp')
-            return (Name(tmp), ss + [make_assign(tmp, mono_IntUnarySub(expr))])
+            return (Name(tmp), ss + [make_assign(tmp, IntUnarySub(expr))])
         else:
-            return (mono_IntUnarySub(expr), ss)
+            return (IntUnarySub(expr), ss)
 
     def visitCallFunc(self, n, needs_to_be_simple):
         if isinstance(n.node, Name):
@@ -171,13 +136,13 @@ class FlattenVisitor(CopyVisitor):
         else:
             raise Exception('flatten: only calls to named functions allowed')
 
-    def visitmono_IfExp(self, n, needs_to_be_simple):
+    def visitIfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)
         (thene, thenss) = self.dispatch(n.then, True)
         (elsee, elsess) = self.dispatch(n.else_, True)
-        simple = mono_IfExp(teste,
-                            flat_InstrSeq(thenss, thene),
-                            flat_InstrSeq(elsess, elsee))
+        simple = IfExp(teste,
+                            InstrSeq(thenss, thene),
+                            InstrSeq(elsess, elsee))
         if needs_to_be_simple:
             tmp = generate_name('ifexptmp')
             myexpr = (Name(tmp))

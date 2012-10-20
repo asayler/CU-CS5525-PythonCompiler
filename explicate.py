@@ -34,45 +34,47 @@ TRUENAME   = "True"
 TRUEVALUE  = 1
 FALSENAME  = "False"
 FALSEVALUE = 0
-TRUENODE   = mono_InjectFrom(BOOL_t, Const(TRUEVALUE))
-FALSENODE  = mono_InjectFrom(BOOL_t, Const(FALSEVALUE))
+TRUENODE   = InjectFrom(BOOL_t, Const(TRUEVALUE))
+FALSENODE  = InjectFrom(BOOL_t, Const(FALSEVALUE))
 
 COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
 COMPIS       = 'is'
 
 class ExplicateVisitor(CopyVisitor):
+    def __init__(self):
+        super(ExplicateVisitor,self).__init__()
   
     # Helper Functions
 
     def projectType(self, expr):
-        return IfExp(mono_IsTag(BOOL_t, expr),
-                     mono_ProjectTo(BOOL_t, expr),
-                     IfExp(mono_IsTag(INT_t, expr),
-                           mono_ProjectTo(INT_t, expr),
-                           mono_ProjectTo(BIG_t, expr)))
+        return IfExp(IsTag(BOOL_t, expr),
+                     ProjectTo(BOOL_t, expr),
+                     IfExp(IsTag(INT_t, expr),
+                           ProjectTo(INT_t, expr),
+                           ProjectTo(BIG_t, expr)))
                      
     def explicateBinary(self, lhsexpr, rhsexpr, smallFunc, smallType, bigFunc, bigType):
         lhsname = generate_name('let_binexp_lhs')
         rhsname = generate_name('let_binexp_rhs')
         lhsvar = Name(lhsname)
         rhsvar = Name(rhsname)
-        t = mono_Let(lhsvar,
+        t = Let(lhsvar,
                      self.dispatch(lhsexpr),
-                     mono_Let(rhsvar,
+                     Let(rhsvar,
                               self.dispatch(rhsexpr),
                               # Small-Small Case
-                              IfExp(And([Or([mono_IsTag(BOOL_t, lhsvar),
-                                             mono_IsTag(INT_t, lhsvar)]),
-                                         Or([mono_IsTag(BOOL_t, rhsvar),
-                                             mono_IsTag(INT_t, rhsvar)])]),
-                                    mono_InjectFrom(smallType,
+                              IfExp(And([Or([IsTag(BOOL_t, lhsvar),
+                                             IsTag(INT_t, lhsvar)]),
+                                         Or([IsTag(BOOL_t, rhsvar),
+                                             IsTag(INT_t, rhsvar)])]),
+                                    InjectFrom(smallType,
                                                     smallFunc((self.projectType(lhsvar),
                                                                self.projectType(rhsvar)))),
                                     # Big-Big Case
-                                    IfExp(And([mono_IsTag(BIG_t, lhsvar),
-                                               mono_IsTag(BIG_t, rhsvar)]),
-                                          mono_InjectFrom(bigType,
+                                    IfExp(And([IsTag(BIG_t, lhsvar),
+                                               IsTag(BIG_t, rhsvar)]),
+                                          InjectFrom(bigType,
                                                           bigFunc([self.projectType(lhsvar),
                                                                    self.projectType(rhsvar)])),
                                           # Mixed Case
@@ -90,7 +92,7 @@ class ExplicateVisitor(CopyVisitor):
             nodes += [self.dispatch(node)]
         # Only worrying about first assignee
         if isinstance(nodes[0], Subscript):
-            return mono_SubscriptAssign(nodes[0].expr,
+            return SubscriptAssign(nodes[0].expr,
                                         nodes[0].subs[0],
                                         self.dispatch(n.expr))
         else:
@@ -101,7 +103,7 @@ class ExplicateVisitor(CopyVisitor):
 
     def visitConst(self, n):
         # ToDo: Create IntConst type for use after explicate
-        return mono_InjectFrom(INT_t, Const(n.value, n.lineno))
+        return InjectFrom(INT_t, Const(n.value, n.lineno))
 
     def visitName(self, n):
         if(n.name == TRUENAME):
@@ -120,12 +122,12 @@ class ExplicateVisitor(CopyVisitor):
         rhsexpr = n.ops[0][1]
         # Equal Compare
         if(op == COMPEQUAL):
-            t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntEqual, BOOL_t, CallBIGEQ, BOOL_t)
+            t = self.explicateBinary(lhsexpr, rhsexpr, IntEqual, BOOL_t, CallBIGEQ, BOOL_t)
         # Not Equal Compare
         elif(op == COMPNOTEQUAL):
-            t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
+            t = self.explicateBinary(lhsexpr, rhsexpr, IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
         elif(op == COMPIS):
-            t = mono_InjectFrom(BOOL_t, mono_IntEqual((self.dispatch(lhsexpr),
+            t = InjectFrom(BOOL_t, IntEqual((self.dispatch(lhsexpr),
                                                        self.dispatch(rhsexpr))))
         # Error case
         else:
@@ -135,7 +137,7 @@ class ExplicateVisitor(CopyVisitor):
     def visitAdd(self, n):
         lhsexpr = n.left
         rhsexpr = n.right
-        t = self.explicateBinary(lhsexpr, rhsexpr, mono_IntAdd, INT_t, CallBIGADD, BIG_t)
+        t = self.explicateBinary(lhsexpr, rhsexpr, IntAdd, INT_t, CallBIGADD, BIG_t)
         return t
         
     def visitNot(self, n):
@@ -144,11 +146,11 @@ class ExplicateVisitor(CopyVisitor):
     def visitUnarySub(self, n):
         varname = generate_name('let_us_expr')
         exprvar = Name(varname)
-        t = mono_Let(exprvar,
+        t = Let(exprvar,
                      self.dispatch(n.expr),
-                     IfExp(Or([mono_IsTag(INT_t, exprvar),
-                               mono_IsTag(BOOL_t, exprvar)]),
-                           mono_InjectFrom(INT_t, mono_IntUnarySub(mono_ProjectTo(INT_t, exprvar))),
+                     IfExp(Or([IsTag(INT_t, exprvar),
+                               IsTag(BOOL_t, exprvar)]),
+                           InjectFrom(INT_t, IntUnarySub(ProjectTo(INT_t, exprvar))),
                            CallTERROR([])))
         return t
 

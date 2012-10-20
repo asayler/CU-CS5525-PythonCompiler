@@ -21,7 +21,6 @@ import sys
 # Data Types
 from compiler.ast import *
 from monoast import *
-from flatast import *
 from x86ast import *
 
 # Helper Tools
@@ -45,47 +44,6 @@ ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
 
 class InstrSelectVisitor(Visitor):
-
-    # Banned Nodes
-
-    def visitAdd(self, n):
-        raise Exception("'Add' node no longer valid at this stage")
-
-    def visitUnarySub(self, n):
-        raise Exception("'UnarySub' node no longer valid at this stage")
-
-    def visitNot(self, n):
-        raise Exception("'Not' node no longer valid at this stage")
-
-    def visitCompare(self, n):
-        raise Exception("'Compare' node no longer valid at this stage")
-
-    def visitPrintnl(self, n):
-        raise Exception("'Printnl' node no longer valid at this stage")
-
-    def visitmono_IsTag(self, n):
-        raise Exception("'mono_IsTag' node no longer valid at this stage")
-
-    def visitmono_ProjectTo(self, n):
-        raise Exception("'mono_ProjectTo' node no longer valid at this stage")
-
-    def visitmono_InjectFrom(self, n):
-        raise Exception("'mono_InjectFrom' node no longer valid at this stage")
-
-    def visitAnd(self, n):
-        raise Exception("'And' node no longer valid at this stage")
-
-    def visitOr(self, n):
-        raise Exception("'Or' node no longer valid at this stage")
-
-    def visitmono_Let(self, n):
-        raise Exception("'Let' node no longer valid at this stage")
-
-    def mono_IsTrue(self, n):
-        raise Exception("'mono_IsTrue' node no longer valid at this stage")
-
-    def IfExp(self, n):
-        raise Exception("'IfExp' node no longer valid at this stage")
 
     # Modules
 
@@ -117,13 +75,13 @@ class InstrSelectVisitor(Visitor):
 
     # Non-Terminal Expressions
 
-    def visitmono_IntAdd(self, n, target):
+    def visitIntAdd(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Add86(arg_select(n.right), target)]
         return instrs
 
-    def visitmono_IntEqual(self, n, target):
+    def visitIntEqual(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
@@ -132,7 +90,7 @@ class InstrSelectVisitor(Visitor):
         instrs += [SetEq86(target)]
         return instrs
 
-    def visitmono_IntNotEqual(self, n, target):
+    def visitIntNotEqual(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
@@ -141,13 +99,13 @@ class InstrSelectVisitor(Visitor):
         instrs += [SetNEq86(target)]
         return instrs
 
-    def visitmono_IntUnarySub(self, n, target):
+    def visitIntUnarySub(self, n, target):
         instrs = []
         instrs += [Move86(arg_select(n.expr), target)]
         instrs += [Neg86(target)]
         return instrs
 
-    def visitmono_IfExp(self, n, target):
+    def visitIfExp(self, n, target):
         #Setup Label
         global IfThenLabelCnt
         ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
@@ -182,7 +140,7 @@ class InstrSelectVisitor(Visitor):
             instrs += [Add86(Const86(WORDLEN * cntargs), ESP)]
         return instrs
 
-    def visitflat_InstrSeq(self, n, target):
+    def visitInstrSeq(self, n, target):
         instrs = []
         for node in n.nodes:
             instrs += self.dispatch(node)

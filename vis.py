@@ -20,7 +20,7 @@
 
 debug = False
 
-class Visitor:
+class Visitor(object):
     def __init__(self):
         self.node = None
         self._cache = {}

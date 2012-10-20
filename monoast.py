@@ -19,7 +19,7 @@
 
 from compiler.ast import *
 
-class mono_Type:
+class PyType(object):
     """Class to represent type constants"""
     def __init__(self, typ):
         self.typ = typ
@@ -30,60 +30,73 @@ class mono_Type:
     def __eq__(self, that):
         return self.__repr__() == repr(that)
 
-INT_t      = mono_Type('INT')
-BOOL_t     = mono_Type('BOOL')
-BIG_t      = mono_Type('BIGPYOBJ')
+INT_t      = PyType('INT')
+BOOL_t     = PyType('BOOL')
+BIG_t      = PyType('BIGPYOBJ')
 
-class mono_Node:
+class PyNode(object):
     """Abstaract base class for monoast nodes"""
     # Do nothing, just a placeholder in case we want to add to it later
 
 # New Mono Nodes
 
-class mono_IsTag(mono_Node):
+class InstrSeq(PyNode):
+    def __init__(self, nodes, expr):
+        self.nodes = nodes
+        self.expr = expr
+    def __repr__(self):
+        return "InstrSeq(%s, %s)" % (repr(self.nodes), repr(self.expr))
+    @staticmethod
+    def visitInstrSeq(self, n):
+        return InstrSeq(map(self.dispatch, nodes), self.dispatch(n.expr))
+
+class IsTag(PyNode):
     """Call code to determine if 'arg' is of type 'typ'"""
     def __init__(self, typ, arg):
         self.typ = typ
         self.arg = arg
     def __repr__(self):
-        return "mono_IsTag(%s, %s)" % (repr(self.typ), repr(self.arg))
+        return "IsTag(%s, %s)" % (repr(self.typ), repr(self.arg))
+    @staticmethod
+    def visitIsTag(self, n):
+        return IsTag(self.dispatch(n.typ), self.dispatch(n.arg))
 
-class mono_InjectFrom(mono_Node):
+class InjectFrom(PyNode):
     """Convert result of 'arg' from 'typ' to pyobj"""
     def __init__(self, typ, arg):
         self.typ = typ
         self.arg = arg
     def __repr__(self):
-        return "mono_InjectFrom(%s, %s)" % (repr(self.typ), repr(self.arg))
+        return "InjectFrom(%s, %s)" % (repr(self.typ), repr(self.arg))
+    @staticmethod
+    def visitInjectFrom(self, n):
+        return InjectFrom(self.dispatch(n.typ), self.dispatch(n.arg))
 
-class mono_ProjectTo(mono_Node):
+class ProjectTo(PyNode):
     """Convert result of 'arg' from pyobj to 'typ'"""
     def __init__(self, typ, arg):
         self.typ = typ
         self.arg = arg
     def __repr__(self):
-        return "mono_ProjectTo(%s, %s)" % (repr(self.typ), repr(self.arg))
+        return "ProjectTo(%s, %s)" % (repr(self.typ), repr(self.arg))
+    @staticmethod
+    def visitProjectTo(self, n):
+        return ProjectTo(self.dispatch(n.typ), self.dispatch(n.arg))
 
-class mono_Let(mono_Node):
+class Let(PyNode):
     """Evaluate 'var' = 'rhs', than run body referencing 'var'"""
     def __init__(self, var, rhs, body):
         self.var  = var
         self.rhs  = rhs
         self.body = body
     def __repr__(self):
-        return "mono_Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
-
-class mono_IfExp(mono_Node):
-    """Evaluate if exp with explicated test"""
-    def __init__(self, test, then, else_):
-        self.test = test
-        self.then = then
-        self.else_ = else_
-    def __repr__(self):
-        return "mono_IfExp(%s, %s, %s)" % (repr(self.test), repr(self.then), repr(self.else_))
+        return "Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
+    @staticmethod
+    def visitLet(self, n):
+        return Let(self.dispatch(n.var), self.dispatch(n.rhs), self.dispatch(n.body))
 
 # General AST Nodes
-class mono_SubscriptAssign:
+class SubscriptAssign:
     '''Assignment statement for subscription'''
     def __init__(self, target, sub, value):
         self.target = target
@@ -91,39 +104,59 @@ class mono_SubscriptAssign:
         self.value = value
 
     def __repr__(self):
-        return "mono_SubscriptAssign(%s, %s, %s)" % (repr(self.target), repr(self.sub), repr(self.value))
+        return "SubscriptAssign(%s, %s, %s)" % (repr(self.target), repr(self.sub), repr(self.value))
 
-class mono_IntEqual(mono_Node):
+    @staticmethod
+    def visitSubscriptAssign(self, n):
+        return SubscriptAssign(self.dispatch(n.target), self.dispatch(n.sub), self.dispatch(n.value))
+
+class IntEqual(PyNode):
     def __init__(self, (left, right), lineno=None):
         self.left = left
         self.right = right
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_IntEqual(%s, %s)" % (repr(self.left), repr(self.right))
+        return "IntEqual(%s, %s)" % (repr(self.left), repr(self.right))
 
-class mono_IntNotEqual(mono_Node):
+    @staticmethod
+    def visitIntEqual(self, n):
+        return IntEqual((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+class IntNotEqual(PyNode):
     def __init__(self, (left, right), lineno=None):
         self.left = left
         self.right = right
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_IntNotEqual(%s, %s)" % (repr(self.left), repr(self.right))
+        return "IntNotEqual(%s, %s)" % (repr(self.left), repr(self.right))
 
-class mono_IntAdd(mono_Node):
+    @staticmethod
+    def visitIntNotEqual(self, n):
+        return IntNotEqual((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+class IntAdd(PyNode):
     def __init__(self, (left, right), lineno=None):
         self.left = left
         self.right = right
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_IntAdd((%s, %s))" % (repr(self.left), repr(self.right))
+        return "IntAdd((%s, %s))" % (repr(self.left), repr(self.right))
 
-class mono_IntUnarySub(mono_Node):
+    @staticmethod
+    def visitIntAdd(self, n):
+        return IntAdd((self.dispatch(n.left), self.dispatch(n.right)), n.lineno)
+
+class IntUnarySub(PyNode):
     def __init__(self, expr, lineno=None):
         self.expr = expr
         self.lineno = lineno
 
     def __repr__(self):
-        return "mono_IntUnarySub(%s)" % (repr(self.expr))
+        return "IntUnarySub(%s)" % (repr(self.expr))
+
+    @staticmethod
+    def visitIntUnarySub(self, n):
+        return IntUnarySub(self.dispatch(n.expr), n.lineno)
