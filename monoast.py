@@ -35,8 +35,30 @@ BOOL_t     = PyType('BOOL')
 BIG_t      = PyType('BIGPYOBJ')
 
 class PyNode(object):
-    """Abstract base class for monoast nodes"""
-    # Do nothing, just a placeholder in case we want to add to it later
+    """Abstaract base class for monoast nodes"""
+    def __str__(self):
+        return repr(self)
+
+class SLambda(PyNode):
+    def __init__(self, params, body):
+        self.params = params
+        self.body = body
+
+    def __repr__(self):
+        return 'SLambda(%s, %s)' % (self.params, self.body) 
+    @staticmethod
+    def visitSLambda(self, n):
+        return SLambda(map(self.dispatch, n.params), self.dispatch(n.body))
+
+class IndirectCallFunc(PyNode):
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args
+    def __repr__(self):
+        return 'IndirectCallFunc(%s, %s)' % (self.name, self.args)
+    @staticmethod
+    def visitIndirectCallFunc(self, n):
+        return IndirectCallFunc(self.dispatch(n.name), map(self.dispatch, n.args))
 
 class InstrSeq(PyNode):
     def __init__(self, nodes, expr):
