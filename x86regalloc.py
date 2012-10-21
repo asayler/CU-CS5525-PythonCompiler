@@ -561,11 +561,8 @@ def addPreamble(instrs, colors):
                 Move86(ESP, EBP)]
     if(stackvars > 0):
         stackvars += (STACKALIGN - (stackvars % STACKALIGN))
-        stackvars += 2
-        preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
-    else:
-        stackvars += 2
-        preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
+    stackvars += 2
+    preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
     return preamble + instrs
 
 def addClosing(instrs):
