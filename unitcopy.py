@@ -77,7 +77,7 @@ class CopyVisitor(Visitor):
         return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code))
 
     def visitReturn(self, n):
-        return Return(self.visit(n.value))
+        return Return(self.dispatch(n.value))
 
     def visitList(self, n):
         nodes = []

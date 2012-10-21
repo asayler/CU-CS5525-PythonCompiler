@@ -50,7 +50,7 @@ class SLambda(PyNode):
         return 'SLambda(%s, %s)' % (self.params, self.code) 
     @staticmethod
     def visitSLambda(self, n):
-        return SLambda(map(self.dispatch, n.params), self.dispatch(n.code))
+        return SLambda(n.params, self.dispatch(n.code))
 
 class IndirectCallFunc(PyNode):
     def __init__(self, name, args):
@@ -81,7 +81,7 @@ class IsTag(PyNode):
         return "IsTag(%s, %s)" % (repr(self.typ), repr(self.arg))
     @staticmethod
     def visitIsTag(self, n):
-        return IsTag(self.dispatch(n.typ), self.dispatch(n.arg))
+        return IsTag(n.typ, self.dispatch(n.arg))
 
 class InjectFrom(PyNode):
     """Convert result of 'arg' from 'typ' to pyobj"""
@@ -92,7 +92,7 @@ class InjectFrom(PyNode):
         return "InjectFrom(%s, %s)" % (repr(self.typ), repr(self.arg))
     @staticmethod
     def visitInjectFrom(self, n):
-        return InjectFrom(self.dispatch(n.typ), self.dispatch(n.arg))
+        return InjectFrom(n.typ, self.dispatch(n.arg))
 
 class ProjectTo(PyNode):
     """Convert result of 'arg' from pyobj to 'typ'"""
@@ -103,7 +103,7 @@ class ProjectTo(PyNode):
         return "ProjectTo(%s, %s)" % (repr(self.typ), repr(self.arg))
     @staticmethod
     def visitProjectTo(self, n):
-        return ProjectTo(self.dispatch(n.typ), self.dispatch(n.arg))
+        return ProjectTo(n.typ, self.dispatch(n.arg))
 
 class Let(PyNode):
     """Evaluate 'var' = 'rhs', than run body referencing 'var'"""

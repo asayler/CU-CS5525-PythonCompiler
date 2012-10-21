@@ -31,6 +31,8 @@ from functionwrappers import *
 class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
+
+        # Remove/alter the below monkeypatching once heapification has been implemented #
         del CopyVisitor.visitAdd
         del CopyVisitor.visitUnarySub
         del CopyVisitor.visitNot
