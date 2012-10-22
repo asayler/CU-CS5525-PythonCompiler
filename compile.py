@@ -31,6 +31,7 @@ from monoast import *
 from x86ast import *
 
 # Compiler Stages
+from uniquify import *
 from explicate import *
 from expand import *
 from flatten import *
@@ -94,8 +95,16 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(parsedast, debugFileName)
 
+    # Uniquify
+    uniqueast = UniquifyVisitor().preorder(parsedast)
+    print uniqueast,'\n\n\n'
+    if(debug):
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-uniquified.dot"
+
+
     # Explicate
-    monoast = ExplicateVisitor().preorder(parsedast)
+    monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
