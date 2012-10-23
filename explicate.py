@@ -174,4 +174,8 @@ class ExplicateVisitor(CopyVisitor):
         return CallFunc(newName, args, n.star_args, n.dstar_args, n.lineno)
 
     def visitLambda(self, n):
-        return SLambda(n.argnames, Return(self.dispatch(n.code)))
+        return SLambda(n.argnames, Stmt([Return(self.dispatch(n.code))]))
+
+    def visitFunction(self, n):
+        return Assign([AssName(n.name, 'OP_ASSIGN')],
+                      SLambda(n.argnames, self.dispatch(n.code)))

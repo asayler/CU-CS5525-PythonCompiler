@@ -45,6 +45,9 @@ class Graph_monoast(Graph_ast):
     def visitLambda(self, n, p):
         raise Exception("'Lambda' node no longer valid at this stage")
 
+    def visitFunction(self, n, p):
+        raise Exception("'Function' node no longer valid at this stage")
+
     # New Nodes
 
     def visitIntAdd(self, n, p):
