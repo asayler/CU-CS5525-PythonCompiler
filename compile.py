@@ -104,6 +104,9 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-mono.dot"
         Graph_monoast().writeGraph(monoast, debugFileName)        
 
+    # Exit Early Since Further Stages Not Yet Implmented for p2
+    return 1
+
     # Type Check
     # TODO
 
