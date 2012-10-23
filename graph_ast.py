@@ -221,7 +221,7 @@ class Graph_ast(Visitor):
     def visitLambda(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("Lambda"))
+        lines += Graphvis_dot().lineLabel(myid, ("Lambda(%s)" % str(n.argnames)))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.code, myid)
         return lines

@@ -172,3 +172,6 @@ class ExplicateVisitor(CopyVisitor):
         for arg in n.args:
             args += [self.dispatch(arg)]
         return CallFunc(newName, args, n.star_args, n.dstar_args, n.lineno)
+
+    def visitLambda(self, n):
+        return SLambda(n.argnames, Return(self.dispatch(n.code)))

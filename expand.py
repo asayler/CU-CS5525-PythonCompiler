@@ -35,6 +35,7 @@ class ExpandVisitor(CopyVisitor):
         del CopyVisitor.visitUnarySub
         del CopyVisitor.visitNot
         del CopyVisitor.visitCompare
+        del CopyVisitor.visitLambda
         CopyVisitor.visitIsTag = IsTag.visitIsTag
         CopyVisitor.visitProjectTo = ProjectTo.visitProjectTo
         CopyVisitor.visitInjectFrom = InjectFrom.visitInjectFrom
