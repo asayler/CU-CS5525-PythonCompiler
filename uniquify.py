@@ -64,8 +64,10 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in module'
         l_vars = []
+        all_vars = []
+        z_vars = [l_vars, all_vars]
         env = {}
-        l_vars = self.dispatch(n.node, env, l_vars, True)
+        n, z_vars = self.dispatch(n.node, env, l_vars, True)
         #{Put code here to make dicitonary from l_vars to pass on}
         node = self,dispatch(n.node, env, [], False)
         return Module(n.doc, node, n.lineno)
@@ -75,10 +77,15 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in stmt, env = ', env
         if(collect_pass):
-            nodes = []   
+            nodes = []
+            n_new = []
+            u = []   
             for s in n.nodes:
-                union += [self.dispatch(s, env, union, collect_pass)]
-            return union
+                (n_new, u) = self.dispatch(s, env, union, collect_pass)
+                nodes += n_new
+                union[0] += u[0]
+                union[1] += u[1]
+            return nodes, union
         else:
             return Stmt(nodes, n.lineno)
 
@@ -86,9 +93,15 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in printnl, env, union = ',env,union
         if(collect_pass):
+            nodes = []
+            n_new = []
+            u = []
             for node in n.nodes:
-                union += [self.dispatch(node, env, union, collect_pass)]
-            return union
+                (n_new, u) = self,dispatch(s, env, union, collect_pass)
+                union[0] += u[0]
+                union[1] += u[1]
+                nodes += n_new
+            return n_new, union
         else:
             nodes = []
             for node in n.nodes:
@@ -99,8 +112,14 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in Assign, env, union =', env,union
         if(collect_pass):
+            nodes = []
+            n_new = []
+            u = []
             for node in n.nodes:
-                union += [self.dispatch(node, env, union, collect_pass)]
+                (n_new, u) = self.dispatch(node, env, union, collect_pass)
+                union[0] += u[0]
+                union[1] += u[1]
+                nodes += n_new
             return union
         else:
             nodes = []
@@ -112,15 +131,14 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in Discard, env, union =',env, union
         if(collect_pass):
-            union = self.dispatch(n.expr, env, union, collect_pass)
-            return union
+            n, union = self.dispatch(n.expr, env, union, collect_pass)
+            return (n, union)
         else:
             return Discard(self.dispatch(n.expr, env, union, collect_pass), n.lineno)
     
     def visitFunction(self, n, env, union, collect_pass):
         env1 = copy.deepcopy(env)
         l_vars = set([])
-
         in_scope = self.dispatch(n.code, env1, l_vars)
         return Function(n.decorators, n.name, n.argnames, n.defaults,
                         n.flags, n.doc, in_scope)
@@ -130,7 +148,7 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in Const, env, union =',env, union
         if(collect_pass):
-            return union
+            return (n, union)
         else:
             return Const(n.value, n.lineno)
     
@@ -138,7 +156,11 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in Name, env, union =',env, union
         if(collect_pass):
-            return union
+            #Add to union because we want to have a party up in this joint
+            #Also we need to keep track of all vars.
+            union[0] = union[0]
+            union[1] += [n.name]
+            return (n, union)
         else:
             return Name(n.name, n.lineno)
 
@@ -146,8 +168,9 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print 'in AssName, env, union=',env,union
         if(collect_pass):
-            union += [n.name]
-            return union
+            union[0] += [n.name]
+            union[1] += [n.name]
+            return (n,union)
         else:
             return AssName(n.name, n.flags, n.lineno)
 
@@ -158,7 +181,7 @@ class UniquifyVisitor(CopyVisitor):
             print 'in Lambda, env, union=',env,union
         if(collect_pass):
             #Start a new union for this function, to collect lhs
-            union = []
+            union = [[],[]]
             union += n.dispatch(n.code, env, union, collect_pass)
             union = set([union])
         else:
