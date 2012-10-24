@@ -35,26 +35,27 @@ from utilities import generate_name
 debug = True
 
 class EnvFunction(Function):
-    def __init__(self, function, env):
+    def __init__(self, function, env, lvars):
         self.function = function
         self.env = env
+        self.lvars = lvars
 
     def __repr__(self):
-        return "EnvFunction(%s, %s)" % (repr(self.function), repr(self.env))
+        return "EnvFunction(%s, %s, %s)" % (repr(self.function), repr(self.env), repr(self.lvars))
 
 class EnvLambda(Lambda):
-    def __init__(self, lambdal, env):
+    def __init__(self, lambdal, env, lvars):
         self.lambdal = lambdal
         self.env = env
+        self.lvars = lvars
 
     def __repr__(self):
-        return "EnvLambda(%s, %s" % (repr(self.function), repr(self.env))
+        return "EnvLambda(%s, %s, %s)" % (repr(self.function), repr(self.env), repr(self.lvars))
 
 
 class UniquifyVisitor(CopyVisitor):
     # Dictionary of in-scope variables (environment)
     # env = {}
-
 
     def __init__(self):
         super(UniquifyVisitor, self).__init__()
@@ -62,10 +63,10 @@ class UniquifyVisitor(CopyVisitor):
     # Modules
     def visitModule(self, n):
         if(debug):
-            print 'in module'
+            print '\nin module'
         lvars = set([])
         allvars = set([])
-        z_vars = [l_vars, allvars]
+        z_vars = [lvars, allvars]
         env = {}
         n, z_vars, all_vars = self.dispatch(n.node, env, lvars, allvars, True)
         #{Put code here to make dicitonary from l_vars to pass on}
@@ -75,7 +76,7 @@ class UniquifyVisitor(CopyVisitor):
     # Statements
     def visitStmt(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in stmt, n, env, lvars =',n, env, lvars, allvars
+            print '\nin stmt, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             nodes = []
             n_new = []
@@ -83,23 +84,23 @@ class UniquifyVisitor(CopyVisitor):
             # r = []
             for s in n.nodes:
                 (n_new, l,r) = self.dispatch(s, env, lvars, allvars, collect_pass)
-                nodes += n_new
+                nodes = n_new
                 lvars = lvars | l
-                allvars += allvars | r
+                allvars = allvars | r
             return nodes, lvars, allvars
         else:
             return Stmt(nodes, n.lineno)
 
     def visitPrintnl(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in printnl, n, env, lvars =',n, env, lvars, allvars
+            print '\nin printnl, n, env, lvars =', env, lvars, allvars
         if(collect_pass):
             nodes = []
             n_new = []
             # l = []
             # r = []
             for node in n.nodes:
-                (n_new, l,r) = self.dispatch(s, env, lvars, allvars, collect_pass)
+                (n_new, l,r) = self.dispatch(n, env, lvars, allvars, collect_pass)
                 lvars = lvars | l
                 allvars = allvars | r
                 nodes += n_new
@@ -112,7 +113,7 @@ class UniquifyVisitor(CopyVisitor):
 
     def visitAssign(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in Assign, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Assign, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             nodes = []
             n_new = []
@@ -135,7 +136,7 @@ class UniquifyVisitor(CopyVisitor):
     
     def visitDiscard(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in Discard, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Discard, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             n, lvars, allvars= self.dispatch(n.expr, env, lvars, collect_pass)
             return n, lvars, allvars
@@ -152,7 +153,7 @@ class UniquifyVisitor(CopyVisitor):
     # Terminal Expressions
     def visitConst(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in Const, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Const, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             return (n, lvars, allvars)
         else:
@@ -160,7 +161,7 @@ class UniquifyVisitor(CopyVisitor):
     
     def visitName(self, n, env, lvars, allvars,collect_pass):
         if(debug):
-            print 'in Name, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Name, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             #Add to lvars because we want to have a party up in this joint
             #Also we need to keep track of all vars.
@@ -171,25 +172,36 @@ class UniquifyVisitor(CopyVisitor):
 
     def visitAssName(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in AssName, n, env, lvars =',n, env, lvars, allvars
+            print '\nin AssName, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            lvars = lvars | [n.name]
-            allvars = allvars | [n.name]
+            lvars = lvars | set([n.name])
+            allvars = allvars | set([n.name])
             print 'ASSNAME', lvars, allvars
             return (n,lvars, allvars)
         else:
             return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
-
+    # Be sure to add both parameters and func names
     def visitLambda(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print 'in Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             #Start a new lvars for this function, to collect lhs
-            lvars = [[],[]]
-            lvars += n.dispatch(n.code, env, lvars, collect_pass)
-            lvars = set([lvars])
+            l = set([])
+            r = set([])
+            for arg in n.argnames: #parameters are new lhs'
+                l = l | set([arg])
+                r = r | set([arg])
+            n, l1, r1 = n.dispatch(n.code, env, l, r, collect_pass)
+            l = l | l1
+            r = r | r1
+            # Put the vars in environment
+            this_env = {}
+            for var in r:
+                this_env[var] = ['']
+            new_lambda = EnvLambda(n, this_env, l)
+            return new_lambda, lvars, rvars
         else:
             return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
 
