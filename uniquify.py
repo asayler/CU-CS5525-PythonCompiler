@@ -92,7 +92,13 @@ class UniquifyVisitor(CopyVisitor):
             return Assign(nodes, self.dispatch(n.expr, env, union, collect_pass), n.lineno)
     
     def visitDiscard(self, n, env, union, collect_pass):
-        return Discard(self.dispatch(n.expr, env), n.lineno)
+        if(debug):
+            print 'in Discard, env, union =',env, union
+        if(collect_pass):
+            union = self.dispatch(n.expr, env, union, collect_pass)
+            return union
+        else:
+            return Discard(self.dispatch(n.expr, env, union, collect_pass), n.lineno)
     
     def visitFunction(self, n, env, union, collect_pass):
         env1 = copy.deepcopy(env)
