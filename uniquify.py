@@ -110,11 +110,20 @@ class UniquifyVisitor(CopyVisitor):
 
     # Terminal Expressions
     def visitConst(self, n, env, union, collect_pass):
-        return Const(n.value, n.lineno)
+        if(debug):
+            print 'in Const, env, union =',env, union
+        if(collect_pass):
+            return union
+        else:
+            return Const(n.value, n.lineno)
     
-
     def visitName(self, n, env, union, collect_pass):
-        return Name(n.name, n.lineno)
+        if(debug):
+            print 'in Name, env, union =',env, union
+        if(collect_pass):
+            return union
+        else:
+            return Name(n.name, n.lineno)
 
     def visitAssName(self, n, env, union, collect_pass):
         if(collect_pass):
