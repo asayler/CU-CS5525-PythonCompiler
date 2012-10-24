@@ -67,7 +67,7 @@ class UniquifyVisitor(CopyVisitor):
         all_vars = []
         z_vars = [l_vars, all_vars]
         env = {}
-        n, z_vars = self.dispatch(n.node, env, l_vars, True)
+        n, z_vars, all_vars = self.dispatch(n.node, env, l_vars, r_vars, True)
         #{Put code here to make dicitonary from l_vars to pass on}
         node = self,dispatch(n.node, env, [], False)
         return Module(n.doc, node, n.lineno)
