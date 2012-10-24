@@ -34,6 +34,23 @@ from utilities import generate_name
 
 debug = True
 
+class EnvFunction(Function):
+    def __init__(self, function, env):
+        self.function = function
+        self.env = env
+
+    def __repr__(self):
+        return "EnvFunction(%s, %s)" % (repr(self.function), repr(self.env))
+
+class EnvLambda(Lambda):
+    def __init__(self, lambdal, env):
+        self.lambdal = lambdal
+        self.env = env
+
+    def __repr__(self):
+        return "EnvLambda(%s, %s" % (repr(self.function), repr(self.env))
+
+
 class UniquifyVisitor(CopyVisitor):
     # Dictionary of in-scope variables (environment)
     # env = {}
@@ -126,6 +143,8 @@ class UniquifyVisitor(CopyVisitor):
             return Name(n.name, n.lineno)
 
     def visitAssName(self, n, env, union, collect_pass):
+        if(debug):
+            print 'in AssName, env, union=',env,union
         if(collect_pass):
             union += [n.name]
             return union
@@ -135,7 +154,15 @@ class UniquifyVisitor(CopyVisitor):
     # Non-Terminal Expressions
 
     def visitLambda(self, n, env, union, collect_pass):
-        return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env))
+        if(debug):
+            print 'in Lambda, env, union=',env,union
+        if(collect_pass):
+            #Start a new union for this function, to collect lhs
+            union = []
+            union += n.dispatch(n.code, env, union, collect_pass)
+            union = set([union])
+        else:
+            return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, union, collect_pass))
 
     def visitReturn(self, n, env, union, collect_pass):
         return Return(self.dispatch(n.value, env))
