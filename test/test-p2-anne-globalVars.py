@@ -1,13 +1,15 @@
 x = 1
-y = 4
-z = 5
-x_1 = 3
+y = 2
+z = 3
+x_1 = 4
 print0 = 5
 print_0 = x
-print 3
+print 6
 print print_1
 
 def f(y):
-	x = 5
+	x = 7
 	print x
 print x
+b = [8,9,10]
+b[1] = 11
