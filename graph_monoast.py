@@ -132,7 +132,7 @@ class Graph_monoast(Graph_ast):
     def visitSLambda(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("SLambda(%s)" % n.params))
+        lines += Graphvis_dot().lineLabel(myid, ("SLambda(%s, %s)" % (n.params, n.label)))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.code, myid)
         return lines

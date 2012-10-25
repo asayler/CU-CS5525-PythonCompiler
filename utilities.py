@@ -20,7 +20,7 @@
 
 from compiler.ast import *
 
-counter = 0
+counter = 1
 
 def generate_name(x):
     global counter
