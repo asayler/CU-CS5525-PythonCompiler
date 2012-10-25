@@ -107,9 +107,10 @@ class ClosureVisitor(CopyVisitor):
         # Create new closed slambda
         slambdas += [SLambda(params, Stmt(stmts), label)]
         # Return Call and list of SLambdas
-        return (CallCREATECLOSURE([label, List(fvs)]), slambdas)
+        return (InjectFrom(BIG_t, CallCREATECLOSURE([label, List(fvs)])), slambdas)
 
     def visitIndirectCallFunc(self, n):
+        
         return (n, [])
 
     # Non-Terminal Expressions - Copy
