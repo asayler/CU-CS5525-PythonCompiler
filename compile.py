@@ -104,6 +104,13 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-mono.dot"
         Graph_monoast().writeGraph(monoast, debugFileName)        
 
+    # Heapify
+    heapast = HeapifyVisitor().preorder(monoast)
+    if(debug):
+        # Graph not available for heapification
+        # Print heapast
+        sys.stderr.write("heapified ast = \n" + str(heapast) + "\n")
+
     # Exit Early Since Further Stages Not Yet Implmented for p2
     return 1
 
