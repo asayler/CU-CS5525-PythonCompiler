@@ -45,7 +45,7 @@ from graph_monoast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = True
+debug = False
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -116,13 +116,11 @@ def main(argv=None):
         Graph_monoast().writeGraph(monoast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
-    return 1
-
     # Type Check
     # TODO
 
     # Expand
-    expandedast = ExpandVisitor().preorder(monoast)
+    expandedast = ExpandVisitor().preorder(heapast)
     if(debug):
         # Print expandedast
         #sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
