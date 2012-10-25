@@ -94,13 +94,3 @@ class HeapifyVisitor(CopyVisitor):
         if n.name in self.needs_heapification:
             return Subscript(Name(n.name), 'OP_APPLY', [ZERO])
         else: return n
-
-def test():
-    ast1 = Module(None, Stmt([Discard(SLambda(['x'],
-                                        Stmt([Assign([AssName('z', 'OP_ASSIGN')], ZERO),
-                                              Discard(SLambda(['y'],
-                                                              Stmt([
-                                                Return(Name('x'))], None)))], None)))], None))
-    print HeapifyVisitor().preorder(ast1)
-    
-test()
