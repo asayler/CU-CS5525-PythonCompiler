@@ -117,7 +117,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             nodes = []
             for node in n.nodes:
-                nodes += [self.dispatch(node, env, lvars, collect_pass)]
+                nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
             return Printnl(nodes, n.dest, n.lineno)
 
     def visitAssign(self, n, env, lvars, allvars, collect_pass):
@@ -141,7 +141,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             nodes = []
             for node in n.nodes:
-                nodes += [self.dispatch(node, env)]
+                nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
             return Assign(nodes, self.dispatch(n.expr, env, lvars, allvars, collect_pass), n.lineno)
     
     def visitDiscard(self, n, env, lvars, allvars, collect_pass):
@@ -202,6 +202,8 @@ class UniquifyVisitor(CopyVisitor):
             return Function(n.function.decorators, n.function.name, n.function.argnames, 
                             n.function.defaults,
                             n.function.flags, n.function.doc, code)
+        else:
+            print 'IN AN ENV VISITOR WHEN I SHOULDNT BE'
     # Terminal Expressions
     def visitConst(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -234,6 +236,9 @@ class UniquifyVisitor(CopyVisitor):
             print 'ASSNAME', lvars, allvars
             return (n,lvars, allvars)
         else:
+            print 'name before', n.name
+            n.name = env[n.name]
+            print 'name after', n.name
             return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
@@ -259,7 +264,31 @@ class UniquifyVisitor(CopyVisitor):
             new_lambda = EnvLambda(node, this_env, l)
             return new_lambda, lvars, rvars
         else:
+            print 'IN A LAMBDA FUNCTION, SHOULDNT BE HERE NOW'
             return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
+
+     def visitEnvLambda(self, n, env, lvars, allvars, collect_pass):
+        if(debug):
+            print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
+        if(not collect_pass):
+            print 'name before', n.function.name
+            #Change funciton name according to the outer environment
+            n.function.name = env[n.function.name]
+            print 'name after', n.function.name
+            #Make a deep copy of the outer environment
+            env1 = copy.deepcopy(n.env)
+            #For all lvars in this function's scope, we need to make a new variable
+            for var in n.lvars:
+                env1[var] = generate_name(var)
+            #Change all the argument names according to this new environment
+            for arg in n.function.argnames:
+                arg = env1[arg]
+            code = self.dispatch(n.function.code, env1, n.lvars, [], collect_pass)
+            return Function(n.function.decorators, n.function.name, n.function.argnames, 
+                            n.function.defaults,
+                            n.function.flags, n.function.doc, code)
+        else:
+            print 'IN AN ENV LAMBDA WHEN I SHOULDNT BE'
 
     def visitReturn(self, n, env, lvars, allvars, collect_pass):
         if(debug):
