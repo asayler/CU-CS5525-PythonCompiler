@@ -51,7 +51,7 @@ class ClosureVisitor(CopyVisitor):
             stmts += [rstmt]
             slambdas += rslambdas
         if(is_main):
-            slambdas += [SLambda([], stmts, SLambdaLabel(MAINNAME))]
+            slambdas += [SLambda([], Stmt(stmts), SLambdaLabel(MAINNAME))]
             return slambdas
         else:
             return (Stmt(stmts), slambdas)
@@ -106,7 +106,7 @@ class ClosureVisitor(CopyVisitor):
         # Create new closed slambda
         slambdas += [SLambda(params, Stmt(stmts), label)]
         # Return Call and list of SLambdas
-        return (CallCREATECLOSURE([label, fvs]), slambdas)
+        return (CallCREATECLOSURE([label, List(fvs)]), slambdas)
 
     def visitIndirectCallFunc(self, n):
         return (n, [])
