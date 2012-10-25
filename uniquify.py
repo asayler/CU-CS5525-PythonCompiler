@@ -267,7 +267,7 @@ class UniquifyVisitor(CopyVisitor):
             print 'IN A LAMBDA FUNCTION, SHOULDNT BE HERE NOW'
             return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
 
-     def visitEnvLambda(self, n, env, lvars, allvars, collect_pass):
+     def visitEnvLambda (self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
         if(not collect_pass):
