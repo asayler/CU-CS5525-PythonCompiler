@@ -66,12 +66,18 @@ class UniquifyVisitor(CopyVisitor):
             print '\nin module'
         lvars = set([])
         allvars = set([])
-        z_vars = [lvars, allvars]
         env = {}
-        n, z_vars, all_vars = self.dispatch(n.node, env, lvars, allvars, True)
+        node, lvars, allvars = self.dispatch(n.node, env, lvars, allvars, True)
         #{Put code here to make dicitonary from l_vars to pass on}
-        node = self,dispatch(n.node, env, [], False)
-        return Module(n.doc, node, n.lineno)
+        print '\n\n',node,'\n',lvars, '\n',allvars
+        for var in allvars:
+            env[var] = [generate_name(var)]
+        print env
+
+        #node = self.dispatch(n.node, env, [], False)
+        print '\n\n'
+        # ast = self.dispatch(node, )
+        return Module(n.doc, ast, n.lineno)
 
     # Statements
     def visitStmt(self, n, env, lvars, allvars, collect_pass):
@@ -127,6 +133,7 @@ class UniquifyVisitor(CopyVisitor):
                 allvars = allvars | r
                 print allvars
                 nodes += [n_new]
+            print n.expr
             expr, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
@@ -141,7 +148,7 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin Discard, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            expr, l, r= self.dispatch(n.expr, env, lvars, collect_pass)
+            expr, l, r= self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
             return Discard(expr, n.lineno), lvars, allvars
@@ -176,9 +183,9 @@ class UniquifyVisitor(CopyVisitor):
             for arg in n.argnames:
                 l = l | set([arg])
                 r = r | set([arg])
-            n, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
+            n_new, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
             node = Function(n.decorators, n.name, n.argnames, n.defaults,
-                            n.flags, n.doc, n)
+                            n.flags, n.doc, n_new)
             l = l | l1
             r = r | r1
             #Put the function's vars in an environment
@@ -204,7 +211,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             return Const(n.value, n.lineno)
     
-    def visitName(self, n, env, lvars, allvars,collect_pass):
+    def visitName(self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin Name, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
@@ -238,8 +245,8 @@ class UniquifyVisitor(CopyVisitor):
             for arg in n.argnames: #parameters are new lhs'
                 l = l | set([arg])
                 r = r | set([arg])
-            n, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
-            node = Lambda(n.argnames, n.defaults, n.flags, n)
+            code, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
+            node = Lambda(n.argnames, n.defaults, n.flags, code)
             l = l | l1
             r = r | r1
             # Put the vars in environment
@@ -255,11 +262,14 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin Return, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            return n, lvars, rvars
+            value, l, r = self.dispatch(n.value, env, lvars, allvars, collect_pass)
+            lvars = lvars | l
+            allvars = allvars | r
+            return Return(value), lvars, rvars
         else:
             return Return(self.dispatch(n.value, env))
 
-    def visitList(self, n, env, lvars, collect_pass):
+    def visitList(self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin List, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
@@ -305,12 +315,12 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin Subscript, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            expr = self.dispatch(n.expr, env, lvars, allvars)
+            expr, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
             subs = []
             for sub in n.subs:
-                s, l, r = self.dispatch(item[1],env, lvars, allvars, collect_pass)
+                s, l, r = self.dispatch(sub ,env, lvars, allvars, collect_pass)
                 lvars = l | lvars
                 allvars = r | allvars
                 subs += [s]
@@ -328,10 +338,10 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             ops = []
             for op in n.ops:
-                newop, l, r = (op[0], self.dispatch(op[1], env, lvars, allvars, collect_pass))
+                newop, l, r = self.dispatch(op[1], env, lvars, allvars, collect_pass)
                 lvars = l | lvars
                 allvars = r | allvars
-                ops += [newop]
+                ops += [(op[0], newop)]
             e, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
