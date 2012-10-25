@@ -52,6 +52,7 @@ class HeapifyVisitor(CopyVisitor):
         CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
         CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
         CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
+        CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
         # Initialize helper visitors
         self.local_visitor = LocalVarsVisitor()
         self.free_visitor = FreeVarsVisitor()
