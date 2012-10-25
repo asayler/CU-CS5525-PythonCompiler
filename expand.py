@@ -31,21 +31,6 @@ from functionwrappers import *
 class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
-        del CopyVisitor.visitAdd
-        del CopyVisitor.visitUnarySub
-        del CopyVisitor.visitNot
-        del CopyVisitor.visitCompare
-        del CopyVisitor.visitLambda
-        del CopyVisitor.visitFunction
-        CopyVisitor.visitIsTag = IsTag.visitIsTag
-        CopyVisitor.visitProjectTo = ProjectTo.visitProjectTo
-        CopyVisitor.visitInjectFrom = InjectFrom.visitInjectFrom
-        CopyVisitor.visitLet = Let.visitLet
-        CopyVisitor.visitIntAdd = IntAdd.visitIntAdd
-        CopyVisitor.visitIntEqual = IntEqual.visitIntEqual
-        CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
-        CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
-        CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
 
     def visitIsTag(self, n):
         if(n.typ == INT_t):
