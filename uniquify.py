@@ -84,7 +84,7 @@ class UniquifyVisitor(CopyVisitor):
             # r = []
             for s in n.nodes:
                 (n_new, l,r) = self.dispatch(s, env, lvars, allvars, collect_pass)
-                nodes = n_new
+                nodes += [n_new]
                 lvars = lvars | l
                 allvars = allvars | r
             return Stmt(nodes, n.lineno), lvars, allvars
@@ -100,7 +100,7 @@ class UniquifyVisitor(CopyVisitor):
             # l = []
             # r = []
             for node in n.nodes:
-                (n_new, l,r) = self.dispatch(n, env, lvars, allvars, collect_pass)
+                (n_new, l,r) = self.dispatch(node, env, lvars, allvars, collect_pass)
                 lvars = lvars | l
                 allvars = allvars | r
                 nodes += [n_new]
@@ -126,11 +126,11 @@ class UniquifyVisitor(CopyVisitor):
                 print lvars
                 allvars = allvars | r
                 print allvars
-                nodes += n_new
-            expr, l, r = self.dispatch(n.expr, env, lvars, collect_pass)
+                nodes += [n_new]
+            expr, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
-            return return Assign(nodes, expr, n.lineno), lvars, allvars
+            return Assign(nodes, expr, n.lineno), lvars, allvars
         else:
             nodes = []
             for node in n.nodes:
@@ -210,7 +210,7 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             #Add to lvars because we want to have a party up in this joint
             #Also we need to keep track of all vars.
-            allvars = allvars | [n.name]
+            allvars = allvars | set([n.name])
             return (n, lvars, allvars)
         else:
             return Name(n.name, n.lineno)
