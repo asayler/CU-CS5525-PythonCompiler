@@ -46,6 +46,8 @@ SETSUB_n   = Name("set_subscript")
 GETSUB_n   = Name("get_subscript")
 
 CREATECLOSURE_n = Name("create_closure")
+GETFUNPTR_n = Name("get_fun_ptr")
+GETFREEVARS_n = Name("get_free_vars")
 
 # Function Wrappers
 
@@ -115,3 +117,9 @@ def CallGETSUB(args):
 # Closure Macros
 def CallCREATECLOSURE(args):
     return CallFunc(CREATECLOSURE_n, args)
+
+def CallGETFUNPTR(args):
+    return CallFunc(GETFUNPTR_n, args)
+
+def CallGETFREEVARS(args):
+    return CallFunc(GETFREEVARS_n, args)
