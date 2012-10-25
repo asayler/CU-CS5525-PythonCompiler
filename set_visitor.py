@@ -85,7 +85,7 @@ class SetVisitor(Visitor):
         return self.dispatch(n.expr)
 
     def visitLet(self, n):
-        return self.dispatch(n.rhs) | (self.dispatch(n.body) | self.dispatch(n.name))
+        return self.dispatch(n.var) | (self.dispatch(n.rhs) | self.dispatch(n.body))
     
     def visitIfExp(self, n):
         return self.dispatch(n.test) | self.dispatch(n.then) | self.dispatch(n.else_)
