@@ -225,7 +225,7 @@ class UniquifyVisitor(CopyVisitor):
                 print lvars
                 allvars = allvars | r
                 print allvars
-                nodes += n_new
+                nodes += [n_new]
             return List(nodes, n.lineno), lvars, allvars
         else:
             nodes = []
@@ -267,7 +267,7 @@ class UniquifyVisitor(CopyVisitor):
                 s, l, r = self.dispatch(item[1],env, lvars, allvars, collect_pass)
                 lvars = l | lvars
                 allvars = r | allvars
-                subs += s
+                subs += [s]
             return Subscript(expr, n.flags, subs, n.lineno), lvars, allvars
         else:
             expr = self.dispatch(n.expr, env)
@@ -301,55 +301,107 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin Add, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        return Add((self.dispatch(n.left, env), self.dispatch(n.right, env)), n.lineno)
+            left, l, r = self.dispatch(n.left, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            right, l, r = self.dispatch(n.right, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return Add((left, right), n.lineno), lvars, allvars
+        else:
+            return Add((self.dispatch(n.left, env), self.dispatch(n.right, env)), n.lineno)
     
     def visitOr(self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node, env)]
-        return Or(nodes, n.lineno)
+            nodes = []
+            for node in n.nodes:
+                n, l, r = self.dispatch(node, env)]
+                nodes += [n]
+                lvars = l | lvars
+                allvars = r | allvars
+            return Or(nodes, n.lineno), lvars, allvars
+        else:
+            nodes = []
+            for node in n.nodes:
+                nodes += [self.dispatch(node, env)]
+            return Or(nodes, n.lineno)
 
     def visitAnd(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin And, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node, env)]
-        return And(nodes, n.lineno)
+            nodes = []
+            for node in n.nodes:
+                n, l, r = self.dispatch(node, env)]
+                nodes += [n]
+                lvars = l | lvars
+                allvars = r | allvars
+            return And(nodes, n.lineno), lvars, allvars
+        else:
+            nodes = []
+            for node in n.nodes:
+                nodes += [self.dispatch(node, env)]
+            return And(nodes, n.lineno)
 
     def visitNot(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Not, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        return Not(self.dispatch(n.expr, env), n.lineno)
+            n, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return Not(n, n.lineno), lvars, allvars
+        else:
+            return Not(self.dispatch(n.expr, env), n.lineno)
 
     def visitUnarySub(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin UnarySub, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        return UnarySub(self.dispatch(n.expr, env), n.lineno)
+            n, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return UnarySub(n, n.lineno), lvars, allvars
+        else:
+            return UnarySub(self.dispatch(n.expr, env), n.lineno)
 
     def visitIfExp(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin IfExp, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        return IfExp(self.dispatch(n.test, env),
-                     self.dispatch(n.then, env),
-                     self.dispatch(n.else_, env),
-                     n.lineno)    
+            test, l, r = self.dispatch(n.test, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            then, l, r = self.dispatch(n.then, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            else_, l, r = self.dispatch(n.else_, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return IfExp(test, then, else_, n.lineno), lvars, allvars
+        else:
+            return IfExp(self.dispatch(n.test, env),
+                         self.dispatch(n.then, env),
+                         self.dispatch(n.else_, env),
+                         n.lineno)    
 
     def visitCallFunc(self, n, env, lvars,allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin CallFunc, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-        args = []
-        for arg in n.args:
-            args += [self.dispatch(arg, env)]
-        return CallFunc(self.dispatch(n.node, env), args, n.star_args, n.dstar_args, n.lineno)
+            args = []
+            for arg in n.args:
+                a, l, r = self.dispatch(arg, env, lvars, allvars, collect_pass)
+                lvars = l | lvars
+                allvars = r | allvars
+                args += [a]
+        else:
+            args = []
+            for arg in n.args:
+                args += [self.dispatch(arg, env)]
+            return CallFunc(self.dispatch(n.node, env), args, n.star_args, n.dstar_args, n.lineno)
 
 # # Statements
 #     def visitStmt(self, n, env, lvars, collect_pass):
