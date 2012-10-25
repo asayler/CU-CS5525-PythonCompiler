@@ -81,7 +81,9 @@ class HeapifyVisitor(CopyVisitor):
         for local in lvs:
             if local in self.needs_heapification:
                 new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
-        return SLambda(new_params, Stmt(new_stmts + code.nodes))
+        ret = SLambda(new_params, Stmt(new_stmts + code.nodes))
+        ret.free_vars = n.free_vars
+        return ret
 
     def visitAssign(self, n):
         if n.nodes[0].name in self.needs_heapification:
