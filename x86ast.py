@@ -18,6 +18,8 @@
 
 """Mike's x86 AST tree nodes"""
 
+import sys
+
 class X86Arg:
     def __str__(self):
         return self.mnemonic()
@@ -84,6 +86,7 @@ ONEBYTEHIREGS  = {EAX: AH, EBX: BH, ECX: CH, EDX: DH}
 TWOBYTEREGS    = {EAX: AX, EBX: BX, ECX: CX, EDX: DX}
 
 WORDLEN = 4
+STACKALIGN = 4
 
 x86FALSE = Const86(0)
 x86TRUE  = Const86(1)
@@ -138,7 +141,11 @@ class Call86(X86Inst):
     def __init__(self, function):
         self.function = function
     def mnemonic(self):
-        return 'call ' + self.function
+        if(sys.platform == 'darwin'):
+            instrStr = 'call _%s' % self.function
+        else:
+            instrStr = 'call %s' % self.function
+        return instrStr
 
 class LShift86(X86Inst):
     def __init__(self, value, target):

@@ -122,3 +122,24 @@ class Graph_monoast(Graph_ast):
         lines += self.dispatch(n.sub, myid)
         lines += self.dispatch(n.value, myid)
         return lines
+
+    def visitSLambda(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("SLambda"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for parem in n.parems:
+            lines += self.dispatch(parem, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
+
+    def visitIndirectCallFunc(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IndirectCallFunc"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.name, myid)
+        for arg in n.args:
+            lines += self.dispatch(arg, myid)
+        return lines
+

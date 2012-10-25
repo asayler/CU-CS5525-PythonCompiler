@@ -39,8 +39,6 @@ class PyNode(object):
     def __str__(self):
         return repr(self)
 
-# New Mono Nodes
-
 class SLambda(PyNode):
     def __init__(self, params, code):
         self.params = params

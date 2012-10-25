@@ -77,7 +77,15 @@ class Graph_ast(Visitor):
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.expr, myid)
         return lines
-    
+
+    def visitFunction(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Function(%s)" % str(n.name)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
+        return lines
+        
     # Expressions
 
     def visitConst(self, n, p):
@@ -200,4 +208,20 @@ class Graph_ast(Visitor):
         lines += self.dispatch(n.node, myid)
         for arg in n.args:
             lines += self.dispatch(arg, myid)
+        return lines
+
+    def visitReturn(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Return"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
+
+    def visitLambda(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Lambda"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
         return lines
