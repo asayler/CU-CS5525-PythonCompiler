@@ -51,7 +51,7 @@ class FreeVarsVisitor(SetVisitor):
     # Non-Terminal Expressions
 
     def visitLet(self, n):
-        return self.dispatch(n.rhs) | (self.dispatch(n.body) - self.dispatch(n.name))
+        return self.dispatch(n.rhs) | (self.dispatch(n.body) - self.dispatch(n.var))
 
     def visitSLambda(self, n):
         n.free_vars = self.dispatch(n.code) - (set(n.params) | self.local_visitor.preorder(n.code)) 
