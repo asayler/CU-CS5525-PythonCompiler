@@ -11,6 +11,7 @@ def f(y):
 	x = 7
 	y = 42
 	a = b + 2
+	c = 2
 	y = c + 5
 	print x
 print x

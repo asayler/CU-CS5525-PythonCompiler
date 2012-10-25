@@ -32,7 +32,7 @@ from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
-debug = True
+debug = False
 
 class EnvFunction(Function):
     def __init__(self, function, env, lvars):
@@ -69,13 +69,13 @@ class UniquifyVisitor(CopyVisitor):
         env = {}
         node, lvars, allvars = self.dispatch(n.node, env, lvars, allvars, True)
         #{Put code here to make dicitonary from l_vars to pass on}
-        print '\n\n',node,'\n',lvars, '\n',allvars
+        if(debug):
+            print '\n\n',node,'\n',lvars, '\n',allvars
         for var in allvars:
-            env[var] = [generate_name(var)]
-        print env
+            env[var] = generate_name(var)
+        if(debug):
+            print env
 
-        #node = self.dispatch(n.node, env, [], False)
-        print '\n\n'
         ast = self.dispatch(node, env, lvars, allvars, False)
         return Module(n.doc, ast, n.lineno)
 
@@ -133,7 +133,8 @@ class UniquifyVisitor(CopyVisitor):
                 lvars = lvars | l
                 allvars = allvars | r
                 nodes += [n_new]
-            print n.expr
+            if(debug):
+                print n.expr
             expr, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
@@ -175,7 +176,9 @@ class UniquifyVisitor(CopyVisitor):
             #Put the function's vars in an environment
             this_env = {}
             for var in r:
-                this_env[var] = ['']
+                this_env[var] = generate_name(var)
+            if(debug):
+                print '\n\n\n\nthe prev dictionary', this_env
             #Create a new node containing the env and lvars to save
             new_lambda = EnvFunction(node, this_env, l)
             return new_lambda, lvars, allvars
@@ -186,18 +189,28 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
         if(not collect_pass):
-            print 'name before', n.function.name
+            if(debug):
+                print 'name before', n.function.name
             #Change funciton name according to the outer environment
             n.function.name = env[n.function.name]
-            print 'name after', n.function.name
-            #Make a deep copy of the outer environment
+            if(debug):
+                print 'name after', n.function.name
+            #Make a deep copy of the environment associated with the function
+            if(debug):
+                print '\n\n\n\nfunction old env', env
             env1 = copy.deepcopy(n.env)
+            #Add anything from the outside environment
+            for item, val in env.iteritems():
+                env1[item]= val
             #For all lvars in this function's scope, we need to make a new variable
             for var in n.lvars:
                 env1[var] = generate_name(var)
-            print 'function new env', env1
+            if(debug):
+                print '\n\n\n\nfunction new env', env1
             #Change all the argument names according to this new environment
             for arg in n.function.argnames:
+                if(debug):
+                    print 'env1[arg]', env1[arg]
                 arg = env1[arg]
             code = self.dispatch(n.function.code, env1, n.lvars, [], collect_pass)
             return Function(n.function.decorators, n.function.name, n.function.argnames, 
@@ -223,9 +236,11 @@ class UniquifyVisitor(CopyVisitor):
             allvars = allvars | set([n.name])
             return (n, lvars, allvars)
         else:
-            print 'old name', n.name
+            if(debug):
+                print 'old name', n.name
             n.name = env[n.name]
-            print 'new name',n.name
+            if(debug):
+                print 'new name',n.name
             return Name(n.name, n.lineno)
 
     def visitAssName(self, n, env, lvars, allvars, collect_pass):
@@ -234,12 +249,15 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             lvars = lvars | set([n.name])
             allvars = allvars | set([n.name])
-            print 'ASSNAME', lvars, allvars
+            if(debug):
+                print 'ASSNAME', lvars, allvars
             return (n,lvars, allvars)
         else:
-            print 'name before', n.name
+            if(debug):
+                print 'name before', n.name
             n.name = env[n.name]
-            print 'name after', n.name
+            if(debug):
+                print 'name after', n.name
             return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
@@ -261,7 +279,7 @@ class UniquifyVisitor(CopyVisitor):
             # Put the vars in environment
             this_env = {}
             for var in r:
-                this_env[var] = ['']
+                this_env[var] = generate_name(var)
             new_lambda = EnvLambda(node, this_env, l)
             return new_lambda, lvars, rvars
         else:
@@ -272,15 +290,21 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
         if(not collect_pass):
-            #Make a deep copy of the outer environment
+            #Make a deep copy of the environment associated with the function
+            if(debug):
+                print '\n\n\n\nfunction old env', env
             env1 = copy.deepcopy(n.env)
+            #Add anything from the outside environment
+            for item, val in env.iteritems():
+                env1[item]= val
             #For all lvars in this function's scope, we need to make a new variable
             for var in n.lvars:
                 env1[var] = generate_name(var)
-            print 'Lamdba new env', env1
+            if(debug):
+                print 'Lamdba new env', env1
             #Change all the argument names according to this new environment
             for arg in n.lambdal.argnames:
-                arg = env1[arg]
+                n.lambdal.argnames[arg] = env1[arg]
             code = self.dispatch(n.lambdal.code, env1, n.lvars, [], collect_pass)
             return Lambda(n.lambdal.argnames, n.lambdal.defaults, n.lambdal.flags, code)
         else:
@@ -306,9 +330,7 @@ class UniquifyVisitor(CopyVisitor):
                 # nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
                 (n_new, l, r) = self.dispatch(node, env, lvars, allvars,collect_pass)
                 lvars = lvars | l
-                print lvars
                 allvars = allvars | r
-                print allvars
                 nodes += [n_new]
             return List(nodes, n.lineno), lvars, allvars
         else:
@@ -488,118 +510,4 @@ class UniquifyVisitor(CopyVisitor):
                 args += [self.dispatch(arg, env)]
             return CallFunc(self.dispatch(n.node, env, lvars, allvars, collect_pass), 
                 args, n.star_args, n.dstar_args, n.lineno)
-
-# # Statements
-#     def visitStmt(self, n, env, lvars, collect_pass):
-#         if(debug):
-#             print 'in stmt, env = ',env
-#         if(collect_pass):
-#             nodes = []   
-#             for s in n.nodes:
-#                 nodes += [self.dispatch(s, env, lvars, collect_pass)]
-#         return Stmt(nodes, n.lineno)
-
-#     def visitPrintnl(self, n, env, lvars, collect_pass):
-#         nodes = []
-#         for node in n.nodes:
-#             nodes += [self.dispatch(node,env)]
-#         return Printnl(nodes, n.dest, n.lineno)
-
-#     def visitAssign(self, n, env, lvars, collect_pass):
-#         nodes = []
-#         for node in n.nodes:
-#             nodes += [self.dispatch(node, env)]
-#         return Assign(nodes, self.dispatch(n.expr, env), n.lineno)
-    
-#     def visitDiscard(self, n, env, lvars, collect_pass):
-#         return Discard(self.dispatch(n.expr, env), n.lineno)
-    
-#     def visitFunction(self, n, env, lvars, collect_pass):
-#         env1 = copy.deepcopy(env)
-#         l_vars = set([])
-
-#         in_scope = self.dispatch(n.code, env1, l_vars)
-#         return Function(n.decorators, n.name, n.argnames, n.defaults,
-#                         n.flags, n.doc, in_scope)
-
-#     # Terminal Expressions
-#     def visitConst(self, n, env, lvars, collect_pass):
-#         return Const(n.value, n.lineno)
-    
-
-#     def visitName(self, n, env, lvars, collect_pass):
-#         return Name(n.name, n.lineno)
-
-#     def visitAssName(self, n, env, lvars, collect_pass):
-#         return AssName(n.name, n.flags, n.lineno)
-
-#     # Non-Terminal Expressions
-
-#     def visitLambda(self, n, env, lvars, collect_pass):
-#         return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env))
-
-#     def visitReturn(self, n, env, lvars, collect_pass):
-#         return Return(self.dispatch(n.value, env))
-
-#     def visitList(self, n, env, lvars, collect_pass):
-#         nodes = []
-#         for node in n.nodes:
-#             nodes += [self.dispatch(node, env)]
-#         return List(nodes, n.lineno)
-
-#     def visitDict(self, n, env, lvars, collect_pass):
-#         items = []
-#         for item in n.items:
-#             key = self.dispatch(item[0],env)
-#             value = self.dispatch(item[1],env)
-#             items += [(key, value)]
-#         return Dict(items, n.lineno)
-
-#     def visitSubscript(self, n, env, lvars, collect_pass):
-#         expr = self.dispatch(n.expr, env)
-#         subs = []
-#         for sub in n.subs:
-#             subs += [self.dispatch(sub, env)]
-#         return Subscript(expr, n.flags, subs, n.lineno)
-    
-#     def visitCompare(self, n, env, lvars, collect_pass):
-#         ops = []
-#         for op in n.ops:
-#             newop = (op[0], self.dispatch(op[1], env))
-#             ops += [newop]
-#         return Compare(self.dispatch(n.expr, env), ops, n.lineno)
-
-#     def visitAdd(self, n, env, lvars, collect_pass):
-#         return Add((self.dispatch(n.left, env), self.dispatch(n.right, env)), n.lineno)
-    
-#     def visitOr(self, n, env, lvars, collect_pass):
-#         nodes = []
-#         for node in n.nodes:
-#             nodes += [self.dispatch(node, env)]
-#         return Or(nodes, n.lineno)
-
-#     def visitAnd(self, n, env, lvars, collect_pass):
-#         nodes = []
-#         for node in n.nodes:
-#             nodes += [self.dispatch(node, env)]
-#         return And(nodes, n.lineno)
-
-#     def visitNot(self, n, env, lvars, collect_pass):
-#         return Not(self.dispatch(n.expr, env), n.lineno)
-
-#     def visitUnarySub(self, n, env, lvars, collect_pass):
-#         return UnarySub(self.dispatch(n.expr, env), n.lineno)
-
-#     def visitIfExp(self, n, env, lvars, collect_pass):
-#         return IfExp(self.dispatch(n.test, env),
-#                      self.dispatch(n.then, env),
-#                      self.dispatch(n.else_, env),
-#                      n.lineno)    
-
-#     def visitCallFunc(self, n, env, lvars, collect_pass):
-#         args = []
-#         for arg in n.args:
-#             args += [self.dispatch(arg, env)]
-#         return CallFunc(self.dispatch(n.node, env), args, n.star_args, n.dstar_args, n.lineno)
-
 

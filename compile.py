@@ -97,14 +97,16 @@ def main(argv=None):
 
     # Uniquify
     uniqueast = UniquifyVisitor().preorder(parsedast)
-    print uniqueast,'\n\n\n'
+    # print uniqueast,'\n\n\n'
     if(debug):
+        # Print parsedast
+        sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
-    monoast = ExplicateVisitor().preorder(uniqueast)
+    monoast = ExplicateVisitor().preorder(parsedast)
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
