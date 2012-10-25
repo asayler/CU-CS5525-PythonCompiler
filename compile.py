@@ -32,6 +32,7 @@ from x86ast import *
 
 # Compiler Stages
 from explicate import *
+from heapify import *
 from expand import *
 from flatten import *
 from instr_select import *
@@ -101,15 +102,18 @@ def main(argv=None):
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-mono.dot"
+        debugFileName = debugFileName[:-3] + "-explicated.dot"
         Graph_monoast().writeGraph(monoast, debugFileName)        
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
     if(debug):
-        # Graph not available for heapification
         # Print heapast
         sys.stderr.write("heapified ast = \n" + str(heapast) + "\n")
+        # Graph monoast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-heapified.dot"
+        Graph_monoast().writeGraph(monoast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
     return 1

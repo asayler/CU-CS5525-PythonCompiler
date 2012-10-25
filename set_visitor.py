@@ -66,6 +66,10 @@ class SetVisitor(Visitor):
         return self.dispatch(n.node) | reduce(lambda x,y: x | y, 
                                               map(self.dispatch, n.args), 
                                               set([]))
+    def visitIndirectCallFunc(self, n):
+        return self.dispatch(n.node) | reduce(lambda x,y: x | y, 
+                                              map(self.dispatch, n.args), 
+                                              set([]))
 
     def binary(self, n):
         return self.dispatch(n.left) | self.dispatch(n.right)

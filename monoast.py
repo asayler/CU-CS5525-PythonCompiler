@@ -51,14 +51,14 @@ class SLambda(PyNode):
         return SLambda(n.params, self.dispatch(n.code))
 
 class IndirectCallFunc(PyNode):
-    def __init__(self, name, args):
-        self.name = name
+    def __init__(self, node, args):
+        self.node = node
         self.args = args
     def __repr__(self):
-        return 'IndirectCallFunc(%s, %s)' % (self.name, self.args)
+        return 'IndirectCallFunc(%s, %s)' % (self.node, self.args)
     @staticmethod
     def visitIndirectCallFunc(self, n):
-        return IndirectCallFunc(self.dispatch(n.name), map(self.dispatch, n.args))
+        return IndirectCallFunc(self.dispatch(n.node), map(self.dispatch, n.args))
 
 class InstrSeq(PyNode):
     def __init__(self, nodes, expr):
