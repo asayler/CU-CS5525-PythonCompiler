@@ -96,6 +96,12 @@ class SetVisitor(Visitor):
     def visitPrintnl(self, n):
         return reduce(lambda x,y: x | y, map(self.dispatch, n.nodes), set([]))
 
+    def visitList(self, n):
+        return reduce(lambda x,y: x | y, map(self.dispatch, n.nodes), set([]))
+
+    def visitDict(self, n):
+        return reduce(lambda x,y: x | y, map(lambda _,z: self.dispatch(z), n.items), set([]))
+
     def visitIsTag(self, n):
         return self.dispatch(n.arg)
 
