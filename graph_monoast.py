@@ -42,6 +42,12 @@ class Graph_monoast(Graph_ast):
     def visitCompare(self, n, p):
         raise Exception("'Compare' node no longer valid at this stage")
 
+    def visitLambda(self, n, p):
+        raise Exception("'Lambda' node no longer valid at this stage")
+
+    def visitFunction(self, n, p):
+        raise Exception("'Function' node no longer valid at this stage")
+
     # New Nodes
 
     def visitIntAdd(self, n, p):
@@ -126,10 +132,8 @@ class Graph_monoast(Graph_ast):
     def visitSLambda(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("SLambda"))
+        lines += Graphvis_dot().lineLabel(myid, ("SLambda(%s)" % n.params))
         lines += Graphvis_dot().linePair(p, myid)
-        for parem in n.parems:
-            lines += self.dispatch(parem, myid)
         lines += self.dispatch(n.body, myid)
         return lines
 
