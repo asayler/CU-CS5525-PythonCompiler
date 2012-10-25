@@ -33,6 +33,7 @@ from x86ast import *
 # Compiler Stages
 from explicate import *
 from heapify import *
+from closureconvert import *
 from expand import *
 from flatten import *
 from instr_select import *
@@ -113,7 +114,17 @@ def main(argv=None):
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-heapified.dot"
-        Graph_monoast().writeGraph(monoast, debugFileName)
+        Graph_monoast().writeGraph(heapast, debugFileName)
+
+    # Closure COnvert
+    closedast = ClosureVisitor().preorder(heapast)
+    if(debug):
+        # Print heapast
+        sys.stderr.write("closed ast = \n" + str(closedast) + "\n")
+        # Graph monoast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-closed.dot"
+        #Graph_monoast().writeGraph(closedast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
     return 1

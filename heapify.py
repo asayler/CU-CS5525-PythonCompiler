@@ -32,9 +32,9 @@ from functionwrappers import *
 from compiler.ast import *
 from monoast import *
 
-#Assumption: Let-bound variables cannot be free in nested functions
-
 ZERO = InjectFrom(INT_t, Const(0))
+
+#Assumption: Let-bound variables cannot be free in nested functions
 
 class HeapifyVisitor(CopyVisitor):
     def __init__(self):

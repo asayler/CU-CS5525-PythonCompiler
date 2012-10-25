@@ -18,6 +18,8 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
+from compiler.ast import *
+
 counter = 0
 
 def generate_name(x):
@@ -25,3 +27,6 @@ def generate_name(x):
     name = str(counter) + '_' + x
     counter = counter + 1
     return name
+
+def make_assign(lhs, rhs):
+    return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
