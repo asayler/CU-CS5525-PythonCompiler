@@ -76,7 +76,7 @@ class UniquifyVisitor(CopyVisitor):
 
         #node = self.dispatch(n.node, env, [], False)
         print '\n\n'
-        # ast = self.dispatch(node, )
+        ast = self.dispatch(node, env, lvars, allvars, False)
         return Module(n.doc, ast, n.lineno)
 
     # Statements
@@ -95,6 +95,9 @@ class UniquifyVisitor(CopyVisitor):
                 allvars = allvars | r
             return Stmt(nodes, n.lineno), lvars, allvars
         else:
+            nodes = []
+            for s in n.nodes:
+                nodes += [self.dispatch(s, env, lvars, allvars, collect_pass)]
             return Stmt(nodes, n.lineno)
 
     def visitPrintnl(self, n, env, lvars, allvars, collect_pass):
@@ -126,12 +129,9 @@ class UniquifyVisitor(CopyVisitor):
             # l = []
             # r = []
             for node in n.nodes:
-                print 'happening once'
                 (n_new, l, r) = self.dispatch(node, env, lvars, allvars,collect_pass)
                 lvars = lvars | l
-                print lvars
                 allvars = allvars | r
-                print allvars
                 nodes += [n_new]
             print n.expr
             expr, l, r = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
@@ -142,7 +142,7 @@ class UniquifyVisitor(CopyVisitor):
             nodes = []
             for node in n.nodes:
                 nodes += [self.dispatch(node, env)]
-            return Assign(nodes, self.dispatch(n.expr, env, lvars, collect_pass), n.lineno)
+            return Assign(nodes, self.dispatch(n.expr, env, lvars, allvars, collect_pass), n.lineno)
     
     def visitDiscard(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -153,28 +153,12 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return Discard(expr, n.lineno), lvars, allvars
         else:
-            return Discard(self.dispatch(n.expr, env, lvars, collect_pass), n.lineno)
+            return Discard(self.dispatch(n.expr, env, lvars, allvar, collect_pass), n.lineno)
     
     def visitFunction(self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin Func, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            #  #Start a new lvars for this function, to collect lhs
-            # l = set([])
-            # r = set([])
-            # for arg in n.argnames: #parameters are new lhs'
-            #     l = l | set([arg])
-            #     r = r | set([arg])
-            # n, l1, r1 = n.dispatch(n.code, env, l, r, collect_pass)
-            # l = l | l1
-            # r = r | r1
-            # # Put the vars in environment
-            # this_env = {}
-            # for var in r:
-            #     this_env[var] = ['']
-            # new_lambda = EnvLambda(n, this_env, l)
-            # return new_lambda, lvars, rvars
-
             #Add the function name to the lhs and allvars
             lvars = lvars | set([n.name])
             allvars = allvars | set([n.name])
@@ -196,12 +180,28 @@ class UniquifyVisitor(CopyVisitor):
             new_lambda = EnvFunction(node, this_env, l)
             return new_lambda, lvars, allvars
         else:
-            env1 = copy.deepcopy(env)
-            l_vars = set([])
-            in_scope = self.dispatch(n.code, env1, l_vars)
-            return Function(n.decorators, n.name, n.argnames, n.defaults,
-                            n.flags, n.doc, in_scope)
+            print 'IN A VISITOR FUNCTION, SHOULDNT BE HERE NOW'
 
+    def visitEnvFunction(self, n, env, lvars, allvars, collect_pass):
+        if(debug):
+            print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
+        if(not collect_pass):
+            print 'name before', n.function.name
+            #Change funciton name according to the outer environment
+            n.function.name = env[n.function.name]
+            print 'name after', n.function.name
+            #Make a deep copy of the outer environment
+            env1 = copy.deepcopy(n.env)
+            #For all lvars in this function's scope, we need to make a new variable
+            for var in n.lvars:
+                env1[var] = generate_name(var)
+            #Change all the argument names according to this new environment
+            for arg in n.function.argnames:
+                arg = env1[arg]
+            code = self.dispatch(n.function.code, env1, n.lvars, [], collect_pass)
+            return Function(n.function.decorators, n.function.name, n.function.argnames, 
+                            n.function.defaults,
+                            n.function.flags, n.function.doc, code)
     # Terminal Expressions
     def visitConst(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -220,6 +220,9 @@ class UniquifyVisitor(CopyVisitor):
             allvars = allvars | set([n.name])
             return (n, lvars, allvars)
         else:
+            print 'old name', n.name
+            n.name = env[n.name]
+            print 'new name',n.name
             return Name(n.name, n.lineno)
 
     def visitAssName(self, n, env, lvars, allvars, collect_pass):
