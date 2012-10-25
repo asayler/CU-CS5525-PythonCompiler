@@ -87,7 +87,7 @@ class UniquifyVisitor(CopyVisitor):
                 nodes = n_new
                 lvars = lvars | l
                 allvars = allvars | r
-            return nodes, lvars, allvars
+            return Stmt(nodes, n.lineno), lvars, allvars
         else:
             return Stmt(nodes, n.lineno)
 
@@ -103,8 +103,8 @@ class UniquifyVisitor(CopyVisitor):
                 (n_new, l,r) = self.dispatch(n, env, lvars, allvars, collect_pass)
                 lvars = lvars | l
                 allvars = allvars | r
-                nodes += n_new
-            return nodes, lvars, allvars
+                nodes += [n_new]
+            return Printnl(nodes, n.dest, n.lineno), lvars, allvars
         else:
             nodes = []
             for node in n.nodes:
@@ -127,7 +127,10 @@ class UniquifyVisitor(CopyVisitor):
                 allvars = allvars | r
                 print allvars
                 nodes += n_new
-            return nodes, lvars, allvars
+            expr, l, r = self.dispatch(n.expr, env, lvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return return Assign(nodes, expr, n.lineno), lvars, allvars
         else:
             nodes = []
             for node in n.nodes:
@@ -138,17 +141,59 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin Discard, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            n, lvars, allvars= self.dispatch(n.expr, env, lvars, collect_pass)
-            return n, lvars, allvars
+            expr, l, r= self.dispatch(n.expr, env, lvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return Discard(expr, n.lineno), lvars, allvars
         else:
             return Discard(self.dispatch(n.expr, env, lvars, collect_pass), n.lineno)
     
     def visitFunction(self, n, env, lvars, allvars, collect_pass):
-        env1 = copy.deepcopy(env)
-        l_vars = set([])
-        in_scope = self.dispatch(n.code, env1, l_vars)
-        return Function(n.decorators, n.name, n.argnames, n.defaults,
-                        n.flags, n.doc, in_scope)
+        if(debug):
+            print '\nin Func, n, env, lvars =',n, env, lvars, allvars
+        if(collect_pass):
+            #  #Start a new lvars for this function, to collect lhs
+            # l = set([])
+            # r = set([])
+            # for arg in n.argnames: #parameters are new lhs'
+            #     l = l | set([arg])
+            #     r = r | set([arg])
+            # n, l1, r1 = n.dispatch(n.code, env, l, r, collect_pass)
+            # l = l | l1
+            # r = r | r1
+            # # Put the vars in environment
+            # this_env = {}
+            # for var in r:
+            #     this_env[var] = ['']
+            # new_lambda = EnvLambda(n, this_env, l)
+            # return new_lambda, lvars, rvars
+
+            #Add the function name to the lhs and allvars
+            lvars = lvars | set([n.name])
+            allvars = allvars | set([n.name])
+            l = set([])
+            r = set([])
+            for arg in n.argnames:
+                l = l | set([arg])
+                r = r | set([arg])
+            n, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
+            node = Function(n.decorators, n.name, n.argnames, n.defaults,
+                            n.flags, n.doc, n)
+            l = l | l1
+            r = r | r1
+            #Put the function's vars in an environment
+            this_env = {}
+            for var in r:
+                this_env[var] = ['']
+            #Create a new node containing the env and lvars to save
+            new_lambda = EnvFunction(node, this_env, l)
+            return new_lambda, lvars, allvars
+        else:
+            env1 = copy.deepcopy(env)
+            l_vars = set([])
+            in_scope = self.dispatch(n.code, env1, l_vars)
+            return Function(n.decorators, n.name, n.argnames, n.defaults,
+                            n.flags, n.doc, in_scope)
 
     # Terminal Expressions
     def visitConst(self, n, env, lvars, allvars, collect_pass):
@@ -193,14 +238,15 @@ class UniquifyVisitor(CopyVisitor):
             for arg in n.argnames: #parameters are new lhs'
                 l = l | set([arg])
                 r = r | set([arg])
-            n, l1, r1 = n.dispatch(n.code, env, l, r, collect_pass)
+            n, l1, r1 = self.dispatch(n.code, env, l, r, collect_pass)
+            node = Lambda(n.argnames, n.defaults, n.flags, n)
             l = l | l1
             r = r | r1
             # Put the vars in environment
             this_env = {}
             for var in r:
                 this_env[var] = ['']
-            new_lambda = EnvLambda(n, this_env, l)
+            new_lambda = EnvLambda(node, this_env, l)
             return new_lambda, lvars, rvars
         else:
             return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
@@ -313,11 +359,11 @@ class UniquifyVisitor(CopyVisitor):
     
     def visitOr(self, n, env, lvars, allvars, collect_pass):
         if(debug):
-            print '\nin Lambda, n, env, lvars =',n, env, lvars, allvars
+            print '\nin Or, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             nodes = []
             for node in n.nodes:
-                n, l, r = self.dispatch(node, env)]
+                n, l, r = self.dispatch(node, env, lvars, allvars, collect_pass)
                 nodes += [n]
                 lvars = l | lvars
                 allvars = r | allvars
@@ -334,7 +380,7 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             nodes = []
             for node in n.nodes:
-                n, l, r = self.dispatch(node, env)]
+                n, l, r = self.dispatch(node, env, lvars, allvars, collect_pass)
                 nodes += [n]
                 lvars = l | lvars
                 allvars = r | allvars
