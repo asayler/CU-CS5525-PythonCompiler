@@ -139,3 +139,9 @@ class CopyVisitor(Visitor):
         for arg in n.args:
             args += [self.dispatch(arg)]
         return CallFunc(self.dispatch(n.node), args, n.star_args, n.dstar_args, n.lineno)
+
+    def visitCallFunc(self, n):
+        args = []
+        for arg in n.args:
+            args += [self.dispatch(arg)]
+        return CallFunc(self.dispatch(n.node), args, n.star_args, n.dstar_args, n.lineno)

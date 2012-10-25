@@ -45,6 +45,10 @@ MAKEDICT_n = Name("create_dict")
 SETSUB_n   = Name("set_subscript")
 GETSUB_n   = Name("get_subscript")
 
+CREATECLOSURE_n = Name("create_closure")
+GETFUNPTR_n = Name("get_fun_ptr")
+GETFREEVARS_n = Name("get_free_vars")
+
 # Function Wrappers
 
 # Is Macros
@@ -96,7 +100,7 @@ def CallPRINTANY(args):
 def CallISTRUE(args):
     return CallFunc(ISTRUE_n, args)
 
-#List/Dict Macros
+# List/Dict Macros
 
 def CallMAKELIST(args):
     return CallFunc(MAKELIST_n, args)
@@ -109,3 +113,13 @@ def CallSETSUB(args):
 
 def CallGETSUB(args):
     return CallFunc(GETSUB_n, args)
+
+# Closure Macros
+def CallCREATECLOSURE(args):
+    return CallFunc(CREATECLOSURE_n, args)
+
+def CallGETFUNPTR(args):
+    return CallFunc(GETFUNPTR_n, args)
+
+def CallGETFREEVARS(args):
+    return CallFunc(GETFREEVARS_n, args)

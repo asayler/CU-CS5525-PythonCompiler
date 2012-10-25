@@ -39,9 +39,6 @@ from monoast import *
 # Notes: this introduces too many variables and moves, but that's OK.
 # Register allocation with move biasing will hopefully take care of it.
 
-def make_assign(lhs, rhs):
-    return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
-
 class FlattenVisitor(CopyVisitor):
     def __init__(self):
         super(FlattenVisitor,self).__init__()

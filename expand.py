@@ -32,21 +32,6 @@ class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
 
-        # Remove/alter the below monkeypatching once heapification has been implemented #
-        del CopyVisitor.visitAdd
-        del CopyVisitor.visitUnarySub
-        del CopyVisitor.visitNot
-        del CopyVisitor.visitCompare
-        CopyVisitor.visitIsTag = IsTag.visitIsTag
-        CopyVisitor.visitProjectTo = ProjectTo.visitProjectTo
-        CopyVisitor.visitInjectFrom = InjectFrom.visitInjectFrom
-        CopyVisitor.visitLet = Let.visitLet
-        CopyVisitor.visitIntAdd = IntAdd.visitIntAdd
-        CopyVisitor.visitIntEqual = IntEqual.visitIntEqual
-        CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
-        CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
-        CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
-
     def visitIsTag(self, n):
         if(n.typ == INT_t):
             return CallINJECTBOOL([CallISINT([self.dispatch(n.arg)])])

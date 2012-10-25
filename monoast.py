@@ -40,25 +40,37 @@ class PyNode(object):
         return repr(self)
 
 class SLambda(PyNode):
-    def __init__(self, params, code):
+    def __init__(self, params, code, label=None):
         self.params = params
         self.code = code
+        self.label = label        
 
     def __repr__(self):
-        return 'SLambda(%s, %s)' % (self.params, self.code) 
+        return 'SLambda(%s, %s, %s)' % (self.params, self.code, self.label) 
     @staticmethod
     def visitSLambda(self, n):
-        return SLambda(n.params, self.dispatch(n.code))
+        return SLambda(n.params, self.dispatch(n.code), n.label)
+
+class SLambdaLabel(PyNode):
+    def __init__(self, name):
+        self.name = name
+                
+    def __repr__(self):
+        return 'SLambdaLabel(%s)' % (self.name) 
+    @staticmethod
+    def visitSLambdaLabel(self, n):
+        return SLambdaLabel(n.name)
+
 
 class IndirectCallFunc(PyNode):
-    def __init__(self, name, args):
-        self.name = name
+    def __init__(self, node, args):
+        self.node = node
         self.args = args
     def __repr__(self):
-        return 'IndirectCallFunc(%s, %s)' % (self.name, self.args)
+        return 'IndirectCallFunc(%s, %s)' % (self.node, self.args)
     @staticmethod
     def visitIndirectCallFunc(self, n):
-        return IndirectCallFunc(self.dispatch(n.name), map(self.dispatch, n.args))
+        return IndirectCallFunc(self.dispatch(n.node), map(self.dispatch, n.args))
 
 class InstrSeq(PyNode):
     def __init__(self, nodes, expr):

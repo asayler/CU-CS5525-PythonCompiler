@@ -32,9 +32,9 @@ from functionwrappers import *
 from compiler.ast import *
 from monoast import *
 
-#Assumption: Let-bound variables cannot be free in nested functions
-
 ZERO = InjectFrom(INT_t, Const(0))
+
+#Assumption: Let-bound variables cannot be free in nested functions
 
 class HeapifyVisitor(CopyVisitor):
     def __init__(self):
@@ -52,6 +52,7 @@ class HeapifyVisitor(CopyVisitor):
         CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
         CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
         CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
+        CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
         # Initialize helper visitors
         self.local_visitor = LocalVarsVisitor()
         self.free_visitor = FreeVarsVisitor()
@@ -81,7 +82,9 @@ class HeapifyVisitor(CopyVisitor):
         for local in lvs:
             if local in self.needs_heapification:
                 new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
-        return SLambda(new_params, Stmt(new_stmts + code.nodes))
+        ret = SLambda(new_params, Stmt(new_stmts + code.nodes))
+        ret.free_vars = n.free_vars
+        return ret
 
     def visitAssign(self, n):
         if n.nodes[0].name in self.needs_heapification:
@@ -92,13 +95,3 @@ class HeapifyVisitor(CopyVisitor):
         if n.name in self.needs_heapification:
             return Subscript(Name(n.name), 'OP_APPLY', [ZERO])
         else: return n
-
-def test():
-    ast1 = Module(None, Stmt([Discard(SLambda(['x'],
-                                        Stmt([Assign([AssName('z', 'OP_ASSIGN')], ZERO),
-                                              Discard(SLambda(['y'],
-                                                              Stmt([
-                                                Return(Name('x'))], None)))], None)))], None))
-    print HeapifyVisitor().preorder(ast1)
-    
-test()

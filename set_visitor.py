@@ -66,6 +66,10 @@ class SetVisitor(Visitor):
         return self.dispatch(n.node) | reduce(lambda x,y: x | y, 
                                               map(self.dispatch, n.args), 
                                               set([]))
+    def visitIndirectCallFunc(self, n):
+        return self.dispatch(n.node) | reduce(lambda x,y: x | y, 
+                                              map(self.dispatch, n.args), 
+                                              set([]))
 
     def binary(self, n):
         return self.dispatch(n.left) | self.dispatch(n.right)
@@ -81,7 +85,7 @@ class SetVisitor(Visitor):
         return self.dispatch(n.expr)
 
     def visitLet(self, n):
-        return self.dispatch(n.rhs) | (self.dispatch(n.body) | self.dispatch(n.name))
+        return self.dispatch(n.var) | (self.dispatch(n.rhs) | self.dispatch(n.body))
     
     def visitIfExp(self, n):
         return self.dispatch(n.test) | self.dispatch(n.then) | self.dispatch(n.else_)
@@ -91,6 +95,12 @@ class SetVisitor(Visitor):
 
     def visitPrintnl(self, n):
         return reduce(lambda x,y: x | y, map(self.dispatch, n.nodes), set([]))
+
+    def visitList(self, n):
+        return reduce(lambda x,y: x | y, map(self.dispatch, n.nodes), set([]))
+
+    def visitDict(self, n):
+        return reduce(lambda x,y: x | y, map(lambda _,z: self.dispatch(z), n.items), set([]))
 
     def visitIsTag(self, n):
         return self.dispatch(n.arg)

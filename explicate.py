@@ -155,20 +155,24 @@ class ExplicateVisitor(CopyVisitor):
 
     # Explicate P1 Pyobj functions
     def visitCallFunc(self, n):
-        args = []
-        # Verify/Rectify Names
+        # Verify/Rectify Names and Seperate Direct/Indirect Calls
         if(isinstance(n.node, Name)):
+            args = []
+            for arg in n.args:
+                args += [self.dispatch(arg)]
             name = n.node.name
-            if(name == "input"):
+            if((name == "input") or (name == "input_int")):
                 name = "input_int"
-            elif(name == "input_int"):
-                pass
+                output = CallFunc(Name(name), args)
             else:
-                raise Exception("Only input function accepted in p1")
-            newName = Name(name)
+                output = IndirectCallFunc(Name(name), args)
         else:
-            raise Exception("Only named functions accepted in p1")
-        #Copy Function
-        for arg in n.args:
-            args += [self.dispatch(arg)]
-        return CallFunc(newName, args, n.star_args, n.dstar_args, n.lineno)
+            raise Exception("Only named functions accepted")
+        return output
+
+    def visitLambda(self, n):
+        return SLambda(n.argnames, Stmt([Return(self.dispatch(n.code))]))
+
+    def visitFunction(self, n):
+        return Assign([AssName(n.name, 'OP_ASSIGN')],
+                      SLambda(n.argnames, self.dispatch(n.code)))
