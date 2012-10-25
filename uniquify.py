@@ -195,6 +195,7 @@ class UniquifyVisitor(CopyVisitor):
             #For all lvars in this function's scope, we need to make a new variable
             for var in n.lvars:
                 env1[var] = generate_name(var)
+            print 'function new env', env1
             #Change all the argument names according to this new environment
             for arg in n.function.argnames:
                 arg = env1[arg]
@@ -265,28 +266,23 @@ class UniquifyVisitor(CopyVisitor):
             return new_lambda, lvars, rvars
         else:
             print 'IN A LAMBDA FUNCTION, SHOULDNT BE HERE NOW'
-            return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
+            # return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
 
-     def visitEnvLambda (self, n, env, lvars, allvars, collect_pass):
+    def visitEnvLambda (self, n, env, lvars, allvars, collect_pass):
         if(debug):
             print '\nin EnvFunc, n, env, lvars = ', n, env, lvars, allvars
         if(not collect_pass):
-            print 'name before', n.function.name
-            #Change funciton name according to the outer environment
-            n.function.name = env[n.function.name]
-            print 'name after', n.function.name
             #Make a deep copy of the outer environment
             env1 = copy.deepcopy(n.env)
             #For all lvars in this function's scope, we need to make a new variable
             for var in n.lvars:
                 env1[var] = generate_name(var)
+            print 'Lamdba new env', env1
             #Change all the argument names according to this new environment
-            for arg in n.function.argnames:
+            for arg in n.lambdal.argnames:
                 arg = env1[arg]
-            code = self.dispatch(n.function.code, env1, n.lvars, [], collect_pass)
-            return Function(n.function.decorators, n.function.name, n.function.argnames, 
-                            n.function.defaults,
-                            n.function.flags, n.function.doc, code)
+            code = self.dispatch(n.lambdal.code, env1, n.lvars, [], collect_pass)
+            return Lambda(n.lambdal.argnames, n.lambdal.defaults, n.lambdal.flags, code)
         else:
             print 'IN AN ENV LAMBDA WHEN I SHOULDNT BE'
 
@@ -299,7 +295,7 @@ class UniquifyVisitor(CopyVisitor):
             allvars = allvars | r
             return Return(value), lvars, rvars
         else:
-            return Return(self.dispatch(n.value, env))
+            return Return(self.dispatch(n.value, env, lvars, allvars, collect_pass))
 
     def visitList(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -318,7 +314,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             nodes = []
             for node in n.nodes:
-                nodes += [self.dispatch(node, env)]
+                nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
             return List(nodes, n.lineno)
 
     def visitDict(self, n, env, lvars, allvars, collect_pass):
@@ -338,8 +334,8 @@ class UniquifyVisitor(CopyVisitor):
         else:
             items = []
             for item in n.items:
-                key = self.dispatch(item[0],env)
-                value = self.dispatch(item[1],env)
+                key = self.dispatch(item[0],env, lvars, allvars, collect_pass)
+                value = self.dispatch(item[1],env, lvars, allvars, collect_pass)
                 items += [(key, value)]
             return Dict(items, n.lineno)
 
@@ -358,10 +354,10 @@ class UniquifyVisitor(CopyVisitor):
                 subs += [s]
             return Subscript(expr, n.flags, subs, n.lineno), lvars, allvars
         else:
-            expr = self.dispatch(n.expr, env)
+            expr = self.dispatch(n.expr, env, lvars, allvars, collect_pass)
             subs = []
             for sub in n.subs:
-                subs += [self.dispatch(sub, env)]
+                subs += [self.dispatch(sub, env, lvars, allvars, collect_pass)]
             return Subscript(expr, n.flags, subs, n.lineno)
     
     def visitCompare(self, n, env, lvars, allvars, collect_pass):
@@ -381,9 +377,9 @@ class UniquifyVisitor(CopyVisitor):
         else:
             ops = []
             for op in n.ops:
-                newop = (op[0], self.dispatch(op[1], env))
+                newop = (op[0], self.dispatch(op[1], env, lvars, allvars, collect_pass))
                 ops += [newop]
-            return Compare(self.dispatch(n.expr, env), ops, n.lineno)
+            return Compare(self.dispatch(n.expr, env, lvars, allvars, collect_pass), ops, n.lineno)
 
     def visitAdd(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -397,7 +393,8 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return Add((left, right), n.lineno), lvars, allvars
         else:
-            return Add((self.dispatch(n.left, env), self.dispatch(n.right, env)), n.lineno)
+            return Add((self.dispatch(n.left, env, lvars, allvars, collect_pass), 
+                self.dispatch(n.right, env, lvars, allvars, collect_pass)), n.lineno)
     
     def visitOr(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -413,7 +410,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             nodes = []
             for node in n.nodes:
-                nodes += [self.dispatch(node, env)]
+                nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
             return Or(nodes, n.lineno)
 
     def visitAnd(self, n, env, lvars, allvars, collect_pass):
@@ -430,7 +427,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             nodes = []
             for node in n.nodes:
-                nodes += [self.dispatch(node, env)]
+                nodes += [self.dispatch(node, env, lvars, allvars, collect_pass)]
             return And(nodes, n.lineno)
 
     def visitNot(self, n, env, lvars, allvars, collect_pass):
@@ -442,7 +439,7 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return Not(n, n.lineno), lvars, allvars
         else:
-            return Not(self.dispatch(n.expr, env), n.lineno)
+            return Not(self.dispatch(n.expr, env, lvars, allvars, collect_pass), n.lineno)
 
     def visitUnarySub(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -453,7 +450,7 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return UnarySub(n, n.lineno), lvars, allvars
         else:
-            return UnarySub(self.dispatch(n.expr, env), n.lineno)
+            return UnarySub(self.dispatch(n.expr, env, lvars, allvars, collect_pass), n.lineno)
 
     def visitIfExp(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -470,8 +467,8 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return IfExp(test, then, else_, n.lineno), lvars, allvars
         else:
-            return IfExp(self.dispatch(n.test, env),
-                         self.dispatch(n.then, env),
+            return IfExp(self.dispatch(n.test, env, lvars, allvars,collect_pass),
+                         self.dispatch(n.then, env, lvars, allvars, collect_pass),
                          self.dispatch(n.else_, env),
                          n.lineno)    
 
@@ -489,7 +486,8 @@ class UniquifyVisitor(CopyVisitor):
             args = []
             for arg in n.args:
                 args += [self.dispatch(arg, env)]
-            return CallFunc(self.dispatch(n.node, env), args, n.star_args, n.dstar_args, n.lineno)
+            return CallFunc(self.dispatch(n.node, env, lvars, allvars, collect_pass), 
+                args, n.star_args, n.dstar_args, n.lineno)
 
 # # Statements
 #     def visitStmt(self, n, env, lvars, collect_pass):

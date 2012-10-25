@@ -101,7 +101,7 @@ def main(argv=None):
     if(debug):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
-
+        Graph_ast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
