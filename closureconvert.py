@@ -110,8 +110,19 @@ class ClosureVisitor(CopyVisitor):
         return (InjectFrom(BIG_t, CallCREATECLOSURE([label, List(fvs)])), slambdas)
 
     def visitIndirectCallFunc(self, n):
-        
-        return (n, [])
+        slambdas = []
+        (node, rslambdas) = self.dispatch(n.node)
+        slambdas += rslambdas
+        args = []
+        for arg in n.args:
+            (rarg, rslambdas) = self.dispatch(arg)
+            args += [rarg]
+            slambdas += rslambdas
+        tmpname = generate_name('let_ICF')
+        tmpvar = Name(tmpname)
+        t = Let(tmpvar, node, IndirectCallFunc(CallGETFUNPTR([tmpvar]),
+                                               ([CallGETFREEVARS([tmpvar])] + args)))
+        return (t, slambdas)
 
     # Non-Terminal Expressions - Copy
 
