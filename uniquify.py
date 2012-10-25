@@ -206,7 +206,7 @@ class UniquifyVisitor(CopyVisitor):
             return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
 
     def visitReturn(self, n, env, lvars, allvars, collect_pass):
-       if(debug):
+        if(debug):
             print '\nin Return, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
             return n, lvars, rvars
