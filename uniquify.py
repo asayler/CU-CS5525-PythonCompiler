@@ -32,7 +32,7 @@ from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
-debug = True
+debug = False
 
 class EnvFunction(Function):
     def __init__(self, function, env, lvars):
