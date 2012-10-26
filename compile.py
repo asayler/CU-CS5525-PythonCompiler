@@ -109,7 +109,7 @@ def main(argv=None):
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
-    monoast = ExplicateVisitor().preorder(parsedast)
+    monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
