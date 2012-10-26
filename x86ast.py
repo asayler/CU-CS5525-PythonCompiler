@@ -47,7 +47,7 @@ class Mem86(X86Arg):
         self.offset = offset
         self.arg = arg
     def mnemonic(self):
-        return ('-%d(%s)' % (self.offset, self.arg.mnemonic()))
+        return ('%d(%s)' % (self.offset, self.arg.mnemonic()))
 
 class Var86(X86Arg):
     def __init__(self, name):
