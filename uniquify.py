@@ -233,12 +233,14 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             #Add to lvars because we want to have a party up in this joint
             #Also we need to keep track of all vars.
-            allvars = allvars | set([n.name])
+            if(n.name != 'True' and n.name != 'False'):
+                allvars = allvars | set([n.name])
             return (n, lvars, allvars)
         else:
             if(debug):
                 print 'old name', n.name
-            n.name = env[n.name]
+            if(n.name != 'True' and n.name != 'False'):
+                n.name = env[n.name]
             if(debug):
                 print 'new name',n.name
             return Name(n.name, n.lineno)
@@ -354,7 +356,7 @@ class UniquifyVisitor(CopyVisitor):
                 lvars = l | lvars
                 allvars = r | allvars
                 items += [(key, value)]
-            return Dict(items, n.lineno), lvars, rvars
+            return Dict(items, n.lineno), lvars, allvars
         else:
             items = []
             for item in n.items:
@@ -493,7 +495,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             return IfExp(self.dispatch(n.test, env, lvars, allvars,collect_pass),
                          self.dispatch(n.then, env, lvars, allvars, collect_pass),
-                         self.dispatch(n.else_, env),
+                         self.dispatch(n.else_, env, lvars, allvars, collect_pass),
                          n.lineno)    
 
     def visitCallFunc(self, n, env, lvars,allvars, collect_pass):
