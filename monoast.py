@@ -34,6 +34,10 @@ INT_t      = PyType('INT')
 BOOL_t     = PyType('BOOL')
 BIG_t      = PyType('BIGPYOBJ')
 
+# For modules after closure conversion
+def visitModulePostCC(self, n):
+    return Module(n.doc, map(self.dispatch, n.node), n.lineno) 
+
 class PyNode(object):
     """Abstaract base class for monoast nodes"""
     def __str__(self):

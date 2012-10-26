@@ -68,6 +68,15 @@ class ClosureVisitor(CopyVisitor):
     def visitReturn(self, n):
         (value, slambdas) = self.dispatch(n.value)
         return (Return(value), slambdas)
+
+    def visitPrintnl(self, n):
+        nodes = []
+        slambdas = []
+        for node in n.nodes:
+            (node, slambda) = self.dispatch(node)
+            nodes.append(node)
+            slambdas += slambda
+        return (Printnl(nodes, n.dest, n.lineno), slambdas)
     
     # Terminal Expressions
 

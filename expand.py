@@ -31,6 +31,7 @@ from functionwrappers import *
 class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
+        CopyVisitor.visitModule = visitModulePostCC
 
     def visitIsTag(self, n):
         if(n.typ == INT_t):
