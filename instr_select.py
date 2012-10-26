@@ -77,6 +77,7 @@ class InstrSelectVisitor(Visitor):
     def visitReturn(self, n):
         instrs = []
         instrs += [Move86(arg_select(n.value), EAX)]
+        instrs += [Leave86()]
         instrs += [Ret86()]
         return instrs
     
