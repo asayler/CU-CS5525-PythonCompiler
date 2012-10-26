@@ -32,7 +32,7 @@ from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
-debug = False
+debug = True
 
 class EnvFunction(Function):
     def __init__(self, function, env, lvars):
@@ -154,7 +154,7 @@ class UniquifyVisitor(CopyVisitor):
             allvars = r | allvars
             return Discard(expr, n.lineno), lvars, allvars
         else:
-            return Discard(self.dispatch(n.expr, env, lvars, allvar, collect_pass), n.lineno)
+            return Discard(self.dispatch(n.expr, env, lvars, allvars, collect_pass), n.lineno)
     
     def visitFunction(self, n, env, lvars, allvars, collect_pass):
         if(debug):
@@ -247,17 +247,19 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin AssName, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            lvars = lvars | set([n.name])
-            allvars = allvars | set([n.name])
-            if(debug):
-                print 'ASSNAME', lvars, allvars
+            if(n.name != 'True' and n.name != 'False'):
+                lvars = lvars | set([n.name])
+                allvars = allvars | set([n.name])
+                if(debug):
+                    print 'ASSNAME', lvars, allvars
             return (n,lvars, allvars)
         else:
             if(debug):
                 print 'name before', n.name
-            n.name = env[n.name]
-            if(debug):
-                print 'name after', n.name
+            if(n.name != 'True' and n.name != 'False'):
+                n.name = env[n.name]
+                if(debug):
+                    print 'name after', n.name
             return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
@@ -504,10 +506,11 @@ class UniquifyVisitor(CopyVisitor):
                 lvars = l | lvars
                 allvars = r | allvars
                 args += [a]
+            return CallFunc(n.node, args, n.star_args, n.dstar_args, n.lineno), lvars, allvars
         else:
             args = []
             for arg in n.args:
                 args += [self.dispatch(arg, env)]
-            return CallFunc(self.dispatch(n.node, env, lvars, allvars, collect_pass), 
+            return CallFunc(n.node, 
                 args, n.star_args, n.dstar_args, n.lineno)
 
