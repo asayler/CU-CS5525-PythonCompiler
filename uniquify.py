@@ -208,10 +208,14 @@ class UniquifyVisitor(CopyVisitor):
             if(debug):
                 print '\n\n\n\nfunction new env', env1
             #Change all the argument names according to this new environment
+            i = 0
             for arg in n.function.argnames:
                 if(debug):
-                    print 'env1[arg]', env1[arg]
-                arg = env1[arg]
+                    print 'arg names',n.function.argnames[i]
+                n.function.argnames[i] = env1[arg]
+                if(debug):
+                    print 'arg names after',n.function.argnames[i]
+                i += 1
             code = self.dispatch(n.function.code, env1, n.lvars, [], collect_pass)
             return Function(n.function.decorators, n.function.name, n.function.argnames, 
                             n.function.defaults,
@@ -307,8 +311,14 @@ class UniquifyVisitor(CopyVisitor):
             if(debug):
                 print 'Lamdba new env', env1
             #Change all the argument names according to this new environment
+            i = 0
             for arg in n.lambdal.argnames:
-                n.lambdal.argnames[arg] = env1[arg]
+                if(debug):
+                    print 'arg names',n.lambdal.argnames[i]
+                n.lambdal.argnames[i] = env1[arg]
+                if(debug):
+                    print 'arg names after',n.lambdal.argnames[i]
+                i += 1
             code = self.dispatch(n.lambdal.code, env1, n.lvars, [], collect_pass)
             return Lambda(n.lambdal.argnames, n.lambdal.defaults, n.lambdal.flags, code)
         else:
