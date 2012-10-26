@@ -26,7 +26,7 @@ class X86Arg:
     def __repr__(self):
         return self.mnemonic()
     def __hash__(self):
-        return hash(self.__str__())
+        return hash(self.__repr__())
     def __eq__(self, that):
         return self.mnemonic() == that.mnemonic()
     
@@ -148,10 +148,16 @@ class Call86(X86Inst):
         self.function = function
     def mnemonic(self):
         if(sys.platform == 'darwin'):
-            instrStr = 'call _%s' % self.function
+            instrStr = 'call _%s' % self.function.mnemonic()
         else:
-            instrStr = 'call %s' % self.function
+            instrStr = 'call %s' % self.function.mnemonic()
         return instrStr
+
+class IndirectCall86(X86Inst):
+    def __init__(self, function):
+        self.function = function
+    def mnemonic(self):
+        return 'call* $' + ('_' if sys.platform == 'darwin' else '') + self.function.mnemonic()
 
 class LShift86(X86Inst):
     def __init__(self, value, target):
@@ -239,4 +245,5 @@ class Func86(X86Inst):
         self.name = name
         self.nodes = nodes
     def mnemonic(self):
-        return '.globl %s:\n\t%s\n' % (self.name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
+        name = self.name if sys.platform != 'darwin' else ('_' + self.name)
+        return '%s:\n\t%s\n' % (name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
