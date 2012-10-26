@@ -137,8 +137,7 @@ def main(argv=None):
         Graph_closedast().writeGraph(closedast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
-    print 'EXITING'
-    return 1
+ 
     # Type Check
     # TODO
 
@@ -172,6 +171,7 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
+    print 'EXITING'
     return 1
     
     # Write output
