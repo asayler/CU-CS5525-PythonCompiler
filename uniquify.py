@@ -50,7 +50,7 @@ class EnvLambda(Lambda):
         self.lvars = lvars
 
     def __repr__(self):
-        return "EnvLambda(%s, %s, %s)" % (repr(self.function), repr(self.env), repr(self.lvars))
+        return "EnvLambda(%s, %s, %s)" % (repr(self.lambdal), repr(self.env), repr(self.lvars))
 
 
 class UniquifyVisitor(CopyVisitor):
@@ -289,7 +289,7 @@ class UniquifyVisitor(CopyVisitor):
             for var in r:
                 this_env[var] = generate_name(var)
             new_lambda = EnvLambda(node, this_env, l)
-            return new_lambda, lvars, rvars
+            return new_lambda, lvars, allvars
         else:
             print 'IN A LAMBDA FUNCTION, SHOULDNT BE HERE NOW'
             # return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code, env, lvars, collect_pass))
