@@ -48,7 +48,11 @@ class InstrSelectVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        return self.dispatch(n.node)
+        return sum(map(self.dispatch, n.node),[])
+
+    def visitSLambda(self, n):
+        # TEMPORARY
+        return self.dispatch(n.code)
 
     # Statements    
 

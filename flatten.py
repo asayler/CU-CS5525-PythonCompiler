@@ -22,7 +22,7 @@
 from vis import Visitor
 
 # Helper Tools
-from utilities import generate_name
+from utilities import generate_name, make_assign
 from unitcopy import CopyVisitor
 
 from functionwrappers import *
@@ -69,6 +69,10 @@ class FlattenVisitor(CopyVisitor):
     def visitDiscard(self, n):
         (e, ss) = self.dispatch(n.expr, True)
         return ss
+
+    def visitReturn(self, n):
+        (e, ss) = self.dispatch(n.value, True)
+        return ss + [Return(e)]
 
     # For expressions: takes an expression and a bool saying whether the
     # expression needs to be simple, and returns an expression
@@ -119,6 +123,19 @@ class FlattenVisitor(CopyVisitor):
             return (Name(tmp), ss + [make_assign(tmp, IntUnarySub(expr))])
         else:
             return (IntUnarySub(expr), ss)
+
+    def visitIndirectCallFunc(self, n, needs_to_be_simple):
+        if isinstance(n.node, Name):
+            args_sss = [self.dispatch(arg, True) for arg in n.args]
+            args = [arg for (arg,ss) in args_sss]
+            ss = reduce(lambda a,b: a + b, [ss for (arg,ss) in args_sss], [])
+            if needs_to_be_simple:
+                tmp = generate_name('indirectcallfunctmp')
+                return (Name(tmp), ss + [make_assign(tmp, IndirectCallFunc(n.node, args))])
+            else:
+                return (IndirectCallFunc(n.node, args), ss)
+        else:
+            raise Exception('flatten: only indirectcalls to named functions allowed')
 
     def visitCallFunc(self, n, needs_to_be_simple):
         if isinstance(n.node, Name):
