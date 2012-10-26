@@ -255,7 +255,7 @@ def interference(instrs, lafter):
                         addEdge(t, v)
 
         # If call
-        elif(isinstance(instr, Call86),
+        elif(isinstance(instr, Call86) or 
              isinstance(instr, IndirectCall86)):
             for v in live:
                 # Add edge for each callee save register
