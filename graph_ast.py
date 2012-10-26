@@ -132,6 +132,7 @@ class Graph_ast(Visitor):
         myid = Graphvis_dot().uniqueid(n)
         lines += Graphvis_dot().lineLabel(myid, ("Subscript"))
         lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.subs[0], myid)
         lines += self.dispatch(n.expr, myid)
         return lines
                 
