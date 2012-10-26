@@ -24,9 +24,9 @@ from monoast import *
 
 from graphvis_dot import Graphvis_dot
 
-from graph_monoast import Graph_monoast
+from graph_closedast import Graph_closedast
 
-class Graph_expandedast(Graph_monoast):
+class Graph_expandedast(Graph_closedast):
     
     # Banned Nodes
 
