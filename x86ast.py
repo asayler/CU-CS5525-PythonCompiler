@@ -246,4 +246,4 @@ class Func86(X86Inst):
         self.nodes = nodes
     def mnemonic(self):
         name = self.name if sys.platform != 'darwin' else ('_' + self.name)
-        return '%s:\n\t%s\n' % (name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
+        return '.globl%s\n%s:\n\t%s\n' % (name, name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
