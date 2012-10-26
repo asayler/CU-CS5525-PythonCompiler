@@ -233,13 +233,13 @@ class UniquifyVisitor(CopyVisitor):
         if(collect_pass):
             #Add to lvars because we want to have a party up in this joint
             #Also we need to keep track of all vars.
-            if(n.name != 'True' and n.name != 'False'):
+            if(n.name != 'True' and n.name != 'False' and n.name != 'input' and n.name != 'print'):
                 allvars = allvars | set([n.name])
             return (n, lvars, allvars)
         else:
             if(debug):
                 print 'old name', n.name
-            if(n.name != 'True' and n.name != 'False'):
+            if(n.name != 'True' and n.name != 'False' and n.name != 'input' and n.name != 'print'):
                 n.name = env[n.name]
             if(debug):
                 print 'new name',n.name
@@ -249,7 +249,7 @@ class UniquifyVisitor(CopyVisitor):
         if(debug):
             print '\nin AssName, n, env, lvars =',n, env, lvars, allvars
         if(collect_pass):
-            if(n.name != 'True' and n.name != 'False'):
+            if(n.name != 'True' and n.name != 'False' and n.name != 'input' and n.name != 'print'):
                 lvars = lvars | set([n.name])
                 allvars = allvars | set([n.name])
                 if(debug):
@@ -258,7 +258,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             if(debug):
                 print 'name before', n.name
-            if(n.name != 'True' and n.name != 'False'):
+            if(n.name != 'True' and n.name != 'False' and n.name != 'input' and n.name != 'print'):
                 n.name = env[n.name]
                 if(debug):
                     print 'name after', n.name
@@ -508,11 +508,14 @@ class UniquifyVisitor(CopyVisitor):
                 lvars = l | lvars
                 allvars = r | allvars
                 args += [a]
-            return CallFunc(n.node, args, n.star_args, n.dstar_args, n.lineno), lvars, allvars
+            node, l, r = self.dispatch(n.node, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return CallFunc(node, args, n.star_args, n.dstar_args, n.lineno), lvars, allvars
         else:
             args = []
             for arg in n.args:
                 args += [self.dispatch(arg, env, lvars, allvars, collect_pass)]
-            return CallFunc(n.node, 
+            return CallFunc(self.dispatch(n.node, env, lvars, allvars, collect_pass), 
                 args, n.star_args, n.dstar_args, n.lineno)
 
