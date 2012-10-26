@@ -22,7 +22,7 @@ from x86ast import *
 
 from utilities import generate_name
 
-debug = False
+debug = True
 
 MAXITERATIONS = 9
 
@@ -348,13 +348,13 @@ def color(graph, colors, regOnlyVars):
     while(len(w) > 0):
         
         # Find regOnlyKeys in Keys
-        priorityKeys = []
-        for key in w:
-            if(key in regOnlyVars):
-                priorityKeys += [key]
+        #priorityKeys = []
+        #for key in w:
+        #    if(key in regOnlyVars):
+        #        priorityKeys += [key]
         # Else use all keys
-        if(len(priorityKeys) == 0):
-            priorityKeys = w
+#        if(len(priorityKeys) == 0):
+        priorityKeys = w
         
         # Find key with max saturation
         maxkeys = []
@@ -367,9 +367,10 @@ def color(graph, colors, regOnlyVars):
             elif(sat == maxsat):
                 maxkeys += [key]
         # Break ties
-        # Nothing to break currently
-        # Otherwise use first var
-        maxkey = maxkeys[0]
+        for key in maxkeys:
+            maxkey = key
+            if key in regOnlyVars:
+                break
         
         # Select color for key with max saturation and remove from w
         adjcolors = set([])
