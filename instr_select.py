@@ -39,7 +39,7 @@ DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 
-IfThenLabelCnt = 0
+IfThenLabelCnt = 1
 ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
 
@@ -48,11 +48,13 @@ class InstrSelectVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        return sum(map(self.dispatch, n.node),[])
+        slambdas = []
+        for node in n.node:
+            slambdas += [self.dispatch(node)]
+        return slambdas
 
     def visitSLambda(self, n):
-        # TEMPORARY
-        return self.dispatch(n.code)
+        return Func86(n.label, self.dispatch(n.code))
 
     # Statements    
 
