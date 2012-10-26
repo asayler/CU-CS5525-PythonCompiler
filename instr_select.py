@@ -56,8 +56,14 @@ class InstrSelectVisitor(Visitor):
         return slambdas
 
     def visitSLambda(self, n):
-        #ToDo Add Function Setup, preamble, callee save, etc
-        return Func86(n.label, self.dispatch(n.code))
+        instrs = []
+        #Handle Arguments
+        offset = 8
+        for param in n.params:
+            instrs += [Move86(Mem86(offset, EBP), Var86(param))]
+            offset += 4
+        instrs += self.dispatch(n.code)
+        return Func86(n.label, instrs)
 
     # Statements    
 
