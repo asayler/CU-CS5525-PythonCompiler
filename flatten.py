@@ -84,6 +84,9 @@ class FlattenVisitor(CopyVisitor):
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
 
+    def visitSLambdaLabel(self, n, needs_to_be_simple):
+        return (n, [])
+
     def visitLet(self, n, needs_to_be_simple):
         (rhs, ss1) = self.dispatch(n.rhs, True)
         (body, ss2) = self.dispatch(n.body, True)
@@ -125,17 +128,19 @@ class FlattenVisitor(CopyVisitor):
             return (IntUnarySub(expr), ss)
 
     def visitIndirectCallFunc(self, n, needs_to_be_simple):
-        if isinstance(n.node, Name):
+        if isinstance(n.node, CallFunc):
             args_sss = [self.dispatch(arg, True) for arg in n.args]
             args = [arg for (arg,ss) in args_sss]
             ss = reduce(lambda a,b: a + b, [ss for (arg,ss) in args_sss], [])
+            (expr, sss) = self.dispatch(n.node, True)
+            ss += sss
             if needs_to_be_simple:
                 tmp = generate_name('indirectcallfunctmp')
-                return (Name(tmp), ss + [make_assign(tmp, IndirectCallFunc(n.node, args))])
+                return (Name(tmp), ss + [make_assign(tmp, IndirectCallFunc(expr, args))])
             else:
-                return (IndirectCallFunc(n.node, args), ss)
+                return (IndirectCallFunc(expr, args), ss)
         else:
-            raise Exception('flatten: only indirectcalls to named functions allowed')
+            raise Exception('flatten: only indirectcalls to closure converted functions allowed')
 
     def visitCallFunc(self, n, needs_to_be_simple):
         if isinstance(n.node, Name):
@@ -178,7 +183,6 @@ class FlattenVisitor(CopyVisitor):
         for node in n.nodes:
             myss += self.dispatch(Discard(CallSETSUB([expr, CallINJECTINT([Const(cnt)]), node])))
             cnt += 1
-
         return (expr, myss)
 
     def visitDict(self, n, needs_to_be_simple):
@@ -188,6 +192,5 @@ class FlattenVisitor(CopyVisitor):
         myss += ss
         # Add each dict memeber
         for item in n.items:
-            myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))
-            
+            myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))            
         return (expr, myss)

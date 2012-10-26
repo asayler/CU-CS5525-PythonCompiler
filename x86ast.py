@@ -59,7 +59,7 @@ class IndirectJumpLabel86(X86Arg):
     def __init__(self, name):
         self.name = name
     def mnemonic(self):
-        return self.name
+        return '$' + ('_' if sys.platform == 'darwin' else '') + self.name
 
 EAX = Reg86('eax')
 EBX = Reg86('ebx')
@@ -148,16 +148,16 @@ class Call86(X86Inst):
         self.function = function
     def mnemonic(self):
         if(sys.platform == 'darwin'):
-            instrStr = 'call _%s' % self.function.mnemonic()
+            instrStr = 'call _%s' % self.function
         else:
-            instrStr = 'call %s' % self.function.mnemonic()
+            instrStr = 'call %s' % self.function
         return instrStr
 
 class IndirectCall86(X86Inst):
     def __init__(self, function):
         self.function = function
     def mnemonic(self):
-        return 'call* $' + ('_' if sys.platform == 'darwin' else '') + self.function.mnemonic()
+        return 'call *' + self.function.mnemonic()
 
 class LShift86(X86Inst):
     def __init__(self, value, target):

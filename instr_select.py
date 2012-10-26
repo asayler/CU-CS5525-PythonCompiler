@@ -32,6 +32,8 @@ def arg_select(ast):
         return Var86(ast.name)
     elif isinstance(ast, Const):
         return Const86(ast.value)
+    elif isinstance(ast, SLambdaLabel):
+        return IndirectJumpLabel86(ast.name)
     else:
         raise Exception("InstrSelect: Invalid argument - " + str(ast))
 
@@ -39,7 +41,7 @@ DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 
-IfThenLabelCnt = 0
+IfThenLabelCnt = 1
 ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
 
@@ -48,11 +50,14 @@ class InstrSelectVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        return sum(map(self.dispatch, n.node),[])
+        slambdas = []
+        for node in n.node:
+            slambdas += [self.dispatch(node)]
+        return slambdas
 
     def visitSLambda(self, n):
-        # TEMPORARY
-        return self.dispatch(n.code)
+        #ToDo Add Function Setup, preamble, callee save, etc
+        return Func86(n.label, self.dispatch(n.code))
 
     # Statements    
 
@@ -68,6 +73,12 @@ class InstrSelectVisitor(Visitor):
     def visitDiscard(self, n):
         tmp = Var86(generate_name(DISCARDTEMP))
         return self.dispatch(n.expr, tmp)
+
+    def visitReturn(self, n):
+        instrs = []
+        instrs += [Move86(arg_select(n.value), EAX)]
+        instrs += [Ret86()]
+        return instrs
     
     # Terminal Expressions
 
@@ -145,6 +156,26 @@ class InstrSelectVisitor(Visitor):
             instrs += [Push86(arg_select(arg))]
             offset += WORDLEN
         instrs += [Call86(n.node.name)]
+        instrs += [Move86(EAX, target)]
+        if(cntargs > 0):
+            instrs += [Add86(Const86(offset), ESP)]
+        return instrs
+
+    def visitIndirectCallFunc(self, n, target):
+        instrs = []
+        instrs += self.dispatch(n.node, target)
+        cntargs = 0
+        align = (STACKALIGN - (len(n.args) % STACKALIGN))
+        offset = 0
+        if align != 0:
+            offset += WORDLEN * align
+            instrs += [Sub86(Const86(offset), ESP)]
+        n.args.reverse()
+        for arg in n.args:
+            cntargs += 1
+            instrs += [Push86(arg_select(arg))]
+            offset += WORDLEN
+        instrs += [IndirectCall86(target)]
         instrs += [Move86(EAX, target)]
         if(cntargs > 0):
             instrs += [Add86(Const86(offset), ESP)]

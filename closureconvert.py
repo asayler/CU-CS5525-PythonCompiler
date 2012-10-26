@@ -30,7 +30,7 @@ from functionwrappers import *
 from compiler.ast import *
 from monoast import *
 
-MAINNAME = '0_mainfunc'
+MAINNAME = 'main'
 
 class ClosureVisitor(CopyVisitor):
     def __init__(self):
@@ -52,7 +52,7 @@ class ClosureVisitor(CopyVisitor):
             stmts += [rstmt]
             slambdas += rslambdas
         if(is_main):
-            slambdas += [SLambda([], Stmt(stmts), SLambdaLabel(MAINNAME))]
+            slambdas += [SLambda([], Stmt(stmts), MAINNAME)]
             return slambdas
         else:
             return (Stmt(stmts), slambdas)
@@ -90,7 +90,8 @@ class ClosureVisitor(CopyVisitor):
 
     def visitSLambda(self, n):
         # Creat New Label
-        label = SLambdaLabel(generate_name("SLambda"))
+        label_name = generate_name("SLambda")
+        label = SLambdaLabel(label_name)
         # Recurse on code body
         slambdas = []
         (code, rslambdas) = self.dispatch(n.code, False)
@@ -114,7 +115,7 @@ class ClosureVisitor(CopyVisitor):
         params += [fvs_n]
         params += n.params
         # Create new closed slambda
-        slambdas += [SLambda(params, Stmt(stmts), label)]
+        slambdas += [SLambda(params, Stmt(stmts), label_name)]
         # Return Call and list of SLambdas
         return (InjectFrom(BIG_t, CallCREATECLOSURE([label, List(fvs)])), slambdas)
 
