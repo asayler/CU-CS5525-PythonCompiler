@@ -31,6 +31,7 @@ from monoast import *
 from x86ast import *
 
 # Compiler Stages
+from uniquify import *
 from explicate import *
 from heapify import *
 from closureconvert import *
@@ -94,8 +95,19 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(parsedast, debugFileName)
 
+    # Uniquify
+    uniqueast = UniquifyVisitor().preorder(parsedast)
+    # print uniqueast,'\n\n\n'
+    if(debug):
+        # Print parsedast
+        sys.stderr.write("parsed ast = \n" + str(compiler.parseFile(inputFilePath)) + "\n")
+        sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-uniquified.dot"
+        Graph_ast().writeGraph(uniqueast, debugFileName)
+
     # Explicate
-    monoast = ExplicateVisitor().preorder(parsedast)
+    monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
@@ -125,6 +137,7 @@ def main(argv=None):
         Graph_closedast().writeGraph(closedast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
+ 
     # Type Check
     # TODO
 
@@ -158,6 +171,7 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
+
     # Write output
     write_to_file(assembly, outputFileName)
 
