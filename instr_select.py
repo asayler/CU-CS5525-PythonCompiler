@@ -32,6 +32,8 @@ def arg_select(ast):
         return Var86(ast.name)
     elif isinstance(ast, Const):
         return Const86(ast.value)
+    elif isinstance(ast, SLambdaLabel):
+        return IndirectJumpLabel86(ast.name)
     else:
         raise Exception("InstrSelect: Invalid argument - " + str(ast))
 
