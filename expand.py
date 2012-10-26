@@ -32,6 +32,8 @@ class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
         CopyVisitor.visitModule = visitModulePostCC
+        CopyVisitor.visitSLambdaLabel = SLambdaLabel.visitSLambdaLabel
+        CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
 
     def visitIsTag(self, n):
         if(n.typ == INT_t):

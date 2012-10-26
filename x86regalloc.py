@@ -73,7 +73,10 @@ def liveness(instrs):
         elif(isinstance(instr, Push86)):
             if(validNode(instr.value)):
                 read    += [name(instr.value)]
-        
+        elif(isinstance(instr, IndirectCall86)):
+            if(validNode(instr.function)):
+                read    += [name(instr.function)]
+
         # Unary write
         elif(isinstance(instr, SetEq86) or
              isinstance(instr, SetNEq86)):
@@ -192,7 +195,10 @@ def interference(instrs, lafter):
         elif(isinstance(instr, Push86)):
             if(validNode(instr.value)):
                 graph[name(instr.value)] = set([])
-        
+        elif(isinstance(instr, IndirectCall86)):
+            if(validNode(instr.function)):
+                graph[name(instr.function)] = set([])
+
         # target only nodes
         elif(isinstance(instr, Neg86) or
              isinstance(instr, SetEq86) or
@@ -281,6 +287,7 @@ def interference(instrs, lafter):
              isinstance(instr, JumpEqual86),
              isinstance(instr, Label86),
              isinstance(instr, Push86),
+             isinstance(instr, IndirectCall86),
              isinstance(instr, Comp86)):
             pass
 
@@ -310,8 +317,8 @@ def interference(instrs, lafter):
 
     return graph
 
-def color(graph, colors = {}, regOnlyVars = []):
-
+def color(graph, colors, regOnlyVars):
+    
     def saturation(key):
         sat = 0
         # Loop through neighbors
@@ -484,6 +491,9 @@ def varReplace(instrs, colors):
         elif(isinstance(instr, Push86)):
             if(validNode(instr.value)):
                 instr.value = replace(instr.value, colormap)
+        elif(isinstance(instr, IndirectCall86)):
+            if(validNode(instr.function)):
+                instr.function = replace(instr.function, colormap)
         
         # Unary write
         # TODO: Combine with unary read/write case above
@@ -579,7 +589,7 @@ def regAlloc(instrs):
     graph = interference(instrseq, lafter)
     if(debug):
         sys.stderr.write("graph       =\n" + str(graph) + "\n")
-    colors = color(graph)
+    colors = color(graph, {}, [])
     if(debug):
         sys.stderr.write("colors      =\n" + str(colors) + "\n")
     iterations = 0
@@ -609,6 +619,12 @@ def regAlloc(instrs):
     instrseq = varReplace(instrseq, colors)
     instrseq = fixSmallRegs(instrseq)
     instrseq = addPreamble(instrseq, colors)
-    instrseq = addClosing(instrseq)
+    #instrseq = addClosing(instrseq)
 
     return instrseq
+
+def funcRegAlloc(funcs):
+    outFuncs = []
+    for func in funcs:
+        outFuncs += [Func86(func.name, regAlloc(func.nodes))]
+    return outFuncs

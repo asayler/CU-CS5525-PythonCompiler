@@ -52,10 +52,7 @@ debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
-    if(sys.platform == 'darwin'):
-        assembly = '.globl _main\n_main:\n\t' + '\n\t'.join(assembly)
-    else:
-        assembly = '.globl main\nmain:\n\t' + '\n\t'.join(assembly)
+    assembly = '\n'.join(map(lambda x: x.mnemonic(), assembly))
     outputfile = open(outputFileName, 'w+')
     outputfile.write(assembly + '\n')
     outputfile.close()
@@ -168,15 +165,15 @@ def main(argv=None):
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
-        pass
-        #sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
+        sys.stderr.write("pre instr ast = \n" + str(assembly) + "\n")
 
     # Reg Alloc
-    assembly = regAlloc(assembly)
+    assembly = funcRegAlloc(assembly)
     if(debug):
-        pass
-        #sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")
-
+        sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
+    
+    return 1
+    
     # Write output
     write_to_file(map(str, assembly), outputFileName)
 

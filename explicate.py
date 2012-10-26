@@ -54,7 +54,7 @@ class ExplicateVisitor(CopyVisitor):
                            ProjectTo(INT_t, expr),
                            ProjectTo(BIG_t, expr)))
     
-    def explicateBinary(self, lhsexpr, rhsexpr, smallFunc, smallType, bigFunc, bigType):
+    def explicateBinary(self, lhsexpr, rhsexpr, smallFunc, smallType, bigFunc, bigType, mixedDefault):
         lhsname = generate_name('let_binexp_lhs')
         rhsname = generate_name('let_binexp_rhs')
         lhsvar = Name(lhsname)
@@ -78,8 +78,7 @@ class ExplicateVisitor(CopyVisitor):
                                            bigFunc([self.projectType(lhsvar),
                                                     self.projectType(rhsvar)])),
                                 # Mixed Case
-                                # TODO: Add mixed case logic
-                                CallTERROR([])))))
+                                mixedDefault))))
         return t
 
     # Top Level Expressions
@@ -121,10 +120,10 @@ class ExplicateVisitor(CopyVisitor):
         rhsexpr = n.ops[0][1]
         # Equal Compare
         if(op == COMPEQUAL):
-            t = self.explicateBinary(lhsexpr, rhsexpr, IntEqual, BOOL_t, CallBIGEQ, BOOL_t)
+            t = self.explicateBinary(lhsexpr, rhsexpr, IntEqual, BOOL_t, CallBIGEQ, BOOL_t, FALSENODE)
         # Not Equal Compare
         elif(op == COMPNOTEQUAL):
-            t = self.explicateBinary(lhsexpr, rhsexpr, IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t)
+            t = self.explicateBinary(lhsexpr, rhsexpr, IntNotEqual, BOOL_t, CallBIGNEQ, BOOL_t, TRUENODE)
         elif(op == COMPIS):
             t = InjectFrom(BOOL_t, IntEqual((self.dispatch(lhsexpr),
                                              self.dispatch(rhsexpr))))
@@ -136,7 +135,7 @@ class ExplicateVisitor(CopyVisitor):
     def visitAdd(self, n):
         lhsexpr = n.left
         rhsexpr = n.right
-        t = self.explicateBinary(lhsexpr, rhsexpr, IntAdd, INT_t, CallBIGADD, BIG_t)
+        t = self.explicateBinary(lhsexpr, rhsexpr, IntAdd, INT_t, CallBIGADD, BIG_t, CallTERROR([]))
         return t
     
     def visitNot(self, n):

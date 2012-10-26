@@ -65,7 +65,6 @@ class SLambdaLabel(PyNode):
     def visitSLambdaLabel(self, n):
         return SLambdaLabel(n.name)
 
-
 class IndirectCallFunc(PyNode):
     def __init__(self, node, args):
         self.node = node

@@ -26,7 +26,7 @@ class X86Arg:
     def __repr__(self):
         return self.mnemonic()
     def __hash__(self):
-        return hash(self.__str__())
+        return hash(self.__repr__())
     def __eq__(self, that):
         return self.mnemonic() == that.mnemonic()
     
@@ -59,7 +59,7 @@ class IndirectJumpLabel86(X86Arg):
     def __init__(self, name):
         self.name = name
     def mnemonic(self):
-        return '$' + self.name
+        return '$' + ('_' if sys.platform == 'darwin' else '') + self.name
 
 EAX = Reg86('eax')
 EBX = Reg86('ebx')
@@ -153,6 +153,12 @@ class Call86(X86Inst):
             instrStr = 'call %s' % self.function
         return instrStr
 
+class IndirectCall86(X86Inst):
+    def __init__(self, function):
+        self.function = function
+    def mnemonic(self):
+        return 'call *' + self.function.mnemonic()
+
 class LShift86(X86Inst):
     def __init__(self, value, target):
         self.value = value
@@ -239,4 +245,5 @@ class Func86(X86Inst):
         self.name = name
         self.nodes = nodes
     def mnemonic(self):
-        return '.globl %s:\n\t%s\n' % (self.name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
+        name = self.name if sys.platform != 'darwin' else ('_' + self.name)
+        return '.globl %s\n%s:\n\t%s\n' % (name, name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
