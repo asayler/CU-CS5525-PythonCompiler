@@ -151,8 +151,8 @@ def main(argv=None):
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
-        pass
-        #sys.stderr.write("instr ast = \n" + "\n".join(map(str, assembly)) + "\n")
+        #pass
+        sys.stderr.write("instr ast = \n" + str(assembly) + "\n")
 
     #Exit Early
     return 1
