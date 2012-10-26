@@ -580,15 +580,6 @@ def addPreamble(instrs, colors):
                 Push86(EDI)]
     return preamble + saveRegs + instrs
 
-def addClosing(instrs):
-    restoreRegs[Pop86(EDI),
-                Pop86(ESI),
-                Pop86(EBX)]
-    closing = [Move86(Const86(0), EAX),
-               Leave86(),
-               Ret86()]
-    return instrs + restoreRegs + closing
-
 def regAlloc(instrs, regOnlyVars=None):
     if regOnlyVars is None:
         regOnlyVars = []
@@ -628,7 +619,6 @@ def regAlloc(instrs, regOnlyVars=None):
     instrseq = varReplace(instrseq, colors)
     instrseq = fixSmallRegs(instrseq)
     instrseq = addPreamble(instrseq, colors)
-    #instrseq = addClosing(instrseq)
 
     return instrseq
 
