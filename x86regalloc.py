@@ -469,7 +469,8 @@ def varReplace(instrs, colors):
             return Reg86(colormap[color])
         else:
             # Set stack spill
-            return Mem86((color - len(REGCOLORS) + 1) * WORDLEN, EBP)
+            offset = ((color - len(REGCOLORS) + 1) * WORDLEN)
+            return Mem86(-offset, EBP)
 
     #Duplicate
     instrs = instrs[:]
