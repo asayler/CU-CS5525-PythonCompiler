@@ -57,7 +57,7 @@ class InstrSelectVisitor(Visitor):
 
     def visitSLambda(self, n):
         instrs = []
-        #Handle Arguments
+        # Handle Arguments
         offset = 8
         for param in n.params:
             instrs += [Move86(Mem86(offset, EBP), Var86(param))]

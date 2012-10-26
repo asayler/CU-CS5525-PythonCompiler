@@ -575,13 +575,19 @@ def addPreamble(instrs, colors):
         stackvars += (STACKALIGN - (stackvars % STACKALIGN))
     stackvars += 2
     preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
-    return preamble + instrs
+    saveRegs = [Push86(EBX),
+                Push86(ESI),
+                Push86(EDI)]
+    return preamble + saveRegs + instrs
 
 def addClosing(instrs):
+    restoreRegs[Pop86(EDI),
+                Pop86(ESI),
+                Pop86(EBX)]
     closing = [Move86(Const86(0), EAX),
                Leave86(),
                Ret86()]
-    return instrs + closing
+    return instrs + restoreRegs + closing
 
 def regAlloc(instrs, regOnlyVars=None):
     if regOnlyVars is None:
