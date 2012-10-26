@@ -618,7 +618,7 @@ def regAlloc(instrs):
         
     instrseq = varReplace(instrseq, colors)
     instrseq = fixSmallRegs(instrseq)
-    #instrseq = addPreamble(instrseq, colors)
+    instrseq = addPreamble(instrseq, colors)
     #instrseq = addClosing(instrseq)
 
     return instrseq
