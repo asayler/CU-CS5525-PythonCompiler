@@ -151,18 +151,15 @@ def main(argv=None):
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
-        #pass
-        sys.stderr.write("instr ast = \n" + str(assembly) + "\n")
-
-    #Exit Early
-    return 1
+        sys.stderr.write("pre instr ast = \n" + str(assembly) + "\n")
 
     # Reg Alloc
-    assembly = regAlloc(assembly)
+    assembly = funcRegAlloc(assembly)
     if(debug):
-        pass
-        #sys.stderr.write("instrs = \n" + "\n".join(map(str, assembly)) + "\n")
-
+        sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
+    
+    return 1
+    
     # Write output
     write_to_file(map(str, assembly), outputFileName)
 
