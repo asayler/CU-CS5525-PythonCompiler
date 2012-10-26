@@ -166,7 +166,11 @@ class ExplicateVisitor(CopyVisitor):
             else:
                 output = IndirectCallFunc(Name(name), args)
         else:
-            raise Exception("Only named functions accepted")
+            node = self.dispatch(n.node)
+            args = []
+            for arg in n.args:
+                args += [self.dispatch(arg)]
+            output = IndirectCallFunc(node, args)
         return output
 
     def visitLambda(self, n):
