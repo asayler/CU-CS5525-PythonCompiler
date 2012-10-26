@@ -110,6 +110,12 @@ class Push86(X86Inst):
     def mnemonic(self):
         return 'pushl ' + self.value.mnemonic() 
 
+class Pop86(X86Inst):
+    def __init__(self, value):
+        self.value = value
+    def mnemonic(self):
+        return 'popl ' + self.value.mnemonic() 
+
 class Move86(X86Inst):
     def __init__(self, value, target):
         self.value = value
