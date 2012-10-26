@@ -59,7 +59,7 @@ class IndirectJumpLabel86(X86Arg):
     def __init__(self, name):
         self.name = name
     def mnemonic(self):
-        return self.name
+        return '$' + self.name
 
 EAX = Reg86('eax')
 EBX = Reg86('ebx')
