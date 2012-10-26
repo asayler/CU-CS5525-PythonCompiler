@@ -158,10 +158,8 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
-    return 1
-    
     # Write output
-    write_to_file(map(str, assembly), outputFileName)
+    write_to_file(assembly, outputFileName)
 
     return 0
 
