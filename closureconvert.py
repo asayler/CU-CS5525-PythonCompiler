@@ -52,6 +52,7 @@ class ClosureVisitor(CopyVisitor):
             stmts += [rstmt]
             slambdas += rslambdas
         if(is_main):
+            stmts += [Return(Const(0))]
             slambdas += [SLambda([], Stmt(stmts), MAINNAME)]
             return slambdas
         else:
