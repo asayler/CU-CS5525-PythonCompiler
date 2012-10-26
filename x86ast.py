@@ -43,15 +43,11 @@ class Reg86(X86Arg):
         return '%' + self.register
 
 class Mem86(X86Arg):
-    def __init__(self, offset, arg, sign='-'):
+    def __init__(self, offset, arg):
         self.offset = offset
         self.arg = arg
-        if sign = '+':
-            self.sign = ''
-        else:
-            self.sign = sign
     def mnemonic(self):
-        return ('%s%d(%s)' % (self.sign, self.offset, self.arg.mnemonic()))
+        return ('%d(%s)' % (self.offset, self.arg.mnemonic()))
 
 class Var86(X86Arg):
     def __init__(self, name):
