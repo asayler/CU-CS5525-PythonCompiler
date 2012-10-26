@@ -41,7 +41,6 @@ class SetVisitor(Visitor):
         return lvs
 
     def visitAssign(self, n):
-        print n.nodes
         return self.dispatch(n.expr) | reduce(lambda x,y: x | y, 
                                               map(self.dispatch, n.nodes), 
                                               set([]))
