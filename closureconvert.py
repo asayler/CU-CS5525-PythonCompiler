@@ -30,7 +30,7 @@ from functionwrappers import *
 from compiler.ast import *
 from monoast import *
 
-MAINNAME = '0_mainfunc'
+MAINNAME = 'main'
 
 class ClosureVisitor(CopyVisitor):
     def __init__(self):
