@@ -132,7 +132,7 @@ def main(argv=None):
     # TODO
 
     # Expand
-    expandedast = ExpandVisitor().preorder(heapast)
+    expandedast = ExpandVisitor().preorder(closedast)
     if(debug):
         # Print expandedast
         #sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
@@ -150,7 +150,7 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
         Graph_flatast().writeGraph(flatast, debugFileName)
-
+        
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):
