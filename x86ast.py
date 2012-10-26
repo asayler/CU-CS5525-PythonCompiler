@@ -16,7 +16,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-"""Mike's x86 AST tree nodes"""
+"""x86 AST tree nodes"""
 
 import sys
 
@@ -50,6 +50,12 @@ class Mem86(X86Arg):
         return ('-%d(%s)' % (self.offset, self.arg.mnemonic()))
 
 class Var86(X86Arg):
+    def __init__(self, name):
+        self.name = name
+    def mnemonic(self):
+        return self.name
+
+class IndirectJumpLabel86(X86Arg):
     def __init__(self, name):
         self.name = name
     def mnemonic(self):
@@ -227,3 +233,10 @@ class Leave86(X86Inst):
 class Ret86(X86Inst):
     def mnemonic(self):
         return 'ret'
+
+class Func86(X86Inst):
+    def __init__(self, name, nodes):
+        self.name = name
+        self.nodes = nodes
+    def mnemonic(self):
+        return '.globl %s:\n\t%s\n' % (self.name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
