@@ -107,7 +107,7 @@ class ClosureVisitor(CopyVisitor):
             fvs += [Name(var)]
             stmt = make_assign(var, Subscript(Name(fvs_n), 'OP_APPLY',
                                               [InjectFrom(INT_t, Const(cnt))]))
-            stmts += stmt
+            stmts += [stmt]
             cnt += 1
         # Setup list of stmts
         stmts += code.nodes
