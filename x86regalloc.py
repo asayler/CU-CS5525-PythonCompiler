@@ -445,6 +445,13 @@ def fixMemToMem(instrs, colors):
                     regOnlyVars += [tmp.name]
                 else:
                     fixedInstrs += [instr]
+            elif validNode(instr.target) and isinstance(instr.value, Mem86):
+                if(colors[name(instr.target)] >= len(REGCOLORS)):
+                    tmp = Var86(generate_name(regTempPrefix))
+                    fixedInstrs += addTemp(instr, tmp)
+                    regOnlyVars += [tmp.name]
+                else:
+                    fixedInstrs += [instr]   
             else:
                 fixedInstrs += [instr]
         else:
@@ -625,5 +632,5 @@ def regAlloc(instrs, regOnlyVars=None):
 def funcRegAlloc(funcs):
     outFuncs = []
     for func in funcs:
-        outFuncs += [Func86(func.name, regAlloc(func.nodes, func.params))]
+        outFuncs += [Func86(func.name, regAlloc(func.nodes, []))]
     return outFuncs
