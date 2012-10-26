@@ -70,6 +70,12 @@ class InstrSelectVisitor(Visitor):
     def visitDiscard(self, n):
         tmp = Var86(generate_name(DISCARDTEMP))
         return self.dispatch(n.expr, tmp)
+
+    def visitReturn(self, n):
+        instrs = []
+        instrs += [Move86(arg_select(n.value), EAX)]
+        instrs += [Ret86]
+        return instrs
     
     # Terminal Expressions
 
