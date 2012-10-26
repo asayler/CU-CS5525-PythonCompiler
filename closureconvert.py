@@ -91,7 +91,7 @@ class ClosureVisitor(CopyVisitor):
 
     def visitSLambda(self, n):
         # Creat New Label
-        label_name = generate_name("SLambda")
+        label_name = 'Q' + generate_name("SLambda")
         label = SLambdaLabel(label_name)
         # Recurse on code body
         slambdas = []

@@ -48,7 +48,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = True
+debug = False
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -171,11 +171,9 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
-    print 'EXITING'
-    return 1
-    
+
     # Write output
-    write_to_file(map(str, assembly), outputFileName)
+    write_to_file(assembly, outputFileName)
 
     return 0
 
