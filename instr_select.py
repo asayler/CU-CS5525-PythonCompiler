@@ -63,7 +63,9 @@ class InstrSelectVisitor(Visitor):
             instrs += [Move86(Mem86(offset, EBP), Var86(param))]
             offset += 4
         instrs += self.dispatch(n.code)
-        return Func86(n.label, instrs)
+        ret = Func86(n.label, instrs)
+        ret.params = n.params
+        return ret
 
     # Statements    
 

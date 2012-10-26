@@ -582,19 +582,20 @@ def addClosing(instrs):
                Ret86()]
     return instrs + closing
 
-def regAlloc(instrs):
-    
+def regAlloc(instrs, regOnlyVars=None):
+    if regOnlyVars is None:
+        regOnlyVars = []
+
     (lafter, instrseq) = liveness(instrs)
     if(debug):
         sys.stderr.write("lafter      =\n" + "\n".join(map(str, lafter)) + "\n")
     graph = interference(instrseq, lafter)
     if(debug):
         sys.stderr.write("graph       =\n" + str(graph) + "\n")
-    colors = color(graph, {}, [])
+    colors = color(graph, {}, regOnlyVars)
     if(debug):
         sys.stderr.write("colors      =\n" + str(colors) + "\n")
     iterations = 0
-    regOnlyVars = []
     while(1):
 
         (instrseq, newRegOnlyVars) = fixMemToMem(instrseq, colors)
@@ -627,5 +628,5 @@ def regAlloc(instrs):
 def funcRegAlloc(funcs):
     outFuncs = []
     for func in funcs:
-        outFuncs += [Func86(func.name, regAlloc(func.nodes))]
+        outFuncs += [Func86(func.name, regAlloc(func.nodes, func.params))]
     return outFuncs
