@@ -321,7 +321,7 @@ class UniquifyVisitor(CopyVisitor):
             value, l, r = self.dispatch(n.value, env, lvars, allvars, collect_pass)
             lvars = lvars | l
             allvars = allvars | r
-            return Return(value), lvars, rvars
+            return Return(value), lvars, allvars
         else:
             return Return(self.dispatch(n.value, env, lvars, allvars, collect_pass))
 
@@ -512,7 +512,7 @@ class UniquifyVisitor(CopyVisitor):
         else:
             args = []
             for arg in n.args:
-                args += [self.dispatch(arg, env)]
+                args += [self.dispatch(arg, env, lvars, allvars, collect_pass)]
             return CallFunc(n.node, 
                 args, n.star_args, n.dstar_args, n.lineno)
 

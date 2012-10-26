@@ -48,7 +48,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = False
+debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -103,6 +103,7 @@ def main(argv=None):
     # print uniqueast,'\n\n\n'
     if(debug):
         # Print parsedast
+        sys.stderr.write("parsed ast = \n" + str(compiler.parseFile(inputFilePath)) + "\n")
         sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
@@ -139,6 +140,8 @@ def main(argv=None):
         Graph_closedast().writeGraph(closedast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
+    print 'EXITING'
+    return 1
     # Type Check
     # TODO
 
