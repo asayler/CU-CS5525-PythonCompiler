@@ -153,7 +153,7 @@ class FlattenVisitor(CopyVisitor):
             else:
                 return (CallFunc(n.node, args), ss)
         else:
-            raise Exception('flatten: only calls to named functions allowed')
+            raise Exception('flatten: only calls to named functions allowed, tried to call %s:%s' % (n.node, n.node.__class__))
 
     def visitIfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)

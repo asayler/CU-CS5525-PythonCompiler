@@ -30,6 +30,11 @@ def name(n):
         return n.name
     else: raise Exception('Getting name of invalid node ' + str(n))
 
+STATIC_NAMES = ['True', 'False', 'add', 'is_int', 'is_bool', 'is_big',
+                'inject_int', 'inject_bool', 'inject_big', 'project_int',
+                'project_bool', 'project_big', 'equal', 'not_equal', 'error_pyobj',
+                'print_any', 'is_true', 'input', 'input_int']
+
 class FreeVarsVisitor(SetVisitor):
     def __init__(self):
         super(FreeVarsVisitor,self).__init__()
@@ -41,7 +46,7 @@ class FreeVarsVisitor(SetVisitor):
                                               set([]))
 
     def visitName(self, n):
-        if n.name == 'True' or n.name == 'False':
+        if n.name in STATIC_NAMES:
             return set([])
         else: return set([name(n)])
 
