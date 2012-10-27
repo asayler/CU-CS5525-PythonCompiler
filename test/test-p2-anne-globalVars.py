@@ -28,7 +28,7 @@ x_1 = 4
 print0 = 5
 print_0 = x
 print 6
-print print_1
+print print_0
 
 def f(y):
 	x = 7
