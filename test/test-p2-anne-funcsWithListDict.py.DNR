@@ -4,11 +4,11 @@
 # Fall 2012
 # Python Compiler
 #
-# test-p2-anne-sameFuncNames.py
+# test-p2-anne-funcsWithListDict.py
 # Test Case
 # Subset: p2
 # Type: Student
-# Tesing: Same Func Names
+# Tesing: Funcs with Lists and Dicts
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -21,9 +21,11 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-def x(a):
-	def x(b, c):
-		return b+c
-	return(x(a,1))
-
-print x(3)
+def f(a,b):
+	a[1] = b
+	b = {3:1,True:5}
+	def a(x, b):
+		print x[b[3]]
+		return 0
+	print a({0:False, 4:5}, b)
+	return b

@@ -84,10 +84,10 @@ class InstrSelectVisitor(Visitor):
 
     def visitReturn(self, n):
         instrs = []
+        instrs += [Move86(arg_select(n.value), EAX)]
         instrs += [Pop86(EDI),
                    Pop86(ESI),
                    Pop86(EBX)]
-        instrs += [Move86(arg_select(n.value), EAX)]
         instrs += [Leave86()]
         instrs += [Ret86()]
         return instrs
