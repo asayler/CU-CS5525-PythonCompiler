@@ -22,7 +22,7 @@ from x86ast import *
 
 from utilities import generate_name
 
-debug = True
+debug = False
 
 MAXITERATIONS = 9
 
