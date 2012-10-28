@@ -13,5 +13,4 @@
 *.svg
 submit.zip
 parsetab.py
-test/devtest.py
-test/devtest.in
+test/devtest*
