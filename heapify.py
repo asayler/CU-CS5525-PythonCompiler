@@ -57,13 +57,25 @@ class HeapifyVisitor(CopyVisitor):
         self.local_visitor = LocalVarsVisitor()
         self.free_visitor = FreeVarsVisitor()
         self.nested_visitor = NestedFreeVarsVisitor()
-        # Global set of variables needing heapification
-        self.needs_heapification = set([])
         
     def preorder(self, tree, *args):
         self.local_visitor.preorder(tree)
         self.free_visitor.preorder(tree)
+        # Global set of variables needing heapification
+        self.needs_heapification = set([])
         return super(HeapifyVisitor, self).preorder(tree, *args)
+
+    def visitModule(self, n):
+        self.needs_heapification = self.needs_heapification | self.nested_visitor.preorder(n.node)
+        lvs = n.local_vars
+        new_stmts = []
+        for local in lvs:
+            print 'heapifying', local
+            if local in self.needs_heapification:
+                new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
+        body = self.dispatch(n.node)
+        body.nodes = new_stmts + body.nodes
+        return Module(n.doc, body, n.lineno)
 
     def visitSLambda(self, n):
         lvs = n.local_vars
@@ -88,7 +100,7 @@ class HeapifyVisitor(CopyVisitor):
 
     def visitAssign(self, n):
         if n.nodes[0].name in self.needs_heapification:
-            return SubscriptAssign(Name(name), ZERO, self.dispatch(n.expr))
+            return SubscriptAssign(Name(n.nodes[0].name), ZERO, self.dispatch(n.expr))
         else: return Assign(n.nodes, self.dispatch(n.expr)) 
 
     def visitName(self, n):

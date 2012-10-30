@@ -63,6 +63,10 @@ class FreeVarsVisitor(SetVisitor):
         return n.free_vars
 
 class LocalVarsVisitor(SetVisitor):
+    def visitModule(self, n):
+        n.local_vars = self.dispatch(n.node)
+        return n.local_vars
+
     def visitSLambda(self, n):
         n.local_vars = self.dispatch(n.code) - set(n.params)
         return set([])
