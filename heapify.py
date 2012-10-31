@@ -70,7 +70,6 @@ class HeapifyVisitor(CopyVisitor):
         lvs = n.local_vars
         new_stmts = []
         for local in lvs:
-            print 'heapifying', local
             if local in self.needs_heapification:
                 new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
         body = self.dispatch(n.node)
