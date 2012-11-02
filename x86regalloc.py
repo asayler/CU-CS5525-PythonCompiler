@@ -580,7 +580,7 @@ def addPreamble(instrs, colors):
                 Move86(ESP, EBP)]
     if(stackvars > 0):
         stackvars += (STACKALIGN - (stackvars % STACKALIGN))
-    stackvars += 2
+    stackvars += 3
     preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
     saveRegs = [Push86(EBX),
                 Push86(ESI),
