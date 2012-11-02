@@ -66,6 +66,13 @@ class FlattenVisitor(CopyVisitor):
         myss += [Assign(n.nodes, rhs)]
         return myss
 
+    def visitWhile(self, n):
+        teste, testss = self.dispatch(n.test, True)
+        bodyss = self.dispatch(n.body)
+        tmp = generate_name('whiletmp')
+        print "WHILE", [While(testss + [make_assign(tmp,teste)], Stmt(bodyss), n.else_)],'\n\n'
+        return [While(testss + [make_assign(tmp,teste)], Stmt(bodyss), n.else_)]
+
     def visitDiscard(self, n):
         (e, ss) = self.dispatch(n.expr, True)
         return ss
@@ -194,3 +201,5 @@ class FlattenVisitor(CopyVisitor):
         for item in n.items:
             myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))            
         return (expr, myss)
+
+    
