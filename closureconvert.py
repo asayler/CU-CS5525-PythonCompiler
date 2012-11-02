@@ -266,3 +266,12 @@ class ClosureVisitor(CopyVisitor):
         (body, rslambdas) = self.dispatch(n.body)
         slambdas += rslambdas 
         return (Let(var, rhs, body), slambdas)
+
+    def visitWhile(self, n):
+        slambdas = []
+        (test, rslambdas) = self.dispatch(n.test)
+        slambdas += rslambdas
+        (body, rslambdas) = self.dispatch(n.body, False)
+        slambdas += rslambdas
+        return (While(test, body, n.else_), slambdas)
+

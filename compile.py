@@ -125,7 +125,6 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-heapified.dot"
         Graph_monoast().writeGraph(heapast, debugFileName)
-    return 1
 
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
@@ -138,7 +137,7 @@ def main(argv=None):
         Graph_closedast().writeGraph(closedast, debugFileName)
 
     # Exit Early Since Further Stages Not Yet Implmented for p2
- 
+    return 1
     # Type Check
     # TODO
 
