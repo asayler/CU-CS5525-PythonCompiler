@@ -106,7 +106,6 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
-    return 1
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
@@ -115,7 +114,8 @@ def main(argv=None):
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-explicated.dot"
-        Graph_monoast().writeGraph(monoast, debugFileName)        
+        Graph_monoast().writeGraph(monoast, debugFileName)    
+    return 1    
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
