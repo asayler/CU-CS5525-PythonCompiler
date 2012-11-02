@@ -145,3 +145,9 @@ class CopyVisitor(Visitor):
         for arg in n.args:
             args += [self.dispatch(arg)]
         return CallFunc(self.dispatch(n.node), args, n.star_args, n.dstar_args, n.lineno)
+
+    def visitWhile(self, n):
+        return While(self.dispatch(n.test),
+                     self.dispatch(n.body),
+                     self.dispatch(n._else),
+                     n.lineno)

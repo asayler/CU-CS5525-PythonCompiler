@@ -48,7 +48,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = False
+debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -106,6 +106,7 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
+    return 1
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
