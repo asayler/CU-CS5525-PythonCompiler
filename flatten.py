@@ -59,6 +59,12 @@ class FlattenVisitor(CopyVisitor):
             sss += [self.dispatch(s)]
         return Stmt(reduce(lambda a,b: a + b, sss, []), n.lineno)
 
+    def visitIf(self, n, needs_to_be_simple):
+        tests = map(lambda (test, body): (self.dispatch(test, True), self.dispatch(body, True)), n.tests)
+        ss = sum(map(lambda ((_, s), _): s, tests), [])
+        tests = map(lambda ((test, _), body): (test, body), tests)
+        return ss + [If(tests, self.dispatch(n.else_))]
+
     def visitAssign(self, n):
         myss = []
         (rhs, ss) = self.dispatch(n.expr, False)
@@ -154,6 +160,8 @@ class FlattenVisitor(CopyVisitor):
                 return (CallFunc(n.node, args), ss)
         else:
             raise Exception('flatten: only calls to named functions allowed, tried to call %s:%s' % (n.node, n.node.__class__))
+
+
 
     def visitIfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)
