@@ -508,6 +508,29 @@ class UniquifyVisitor(CopyVisitor):
                          self.dispatch(n.else_, env, lvars, allvars, collect_pass),
                          n.lineno)    
 
+    def visitIf(self, n, env, lvars, allvars, collect_pass):
+        if(debug):
+            print '\nin If, n, env, lvars =',n, env, lvars, allvars
+        if(collect_pass):
+            tests = []
+            for (test, then) in n.tests:
+                test, l, r = self.dispatch(test, env, lvars, allvars, collect_pass)
+                lvars = l | lvars
+                allvars = r | allvars
+                then, l, r = self.dispatch(then, env, lvars, allvars, collect_pass)
+                lvars = l | lvars
+                allvars = r | allvars
+                tests.append((test, then))
+            else_, l, r = self.dispatch(n.else_, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return If(tests, else_), lvars, allvars
+        else:
+            return If(map(lambda (x,y): (self.dispatch(x, env, lvars, allvars,collect_pass),
+                                         self.dispatch(y, env, lvars, allvars, collect_pass)),
+                          n.tests),
+                      self.dispatch(n.else_, env, lvars, allvars, collect_pass))
+        
     def visitCallFunc(self, n, env, lvars,allvars, collect_pass):
         if(debug):
             print '\nin CallFunc, n, env, lvars =',n, env, lvars, allvars

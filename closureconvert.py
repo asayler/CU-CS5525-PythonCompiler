@@ -66,6 +66,19 @@ class ClosureVisitor(CopyVisitor):
         (expr, slambdas) = self.dispatch(n.expr)
         return (Discard(expr), slambdas)
 
+    def visitIf(self, n):
+        slambdas = []
+        tests = []
+        for (test, body) in n.tests:
+            (test, rslambdas) = self.dispatch(test)
+            slambdas += rslambdas
+            (then, rslambdas) = self.dispatch(body, False)
+            slambdas += rslambdas
+            tests.append((test, then))
+        (else_, rslambdas) = self.dispatch(n.else_, False)
+        slambdas += rslambdas
+        return (If(tests, else_), slambdas)
+
     def visitReturn(self, n):
         (value, slambdas) = self.dispatch(n.value)
         return (Return(value), slambdas)

@@ -44,6 +44,7 @@ IFTEMP = "iftemp"
 IfThenLabelCnt = 1
 ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
+CASELABEL  = 'case'
 
 class InstrSelectVisitor(Visitor):
 
@@ -131,6 +132,31 @@ class InstrSelectVisitor(Visitor):
         instrs += [Move86(arg_select(n.expr), target)]
         instrs += [Neg86(target)]
         return instrs
+
+    def visitIf(self, n):
+        #Setup Label
+        global IfThenLabelCnt
+        caselabels = [('%s%d_%d' % (ELSELABEL, i, IfThenLabelCnt)) for i in xrange(0, len(n.tests))]
+        EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
+        IfThenLabelCnt += 1
+        def make_branches(testlist, caselabels, else_):
+            if testlist:
+                test, body = testlist[0]
+                tmp = Var86(generate_name(IFTEMP))
+                tinstrs = self.dispatch(test, tmp)
+                tinstrs += [Comp86(x86FALSE, tmp)]
+                tinstrs += [JumpEqual86(caselabels[0])]
+                
+                ninstrs = self.dispatch(body)
+                ninstrs += [Jump86(EndIfLStr)]
+                
+                einstrs = [Label86(caselabels[0])] + make_branches(testlist[1:], caselabels[1:], else_)
+                return tinstrs + [If86(ninstrs, einstrs)]
+            else:
+                instrs = self.dispatch(else_)
+                instrs += [Label86(EndIfLStr)]
+                return instrs
+        return make_branches(n.tests, caselabels, n.else_)
 
     def visitIfExp(self, n, target):
         #Setup Label
