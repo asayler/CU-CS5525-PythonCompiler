@@ -25,12 +25,14 @@ def iffy(param):
     if param == 0:
         print 2
         print 4
+        return 0
     elif param == 1:
         print 6
+        return 0
     else:
         print 8
         print 10
-    return 0
+        return 0
 
 iffy(input())
 iffy(input())
