@@ -47,6 +47,12 @@ class SetVisitor(Visitor):
         
     def visitDiscard(self, n):
         return self.dispatch(n.expr)
+
+    def visitIf(self, n):
+        return self.dispatch(n.else_) | reduce(lambda x,y: x | y,
+                                               map(lambda (x,y): self.dispatch(x) | self.dispatch(y),
+                                                   n.tests),
+                                               set([]))
     
     # Terminal Expressions
 
@@ -58,6 +64,8 @@ class SetVisitor(Visitor):
 
     def visitAssName(self, n):
         return set([])
+
+
 
     # Non-Terminal Expressions
 

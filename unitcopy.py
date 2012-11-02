@@ -52,6 +52,11 @@ class CopyVisitor(Visitor):
         for node in n.nodes:
             nodes += [self.dispatch(node)]
         return Assign(nodes, self.dispatch(n.expr), n.lineno)
+
+    def visitIf(self, n):
+        return If(map(lambda (x,y): (self.dispatch(x), self.dispatch(y)), 
+                      n.tests),
+                  self.dispatch(n.else_))
     
     def visitDiscard(self, n):
         return Discard(self.dispatch(n.expr), n.lineno)
