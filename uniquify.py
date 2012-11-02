@@ -539,12 +539,9 @@ class UniquifyVisitor(CopyVisitor):
             body, l, r = self.dispatch(n.body, env, lvars, allvars, collect_pass)
             lvars = l | lvars
             allvars = r | allvars
-            else_, l, r = self.dispatch(n.else_, env, lvars, allvars, collect_pass)
-            lvars = l | lvars
-            allvars = r | allvars
-            return IfExp(test, then, else_, n.lineno), lvars, allvars
+            return While(test, body, n.else_, n.lineno), lvars, allvars
         else:
-            return IfExp(self.dispatch(n.test, env, lvars, allvars,collect_pass),
+            return While(self.dispatch(n.test, env, lvars, allvars,collect_pass),
                          self.dispatch(n.body, env, lvars, allvars, collect_pass),
                          n.else_,
                          n.lineno)    
