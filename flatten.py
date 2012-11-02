@@ -59,9 +59,9 @@ class FlattenVisitor(CopyVisitor):
             sss += [self.dispatch(s)]
         return Stmt(reduce(lambda a,b: a + b, sss, []), n.lineno)
 
-    def visitIf(self, n, needs_to_be_simple):
-        tests = map(lambda (test, body): (self.dispatch(test, True), self.dispatch(body, True)), n.tests)
-        ss = sum(map(lambda ((_, s), _): s, tests), [])
+    def visitIf(self, n):
+        tests = map(lambda (test, body): (self.dispatch(test, True), self.dispatch(body)), n.tests)
+        ss = sum(map(lambda ((_1, s), _2): s, tests), [])
         tests = map(lambda ((test, _), body): (test, body), tests)
         return ss + [If(tests, self.dispatch(n.else_))]
 

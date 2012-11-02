@@ -201,6 +201,17 @@ class Graph_ast(Visitor):
         lines += self.dispatch(n.else_, myid)
         return lines
 
+    def visitIf(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("If"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for (test,body) in n.tests:
+            lines += self.dispatch(test, myid)
+            lines += self.dispatch(body, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines
+
     def visitCallFunc(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)

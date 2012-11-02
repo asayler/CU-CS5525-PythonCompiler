@@ -83,6 +83,11 @@ class ExpandVisitor(CopyVisitor):
                      self.dispatch(n.then),
                      self.dispatch(n.else_)) 
 
+    def visitIf(self, n):
+        return If(map(lambda (x,y): (CallISTRUE([self.dispatch(x)]), self.dispatch(y)),
+                      n.tests),
+                  self.dispatch(n.else_))
+
     # Expand And/Or
     def AndToIfExp(self, nodes):
         if(len(nodes) < 2):
