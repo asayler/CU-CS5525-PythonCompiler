@@ -124,3 +124,6 @@ class SetVisitor(Visitor):
 
     def visitReturn(self, n):
         return self.dispatch(n.value)
+
+    def visitWhile(self, n):
+        return self.dispatch(n.test) | self.dispatch(n.body) 

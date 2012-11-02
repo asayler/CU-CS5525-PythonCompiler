@@ -114,8 +114,7 @@ def main(argv=None):
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-explicated.dot"
-        Graph_monoast().writeGraph(monoast, debugFileName)    
-    return 1    
+        Graph_monoast().writeGraph(monoast, debugFileName)        
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
@@ -126,6 +125,7 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-heapified.dot"
         Graph_monoast().writeGraph(heapast, debugFileName)
+    return 1
 
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
