@@ -21,6 +21,7 @@ import sys
 from x86ast import *
 
 from utilities import generate_name
+from utilities import generate_return_label
 
 debug = False
 
@@ -587,9 +588,16 @@ def addPreamble(instrs, colors):
                 Push86(EDI)]
     return preamble + saveRegs + instrs
 
-def regAlloc(instrs, regOnlyVars=None):
-    if regOnlyVars is None:
-        regOnlyVars = []
+def addClosing(instrs, funcName):
+    closing  = [Label86(generate_return_label(funcName))]
+    closing += [Pop86(EDI),
+                Pop86(ESI),
+                Pop86(EBX)]
+    closing += [Leave86()]
+    closing += [Ret86()]
+    return instrs + closing
+
+def regAlloc(instrs, regOnlyVars, funcName):
 
     (lafter, instrseq) = liveness(instrs)
     if(debug):
@@ -626,11 +634,12 @@ def regAlloc(instrs, regOnlyVars=None):
     instrseq = varReplace(instrseq, colors)
     instrseq = fixSmallRegs(instrseq)
     instrseq = addPreamble(instrseq, colors)
+    instrseq = addClosing(instrseq, funcName)
 
     return instrseq
 
 def funcRegAlloc(funcs):
     outFuncs = []
     for func in funcs:
-        outFuncs += [Func86(func.name, regAlloc(func.nodes, []))]
+        outFuncs += [Func86(func.name, regAlloc(func.nodes, [], func.name))]
     return outFuncs
