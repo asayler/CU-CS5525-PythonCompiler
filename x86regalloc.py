@@ -576,12 +576,11 @@ def maxColor(colors):
     return maxcolor
 
 def addPreamble(instrs, colors):
-    stackvars = maxColor(colors) - len(REGCOLORS) + 1
+    stackvars = max((maxColor(colors) - len(REGCOLORS) + 1), 0)
     offset = 2 + len(CALLEESAVE) # retAddr push + EBP push + CalleeSave pushes
     preamble = [Push86(EBP),
                 Move86(ESP, EBP)]
-    if(stackvars > 0):
-        stackvars += (STACKALIGN - ((stackvars + offset) % STACKALIGN))
+    stackvars += (STACKALIGN - ((stackvars + offset) % STACKALIGN))
     preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
     saveregs = CALLEESAVE[:]
     for reg in saveregs:
