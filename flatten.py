@@ -50,6 +50,7 @@ class FlattenVisitor(CopyVisitor):
         del CopyVisitor.visitOr
         del CopyVisitor.visitSubscript
         del CopyVisitor.visitSubscriptAssign
+        CopyVisitor.visitWhilePostCC = WhilePostCC.visitWhilePostCC
 
     # For statements: takes a statement and returns a list of instructions
 
@@ -70,8 +71,7 @@ class FlattenVisitor(CopyVisitor):
         teste, testss = self.dispatch(n.test, True)
         bodyss = self.dispatch(n.body)
         tmp = generate_name('whiletmp')
-        print "WHILE", [While(testss + [make_assign(tmp,teste)], Stmt(bodyss), n.else_)],'\n\n'
-        return [While(testss + [make_assign(tmp,teste)], Stmt(bodyss), n.else_)]
+        return [WhilePostCC(Stmt(testss), teste, Stmt(bodyss), n.else_)]
 
     def visitDiscard(self, n):
         (e, ss) = self.dispatch(n.expr, True)

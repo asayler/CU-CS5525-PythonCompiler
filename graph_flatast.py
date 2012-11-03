@@ -44,3 +44,13 @@ class Graph_flatast(Graph_expandedast):
             lines += self.dispatch(node, myid)
         lines += self.dispatch(n.expr, myid)
         return lines
+
+    def visitWhilePostCC(self, n, p):
+        lines = []
+        myid = Graphvis_dot(). uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("WhilePostCC"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.testss, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
