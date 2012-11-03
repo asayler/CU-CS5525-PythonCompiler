@@ -577,22 +577,23 @@ def maxColor(colors):
 
 def addPreamble(instrs, colors):
     stackvars = maxColor(colors) - len(REGCOLORS) + 1
+    offset = 2 + len(CALLEESAVE) # retAddr push + EBP push + CalleeSave pushes
     preamble = [Push86(EBP),
                 Move86(ESP, EBP)]
     if(stackvars > 0):
-        stackvars += (STACKALIGN - (stackvars % STACKALIGN))
-    stackvars += 3
+        stackvars += (STACKALIGN - ((stackvars + offset) % STACKALIGN))
     preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
-    saveRegs = [Push86(EBX),
-                Push86(ESI),
-                Push86(EDI)]
-    return preamble + saveRegs + instrs
+    saveregs = CALLEESAVE[:]
+    for reg in saveregs:
+        preamble += [Push86(reg)]
+    return preamble + instrs
 
 def addClosing(instrs, funcName):
     closing  = [Label86(generate_return_label(funcName))]
-    closing += [Pop86(EDI),
-                Pop86(ESI),
-                Pop86(EBX)]
+    saveregs = CALLEESAVE[:]
+    saveregs.reverse()
+    for reg in saveregs:
+        closing += [Pop86(reg)]
     closing += [Leave86()]
     closing += [Ret86()]
     return instrs + closing
