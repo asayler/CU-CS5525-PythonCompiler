@@ -46,7 +46,9 @@ ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
 
 class InstrSelectVisitor(Visitor):
-
+    def __init__(self):
+        super(InstrSelectVisitor,self).__init__()
+        del CopyVisitor.visitWhile
     # Modules
 
     def visitModule(self, n):
