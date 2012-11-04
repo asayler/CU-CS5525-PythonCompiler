@@ -30,3 +30,6 @@ def generate_name(x):
 
 def make_assign(lhs, rhs):
     return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
+
+def generate_return_label(funcName):
+    return "l_%s_return" % funcName

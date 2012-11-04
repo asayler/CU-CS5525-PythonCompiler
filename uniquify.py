@@ -530,7 +530,7 @@ class UniquifyVisitor(CopyVisitor):
                                          self.dispatch(y, env, lvars, allvars, collect_pass)),
                           n.tests),
                       self.dispatch(n.else_, env, lvars, allvars, collect_pass))
-        
+    
     def visitCallFunc(self, n, env, lvars,allvars, collect_pass):
         if(debug):
             print '\nin CallFunc, n, env, lvars =',n, env, lvars, allvars

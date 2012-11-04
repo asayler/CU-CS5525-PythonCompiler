@@ -26,6 +26,7 @@ from x86ast import *
 # Helper Tools
 from vis import Visitor
 from utilities import generate_name
+from utilities import generate_return_label
 
 def arg_select(ast):
     if isinstance(ast, Name):
@@ -42,9 +43,9 @@ NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 
 IfThenLabelCnt = 1
-ELSELABEL  = "else"
-ENDIFLABEL = "endelse"
-CASELABEL  = 'case'
+ELSELABEL  = "l_else"
+ENDIFLABEL = "l_endelse"
+CASELABEL = 'l_case'
 
 class InstrSelectVisitor(Visitor):
 
@@ -63,34 +64,32 @@ class InstrSelectVisitor(Visitor):
         for param in n.params:
             instrs += [Move86(Mem86(offset, EBP), Var86(param))]
             offset += 4
-        instrs += self.dispatch(n.code)
+        instrs += self.dispatch(n.code, n.label)
         ret = Func86(n.label, instrs)
         ret.params = n.params
         return ret
 
     # Statements    
 
-    def visitStmt(self, n):
+    def visitStmt(self, n, funcName):
         instrs = []
         for s in n.nodes:
-            instrs += self.dispatch(s)
+            instrs += self.dispatch(s, funcName)
         return instrs
 
-    def visitAssign(self, n):
+    def visitAssign(self, n, funcName):
         return self.dispatch(n.expr, Var86(n.nodes[0].name))
-    
-    def visitDiscard(self, n):
+
+    def visitDiscard(self, n, funcName):
         tmp = Var86(generate_name(DISCARDTEMP))
         return self.dispatch(n.expr, tmp)
 
-    def visitReturn(self, n):
+    def visitReturn(self, n, funcName):
+        if(funcName == None):
+            raise Exception("Return must have a valid function name")
         instrs = []
         instrs += [Move86(arg_select(n.value), EAX)]
-        instrs += [Pop86(EDI),
-                   Pop86(ESI),
-                   Pop86(EBX)]
-        instrs += [Leave86()]
-        instrs += [Ret86()]
+        instrs += [Jump86(generate_return_label(funcName))]
         return instrs
     
     # Terminal Expressions
@@ -222,6 +221,6 @@ class InstrSelectVisitor(Visitor):
     def visitInstrSeq(self, n, target):
         instrs = []
         for node in n.nodes:
-            instrs += self.dispatch(node)
+            instrs += self.dispatch(node, None)
         instrs += [Move86(Var86(n.expr.name), target)]
         return instrs
