@@ -132,7 +132,7 @@ class InstrSelectVisitor(Visitor):
         instrs += [Neg86(target)]
         return instrs
 
-    def visitIf(self, n):
+    def visitIf(self, n, func_name):
         #Setup Label
         global IfThenLabelCnt
         caselabels = [('%s%d_%d' % (ELSELABEL, i, IfThenLabelCnt)) for i in xrange(0, len(n.tests))]
@@ -146,13 +146,13 @@ class InstrSelectVisitor(Visitor):
                 tinstrs += [Comp86(x86FALSE, tmp)]
                 tinstrs += [JumpEqual86(caselabels[0])]
                 
-                ninstrs = self.dispatch(body)
+                ninstrs = self.dispatch(body, func_name)
                 ninstrs += [Jump86(EndIfLStr)]
                 
                 einstrs = [Label86(caselabels[0])] + make_branches(testlist[1:], caselabels[1:], else_)
                 return tinstrs + [If86(ninstrs, einstrs)]
             else:
-                instrs = self.dispatch(else_)
+                instrs = self.dispatch(else_, func_name)
                 instrs += [Label86(EndIfLStr)]
                 return instrs
         return make_branches(n.tests, caselabels, n.else_)
