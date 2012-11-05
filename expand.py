@@ -82,6 +82,11 @@ class ExpandVisitor(CopyVisitor):
         return IfExp(CallISTRUE([self.dispatch(n.test)]),
                      self.dispatch(n.then),
                      self.dispatch(n.else_)) 
+    # Explicate While
+    def visitWhile(self, n):
+        return While(CallISTRUE([self.dispatch(n.test)]),
+                     self.dispatch(n.body),
+                     n.else_) 
 
     # Expand And/Or
     def AndToIfExp(self, nodes):
