@@ -100,8 +100,7 @@ class InstrSelectVisitor(Visitor):
         instrs += [Jump86(generate_return_label(funcName))]
         return instrs
 
-
-    def visitWhileFlat(self, n):
+    def visitWhileFlat(self, n, funcName):
         #Setup Label
         global WhileLabelCnt
         WhileStartLStr  = WHILESTARTLABEL + str(WhileLabelCnt)
@@ -111,13 +110,13 @@ class InstrSelectVisitor(Visitor):
         testtmp = Var86(generate_name(WHILETESTTMP))
         test  = []
         test += [Label86(WhileStartLStr)]
-        test += self.dispatch(n.testss)
+        test += self.dispatch(n.testss, funcName)
         test += self.dispatch(n.test, testtmp)
         test += [Comp86(x86FALSE, testtmp)]
         test += [JumpEqual86(WhileEndLStr)]
         # Body Instructions
         body  = []
-        body += self.dispatch(n.body)
+        body += self.dispatch(n.body, funcName)
         body += [Jump86(WhileStartLStr)]
         body += [Label86(WhileEndLStr)]
         return [Loop86(test + body)]
