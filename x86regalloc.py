@@ -162,10 +162,11 @@ def liveness(instrs):
                     instrsbody.reverse()
                     lafterbody.reverse()
                     # Calculate union of body and initial set
-                    liveset = lafterbody[-1] | lafterbranch
+                    liveset = lafterbody[-1] | liveset_old
                     if(debug):
-                        sys.stderr.write("liveset     = %s\n" % (str(liveset)))
-                        sys.stderr.write("liveset_old = %s\n" % (str(liveset_old)))
+                        sys.stderr.write("lafterbody   = %s\n" % (str(lafterbody[-1])))
+                        sys.stderr.write("liveset      = %s\n" % (str(liveset)))
+                        sys.stderr.write("liveset_old  = %s\n" % (str(liveset_old)))
                     if(liveset_old == liveset):
                         # Make Permanent Changes
                         instrs += instrsbody
