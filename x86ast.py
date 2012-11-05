@@ -237,8 +237,8 @@ class If86(X86Inst):
         self.then = then
         self.else_ = else_
     def mnemonic(self):
-        return ('\n'.join(map(lambda x: x.mnemonic(), self.then)) +
-                '\n' + '\n'.join(map(lambda x: x.mnemonic(), self.else_)))
+        return ('\n\t'.join(map(lambda x: x.mnemonic(), self.then)) +
+                '\n\t' + '\n\t'.join(map(lambda x: x.mnemonic(), self.else_)))
     
 class Leave86(X86Inst):
     def mnemonic(self):
@@ -255,3 +255,9 @@ class Func86(X86Inst):
     def mnemonic(self):
         name = self.name if sys.platform != 'darwin' else ('_' + self.name)
         return '.globl %s\n%s:\n\t%s\n' % (name, name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
+
+class Loop86(X86Inst):
+    def __init__(self, body):
+        self.body = body
+    def mnemonic(self):
+        return ('\n\t'.join(map(lambda x: x.mnemonic(), self.body)))
