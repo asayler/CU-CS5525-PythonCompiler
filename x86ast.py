@@ -94,9 +94,11 @@ TWOBYTEREGS    = {EAX: AX, EBX: BX, ECX: CX, EDX: DX}
 WORDLEN = 4
 STACKALIGN = 4
 
-x86FALSE = Const86(0)
-x86TRUE  = Const86(1)
 x86ZERO  = Const86(0)
+x86ONE   = Const86(1)
+
+x86FALSE = x86ZERO
+x86TRUE  = x86ONE
 
 class X86Inst:
     def __str__(self):
