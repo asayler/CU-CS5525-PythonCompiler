@@ -26,6 +26,7 @@ from utilities import generate_return_label
 debug = False
 
 MAXITERATIONS = 9
+MAXLOOPCNT = 3
 
 def regname(reg):
     if(isinstance(reg, Reg86)):
@@ -151,17 +152,32 @@ def liveness(instrs):
                 lafter += [lafterelse[-1] | lafterthen[-1]]
             elif(isinstance(n, Loop86)):
                 # Loop Instruction
-                # Pop last item for passing to recursive call
-                previous = lafter.pop()
-                # Body Sequence
-                lafterbody, instrsbody = livenessSeq(n.body, previous)
-                instrsbody.reverse()
-                lafterbody.reverse()
-                instrs += instrsbody
-                lafter += lafterbody
-                # Replace last item with union of body and initial set
-                lafter += [lafterbody[-1] | lafterbranch]
-                # ToDo: Loop until stable...
+                loopcnt = 0
+                while(True):
+                    # Pop last item for passing to recursive call
+                    previous = lafter.pop()
+                    liveset_old = previous.copy()
+                    # Body Sequence
+                    lafterbody, instrsbody = livenessSeq(n.body, previous)
+                    instrsbody.reverse()
+                    lafterbody.reverse()
+                    # Calculate union of body and initial set
+                    liveset = lafterbody[-1] | lafterbranch
+                    if(debug):
+                        sys.stderr.write("liveset     = %s\n" % (str(liveset)))
+                        sys.stderr.write("liveset_old = %s\n" % (str(liveset_old)))
+                    if(liveset_old == liveset):
+                        # Make Permanent Changes
+                        instrs += instrsbody
+                        lafter += lafterbody
+                        lafter += [liveset]
+                        break
+                    else:
+                        # Propgate intermediate liveset to next loop iteration
+                        lafter += [liveset]
+                    loopcnt += 1
+                    if(loopcnt > MAXLOOPCNT):
+                        raise Exception("Loop Liveness Analysis does not seem to be converging...")
             else:
                 # Normal Instruction
                 instrs += [n]
