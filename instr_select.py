@@ -25,6 +25,7 @@ from x86ast import *
 
 # Helper Tools
 from vis import Visitor
+
 from utilities import generate_name
 
 def arg_select(ast):
@@ -46,9 +47,11 @@ ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
 
 class InstrSelectVisitor(Visitor):
+    # ToDo: Make inherit from CopyVisitor?
+
     def __init__(self):
         super(InstrSelectVisitor,self).__init__()
-        del CopyVisitor.visitWhile
+        #del CopyVisitor.visitWhile
     # Modules
 
     def visitModule(self, n):
