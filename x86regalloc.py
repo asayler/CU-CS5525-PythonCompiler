@@ -21,6 +21,7 @@ import sys
 from x86ast import *
 
 from utilities import generate_name
+from utilities import generate_return_label
 
 debug = False
 
@@ -258,8 +259,8 @@ def interference(instrs, lafter):
         elif(isinstance(instr, Call86) or 
              isinstance(instr, IndirectCall86)):
             for v in live:
-                # Add edge for each callee save register
-                for reg in CALLEESAVE:
+                # Add edge for each caller save register
+                for reg in CALLERSAVE:
                     if(validNode(reg)):
                         r = name(reg)
                         if(v != r):
@@ -302,7 +303,7 @@ def interference(instrs, lafter):
 
     # Seed Graph
 
-    for reg in CALLEESAVE:
+    for reg in CALLERSAVE:
         if(validNode(reg)):
             graph[name(reg)] = set([])
     for reg in STRINGREGS:
@@ -560,7 +561,7 @@ def fixSmallRegs(instrs):
             if(validNode(instr.target)):
                 instr.target = replaceReg(instr.target)
 
-        # No CHnage Necessary
+        # No Change Necessary
         else:
             pass
 
@@ -575,21 +576,28 @@ def maxColor(colors):
     return maxcolor
 
 def addPreamble(instrs, colors):
-    stackvars = maxColor(colors) - len(REGCOLORS) + 1
+    stackvars = max((maxColor(colors) - len(REGCOLORS) + 1), 0)
+    offset = 2 + len(CALLEESAVE) # retAddr push + EBP push + CalleeSave pushes
     preamble = [Push86(EBP),
                 Move86(ESP, EBP)]
-    if(stackvars > 0):
-        stackvars += (STACKALIGN - (stackvars % STACKALIGN))
-    stackvars += 3
+    stackvars += (STACKALIGN - ((stackvars + offset) % STACKALIGN))
     preamble += [Sub86(Const86(stackvars * WORDLEN), ESP)]
-    saveRegs = [Push86(EBX),
-                Push86(ESI),
-                Push86(EDI)]
-    return preamble + saveRegs + instrs
+    saveregs = CALLEESAVE[:]
+    for reg in saveregs:
+        preamble += [Push86(reg)]
+    return preamble + instrs
 
-def regAlloc(instrs, regOnlyVars=None):
-    if regOnlyVars is None:
-        regOnlyVars = []
+def addClosing(instrs, funcName):
+    closing  = [Label86(generate_return_label(funcName))]
+    saveregs = CALLEESAVE[:]
+    saveregs.reverse()
+    for reg in saveregs:
+        closing += [Pop86(reg)]
+    closing += [Leave86()]
+    closing += [Ret86()]
+    return instrs + closing
+
+def regAlloc(instrs, regOnlyVars, funcName):
 
     (lafter, instrseq) = liveness(instrs)
     if(debug):
@@ -626,11 +634,12 @@ def regAlloc(instrs, regOnlyVars=None):
     instrseq = varReplace(instrseq, colors)
     instrseq = fixSmallRegs(instrseq)
     instrseq = addPreamble(instrseq, colors)
+    instrseq = addClosing(instrseq, funcName)
 
     return instrseq
 
 def funcRegAlloc(funcs):
     outFuncs = []
     for func in funcs:
-        outFuncs += [Func86(func.name, regAlloc(func.nodes, []))]
+        outFuncs += [Func86(func.name, regAlloc(func.nodes, [], func.name))]
     return outFuncs
