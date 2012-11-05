@@ -159,7 +159,6 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
         Graph_flatast().writeGraph(flatast, debugFileName)
-    return 1
 
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
