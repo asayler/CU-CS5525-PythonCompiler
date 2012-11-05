@@ -4,11 +4,11 @@
 # Fall 2012
 # Python Compiler
 #
-# test-p1-ifexp0.py
+# test-p3-ifstmt1.py
 # Test Case
-# Subset: p1
-# Type: Official
-# Tesing: Subscripts/Lists
+# Subset: p3
+# Type: Student
+# Tesing: Functions w/ If Statments
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
