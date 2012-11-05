@@ -149,6 +149,19 @@ def liveness(instrs):
                 lafter += lafterthen
                 # Replace last item with union of last item output from lafters recursive calls
                 lafter += [lafterelse[-1] | lafterthen[-1]]
+            elif(isinstance(n, Loop86)):
+                # Loop Instruction
+                # Pop last item for passing to recursive call
+                previous = lafter.pop()
+                # Body Sequence
+                lafterbody, instrsbody = livenessSeq(n.body, previous)
+                instrsbody.reverse()
+                lafterbody.reverse()
+                instrs += instrsbody
+                lafter += lafterbody
+                # Replace last item with union of body and initial set
+                lafter += [lafterbody[-1] | lafterbranch]
+                # ToDo: Loop until stable...
             else:
                 # Normal Instruction
                 instrs += [n]
