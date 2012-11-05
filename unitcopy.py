@@ -35,6 +35,13 @@ class CopyVisitor(Visitor):
 
     # Statements    
 
+    def visitClass(self, n):
+        return Class(n.name, map(self.dispatch, n.bases), n.doc, 
+                     self.dispatch(n.code))
+
+    def visitAssAttr(self, n):
+        return AssAttr(self.dispatch(n.expr), n.attrname, n.flags)
+
     def visitStmt(self, n):
         nodes = []
         for s in n.nodes:
@@ -77,6 +84,9 @@ class CopyVisitor(Visitor):
         return AssName(n.name, n.flags, n.lineno)
 
     # Non-Terminal Expressions
+
+    def visitGetattr(self, n):
+        return Getattr(self.dispatch(n.expr), n.attrname)
 
     def visitLambda(self, n):
         return Lambda(n.argnames, n.defaults, n.flags, self.dispatch(n.code))
