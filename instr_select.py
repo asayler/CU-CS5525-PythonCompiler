@@ -120,7 +120,7 @@ class InstrSelectVisitor(Visitor):
         body += self.dispatch(n.body, funcName)
         body += [Jump86(WhileStartLStr)]
         body += [Label86(WhileEndLStr)]
-        return [Loop86(test + body)]
+        return [Loop86(test, body)]
     
     # Terminal Expressions
 

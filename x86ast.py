@@ -258,7 +258,9 @@ class Func86(X86Inst):
         return '.globl %s\n%s:\n\t%s\n' % (name, name, '\n\t'.join(map(lambda x: x.mnemonic(), self.nodes)))
 
 class Loop86(X86Inst):
-    def __init__(self, body):
+    def __init__(self, test, body):
+        self.test = test
         self.body = body
     def mnemonic(self):
-        return ('\n\t'.join(map(lambda x: x.mnemonic(), self.body)))
+        return ('\n\t'.join(map(lambda x: x.mnemonic(), self.test)) +
+                '\n\t' + '\n\t'.join(map(lambda x: x.mnemonic(), self.body)))
