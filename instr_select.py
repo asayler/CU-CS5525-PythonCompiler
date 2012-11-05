@@ -41,10 +41,14 @@ def arg_select(ast):
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
+WHILETESTTMP = "whiletesttmp"
 
 IfThenLabelCnt = 1
+WhileLabelCnt = 1
 ELSELABEL  = "else"
 ENDIFLABEL = "endelse"
+WHILESTARTLABEL = "l_whilestart"
+WHILEENDLABEL   = "l_whileend"
 
 class InstrSelectVisitor(Visitor):
     # ToDo: Make inherit from CopyVisitor?
@@ -99,7 +103,25 @@ class InstrSelectVisitor(Visitor):
 
 
     def visitWhileFlat(self, n):
-        pass
+        #Setup Label
+        global WhileLabelCnt
+        WhileStartLStr  = WHILESTARTLABEL + str(WhileLabelCnt)
+        WhileEndLStr    = WHILEENDLABEL   + str(WhileLabelCnt)
+        WhileLabelCnt += 1
+        # Test Instructions
+        testtmp = Var86(generate_name(WHILETESTTMP))
+        test  = []
+        test += [Label86(WhileStartLStr)]
+        test += self.dispatch(n.testss)
+        test += self.dispatch(n.test, testtmp)
+        test += [Comp86(x86FALSE, testtmp)]
+        test += [JumpEqual86(WhileEndLStr)]
+        # Body Instructions
+        body  = []
+        body += self.dispatch(n.body)
+        body += [Jump86(WhileStartLStr)]
+        body += [Label86(WhileEndLStr)]
+        return [Loop86(test + body)]
     
     # Terminal Expressions
 
