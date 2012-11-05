@@ -100,6 +100,9 @@ class ClosureVisitor(CopyVisitor):
     def visitName(self, n):
         return (Name(n.name), [])
 
+    def visitString(self, n):
+        return (n, [])
+
     # Non-Terminal Expressions - Convert
 
     def visitSLambda(self, n):

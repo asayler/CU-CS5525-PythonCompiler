@@ -93,6 +93,9 @@ class FlattenVisitor(CopyVisitor):
     def visitConst(self, n, needs_to_be_simple):
         return (n, [])
 
+    def visitString(self, n, needs_to_be_simple):
+        return (n, [])
+
     def visitName(self, n, needs_to_be_simple):
         return (n, [])
 

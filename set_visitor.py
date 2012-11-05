@@ -64,10 +64,16 @@ class SetVisitor(Visitor):
 
     def visitAssName(self, n):
         return set([])
+    
+    def visitString(self, n):
+        return set([])
 
 
 
     # Non-Terminal Expressions
+
+    def visitAdd(self, n):
+        return self.binary(n)
 
     def visitCallFunc(self, n):
         return self.dispatch(n.node) | reduce(lambda x,y: x | y, 
@@ -90,6 +96,12 @@ class SetVisitor(Visitor):
 
     def visitIntUnarySub(self, n):
         return self.dispatch(n.expr)
+    def visitUnarySub(self, n):
+        return self.dispatch(n.expr)
+
+    def visitGetattr(self, n):
+        return self.dispatch(n.expr)
+
 
     def visitLet(self, n):
         return self.dispatch(n.var) | (self.dispatch(n.rhs) | self.dispatch(n.body))
@@ -129,6 +141,9 @@ class SetVisitor(Visitor):
 
     def visitSubscriptAssign(self, n):
         return self.dispatch(n.target) | self.dispatch(n.value) | self.dispatch(n.sub)
+
+    def visitAttrAssign(self, n):
+        return self.dispatch(n.target) | self.dispatch(n.value)
 
     def visitReturn(self, n):
         return self.dispatch(n.value)

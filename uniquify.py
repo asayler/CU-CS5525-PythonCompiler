@@ -59,6 +59,7 @@ class UniquifyVisitor(CopyVisitor):
 
     def __init__(self):
         super(UniquifyVisitor, self).__init__()
+        CopyVisitor.visitLet = Let.visitLet
 
     # Modules
     def visitModule(self, n):

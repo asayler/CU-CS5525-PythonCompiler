@@ -131,6 +131,9 @@ class CopyVisitor(Visitor):
             nodes += [self.dispatch(node)]
         return Or(nodes, n.lineno)
 
+    def visitString(self, n):
+        return n
+
     def visitAnd(self, n):
         nodes = []
         for node in n.nodes:
@@ -164,5 +167,5 @@ class CopyVisitor(Visitor):
     def visitWhile(self, n):
         return While(self.dispatch(n.test),
                      self.dispatch(n.body),
-                     n.else_,
+                     self.dispatch(n.else_),
                      n.lineno)

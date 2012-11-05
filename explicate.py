@@ -44,6 +44,7 @@ COMPIS       = 'is'
 class ExplicateVisitor(CopyVisitor):
     def __init__(self):
         super(ExplicateVisitor,self).__init__()
+        CopyVisitor.visitLet = Let.visitLet
         
     # Helper Functions
 
@@ -81,20 +82,6 @@ class ExplicateVisitor(CopyVisitor):
                                 mixedDefault))))
         return t
 
-    # Top Level Expressions
-
-    def visitAssign(self, n):
-        # Separate out variable assignment from subscript assignment?
-        nodes = []
-        for node in n.nodes:
-            nodes += [self.dispatch(node)]
-        # Only worrying about first assignee
-        if isinstance(nodes[0], Subscript):
-            return SubscriptAssign(nodes[0].expr,
-                                   nodes[0].subs[0],
-                                   self.dispatch(n.expr))
-        else:
-            return Assign(nodes, self.dispatch(n.expr), n.lineno)
 
 
     # Terminal Expressions
@@ -162,6 +149,8 @@ class ExplicateVisitor(CopyVisitor):
             name = n.node.name
             if((name == "input") or (name == "input_int")):
                 name = "input_int"
+                output = CallFunc(Name(name), args)
+            elif name in RESERVED_NAMES:
                 output = CallFunc(Name(name), args)
             else:
                 output = IndirectCallFunc(Name(name), args)

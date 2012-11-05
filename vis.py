@@ -18,7 +18,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-debug = False
+debug = True
 
 class Visitor(object):
     def __init__(self):

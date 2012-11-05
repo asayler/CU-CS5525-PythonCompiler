@@ -72,10 +72,20 @@ class ExpandVisitor(CopyVisitor):
         return Discard(CallSETSUB([self.dispatch(n.target),
                                    self.dispatch(n.sub),
                                    self.dispatch(n.value)]))
+
+
+    def visitAttrAssign(self, n):
+        return Discard(CallSETATTR([self.dispatch(n.target),
+                                    String(n.attr),
+                                    self.dispatch(n.value)]))
     
     def visitSubscript(self, n):
         return CallGETSUB([self.dispatch(n.expr),
                            self.dispatch(n.subs[0])])
+
+    def visitGetattr(self, n):
+        return CallGETATTR([self.dispatch(n.expr),
+                            String(n.attr)])
 
     # Explicate If
     def visitIfExp(self, n):

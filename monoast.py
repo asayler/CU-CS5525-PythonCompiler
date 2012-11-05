@@ -144,6 +144,21 @@ class SubscriptAssign:
     def visitSubscriptAssign(self, n):
         return SubscriptAssign(self.dispatch(n.target), self.dispatch(n.sub), self.dispatch(n.value))
 
+class AttrAssign:
+    '''Assignment statement for attributes'''
+    def __init__(self, target, attr, value):
+        self.target = target
+        self.attr = attr
+        self.value = value
+
+    def __repr__(self):
+        return "AttrAssign(%s, %s, %s)" % (repr(self.target), repr(self.attr), repr(self.value))
+
+    @staticmethod
+    def visitAttrAssign(self, n):
+        return AttrAssign(self.dispatch(n.target), n.attr, self.dispatch(n.value))
+
+
 class IntEqual(PyNode):
     def __init__(self, (left, right), lineno=None):
         self.left = left
@@ -214,3 +229,9 @@ class WhileFlat(PyNode):
                            n.else_,
                            n.lineno)
 
+class String(PyNode):
+    def __init__(self, string):
+        self.string = string
+
+    def __repr__(self):
+        return 'String(%s)' % self.string

@@ -31,6 +31,8 @@ from monoast import *
 from x86ast import *
 
 # Compiler Stages
+from assign_specialize import *
+from declassify import *
 from uniquify import *
 from explicate import *
 from heapify import *
@@ -95,8 +97,13 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(parsedast, debugFileName)
 
+    assignspecast = AssignSpecializeVisitor().preorder(parsedast)
+    print assignspecast
+    declassifiedast = ClassFindVisitor().preorder(assignspecast, set([]))
+    print declassifiedast
+
     # Uniquify
-    uniqueast = UniquifyVisitor().preorder(parsedast)
+ #   uniqueast = UniquifyVisitor().preorder(parsedast)
     # print uniqueast,'\n\n\n'
     if(debug):
         # Print parsedast
@@ -107,7 +114,7 @@ def main(argv=None):
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
-    monoast = ExplicateVisitor().preorder(uniqueast)
+    monoast = ExplicateVisitor().preorder(declassifiedast)
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
