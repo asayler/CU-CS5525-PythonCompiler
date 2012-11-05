@@ -135,9 +135,7 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-closed.dot"
         Graph_closedast().writeGraph(closedast, debugFileName)
-
-    # Exit Early Since Further Stages Not Yet Implmented for p2
- 
+   
     # Type Check
     # TODO
 
@@ -150,17 +148,18 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-expanded.dot"
         Graph_expandedast().writeGraph(expandedast, debugFileName)
+
     
     # Flatten Tree
     flatast = FlattenVisitor().preorder(expandedast)
     if(debug):
         # Print flatast
-        #sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
+        sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
         # Graph flatast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-flat.dot"
         Graph_flatast().writeGraph(flatast, debugFileName)
-        
+
     # Compile flat tree
     assembly = InstrSelectVisitor().preorder(flatast)
     if(debug):

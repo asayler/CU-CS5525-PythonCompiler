@@ -237,3 +237,12 @@ class Graph_ast(Visitor):
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.code, myid)
         return lines
+
+    def visitWhile(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("While"))
+        lines += Graphvis_dot().linePair(p,myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines

@@ -194,3 +194,23 @@ class IntUnarySub(PyNode):
     @staticmethod
     def visitIntUnarySub(self, n):
         return IntUnarySub(self.dispatch(n.expr), n.lineno)
+
+class WhileFlat(PyNode):
+    def __init__(self, testss, test, body, else_, lineno=None):
+        self.testss = testss
+        self.test = test
+        self.body = body
+        self.else_ = else_
+        self.lineno = lineno
+
+    def __repr__(self):
+        return "WhileFlat(%s ,%s, %s, %s)" % (repr(self.testss), repr(self.test),
+                                              repr(self.body), repr(self.else_))
+    @staticmethod
+    def visitWhilePostCC(self, n):
+        return WhilePostCC(self.dispatch(n.testss),
+                           self.dispatch(n.test),
+                           self.dispatch(n.body),
+                           n.else_,
+                           n.lineno)
+

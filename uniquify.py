@@ -552,3 +552,20 @@ class UniquifyVisitor(CopyVisitor):
             return CallFunc(self.dispatch(n.node, env, lvars, allvars, collect_pass), 
                 args, n.star_args, n.dstar_args, n.lineno)
 
+    def visitWhile(self, n, env, lvars, allvars, collect_pass):
+        if(debug):
+            print '\nin While, n, env, lvars =',n, env, lvars, allvars
+        if(collect_pass):
+            test, l, r = self.dispatch(n.test, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            body, l, r = self.dispatch(n.body, env, lvars, allvars, collect_pass)
+            lvars = l | lvars
+            allvars = r | allvars
+            return While(test, body, n.else_, n.lineno), lvars, allvars
+        else:
+            return While(self.dispatch(n.test, env, lvars, allvars,collect_pass),
+                         self.dispatch(n.body, env, lvars, allvars, collect_pass),
+                         n.else_,
+                         n.lineno)    
+

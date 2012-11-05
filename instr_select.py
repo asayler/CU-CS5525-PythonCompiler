@@ -25,6 +25,7 @@ from x86ast import *
 
 # Helper Tools
 from vis import Visitor
+
 from utilities import generate_name
 from utilities import generate_return_label
 
@@ -41,14 +42,22 @@ def arg_select(ast):
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
+WHILETESTTMP = "whiletesttmp"
 
 IfThenLabelCnt = 1
+WhileLabelCnt = 1
 ELSELABEL  = "l_else"
 ENDIFLABEL = "l_endelse"
 CASELABEL = 'l_case'
+WHILESTARTLABEL = "l_whilestart"
+WHILEENDLABEL   = "l_whileend"
 
 class InstrSelectVisitor(Visitor):
+    # ToDo: Make inherit from CopyVisitor?
 
+    def __init__(self):
+        super(InstrSelectVisitor,self).__init__()
+        #del CopyVisitor.visitWhile
     # Modules
 
     def visitModule(self, n):
@@ -91,6 +100,27 @@ class InstrSelectVisitor(Visitor):
         instrs += [Move86(arg_select(n.value), EAX)]
         instrs += [Jump86(generate_return_label(funcName))]
         return instrs
+
+    def visitWhileFlat(self, n, funcName):
+        #Setup Label
+        global WhileLabelCnt
+        WhileStartLStr  = WHILESTARTLABEL + str(WhileLabelCnt)
+        WhileEndLStr    = WHILEENDLABEL   + str(WhileLabelCnt)
+        WhileLabelCnt += 1
+        # Test Instructions
+        testtmp = Var86(generate_name(WHILETESTTMP))
+        test  = []
+        test += [Label86(WhileStartLStr)]
+        test += self.dispatch(n.testss, funcName)
+        test += self.dispatch(n.test, testtmp)
+        test += [Comp86(x86FALSE, testtmp)]
+        test += [JumpEqual86(WhileEndLStr)]
+        # Body Instructions
+        body  = []
+        body += self.dispatch(n.body, funcName)
+        body += [Jump86(WhileStartLStr)]
+        body += [Label86(WhileEndLStr)]
+        return [Loop86(test + body)]
     
     # Terminal Expressions
 
