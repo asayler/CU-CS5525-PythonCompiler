@@ -96,6 +96,10 @@ class InstrSelectVisitor(Visitor):
         instrs += [Leave86()]
         instrs += [Ret86()]
         return instrs
+
+
+    def visitWhileFlat(self, n):
+        pass
     
     # Terminal Expressions
 
