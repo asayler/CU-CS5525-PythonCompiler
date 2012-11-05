@@ -23,7 +23,7 @@ from x86ast import *
 from utilities import generate_name
 from utilities import generate_return_label
 
-debug = True
+debug = False
 
 MAXITERATIONS = 9
 MAXLOOPCNT = 3
@@ -140,16 +140,18 @@ def liveness(instrs):
                 lafterelse, instrselse = livenessSeq(n.else_, previous)
                 instrselse.reverse()
                 lafterelse.reverse()
+                livesetelse = lafterelse.pop()
                 instrs += instrselse
                 lafter += lafterelse
                 # Then Sequence
                 lafterthen, instrsthen = livenessSeq(n.then, previous)
                 instrsthen.reverse()
                 lafterthen.reverse()
+                livesetthen = lafterthen.pop()
                 instrs += instrsthen
                 lafter += lafterthen
                 # Replace last item with union of last item output from lafters recursive calls
-                lafter += [lafterelse[-1] | lafterthen[-1]]
+                lafter += [livesetelse | livesetthen]
             elif(isinstance(n, Loop86)):
                 # Loop Instruction
                 loopcnt = 0
@@ -161,16 +163,23 @@ def liveness(instrs):
                     lafterbody, instrsbody = livenessSeq(n.body, previous)
                     instrsbody.reverse()
                     lafterbody.reverse()
-                    # Calculate union of body and initial set
-                    liveset = lafterbody[-1] | liveset_old
+                    # Test Sequence
+                    #sys.stderr.write("n.test          = %s\n" % (str(n.test)))
+                    laftertest, instrstest = livenessSeq(n.test, previous)
+                    instrstest.reverse()
+                    laftertest.reverse()
+                    #sys.stderr.write("laftertest      = %s\n" % (str(laftertest[-1])))
+                    # Calculate union of test, body, and initial set
+                    liveset = lafterbody.pop() | laftertest.pop() | liveset_old
                     if(debug):
-                        sys.stderr.write("lafterbody   = %s\n" % (str(lafterbody[-1])))
-                        sys.stderr.write("liveset      = %s\n" % (str(liveset)))
                         sys.stderr.write("liveset_old  = %s\n" % (str(liveset_old)))
+                        sys.stderr.write("liveset      = %s\n" % (str(liveset)))
                     if(liveset_old == liveset):
                         # Make Permanent Changes
                         instrs += instrsbody
                         lafter += lafterbody
+                        instrs += instrstest
+                        lafter += laftertest
                         lafter += [liveset]
                         break
                     else:
@@ -188,9 +197,10 @@ def liveness(instrs):
         # Reverse and return lafter
         instrs.reverse()
         lafter.reverse()
-        return (lafter[1:], instrs)
+        return (lafter[:], instrs)
 
-    return livenessSeq(instrs);
+    lafterfull, instrsfull = livenessSeq(instrs)    
+    return (lafterfull[1:], instrsfull);
 
 def interference(instrs, lafter):
     #Setup Empty Graph
