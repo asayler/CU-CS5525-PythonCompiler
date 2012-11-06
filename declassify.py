@@ -32,6 +32,8 @@ from utilities import generate_name
 
 # OFF DA HOOK #
 def specializeCallFunc(self, n):
+    if isinstance(n.node, Name) and n.node.name in RESERVED_NAMES:
+        return CallFunc(self.dispatch(n.node), map(self.dispatch, n.args),  n.star_args, n.dstar_args, n.lineno)
     ftemp = generate_name('func')
     def gen_arg(args, vals):
         if args:

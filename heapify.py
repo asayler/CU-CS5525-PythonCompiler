@@ -46,12 +46,10 @@ class HeapifyVisitor(CopyVisitor):
         CopyVisitor.visitIsTag = IsTag.visitIsTag
         CopyVisitor.visitProjectTo = ProjectTo.visitProjectTo
         CopyVisitor.visitInjectFrom = InjectFrom.visitInjectFrom
-        CopyVisitor.visitLet = Let.visitLet
         CopyVisitor.visitIntAdd = IntAdd.visitIntAdd
         CopyVisitor.visitIntEqual = IntEqual.visitIntEqual
         CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
         CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
-        CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
         CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
         # Initialize helper visitors
         self.local_visitor = LocalVarsVisitor()

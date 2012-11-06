@@ -35,6 +35,7 @@ class ExpandVisitor(CopyVisitor):
         CopyVisitor.visitSLambdaLabel = SLambdaLabel.visitSLambdaLabel
         CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
 
+
     def visitIsTag(self, n):
         if(n.typ == INT_t):
             return CallINJECTBOOL([CallISINT([self.dispatch(n.arg)])])
@@ -84,8 +85,7 @@ class ExpandVisitor(CopyVisitor):
                            self.dispatch(n.subs[0])])
 
     def visitGetattr(self, n):
-        return CallGETATTR([self.dispatch(n.expr),
-                            String(n.attr)])
+        return CallGETATTR([self.dispatch(n.expr), String(n.attrname)])
 
     # Explicate If
     def visitIfExp(self, n):

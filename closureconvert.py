@@ -184,6 +184,10 @@ class ClosureVisitor(CopyVisitor):
         slambdas += rslambdas
         return (CallFunc(node, args), slambdas)
 
+    def visitGetattr(self, n):
+        (expr, slambdas) = self.dispatch(n.expr)
+        return (Getattr(expr, n.attrname), slambdas)
+
     def visitIfExp(self, n):
         slambdas = []
         (test, rslambdas) = self.dispatch(n.test)
