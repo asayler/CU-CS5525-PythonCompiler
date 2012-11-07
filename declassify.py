@@ -89,10 +89,10 @@ class ClassFindVisitor(CopyVisitor):
     def visitClass(self, n, scope):
         classtemp = generate_name(n.name + '_temp')
         bases = map(self.dispatch, n.bases)
-        stmts = [Assign(AssName(classtemp, 'OP_ASSIGN'), 
-                        CallCREATECLASS(bases))]
-        stmts += DeclassifyVisitor(classtemp, finder).preorder(n.code, scope)
-        stmts += [Assign(AssName(n.name, 'OP_ASSIGN'), Name(classtemp))]
+        stmts = [Assign([AssName(classtemp, 'OP_ASSIGN')], 
+                        CallCREATECLASS([List(bases)]))]
+        stmts += DeclassifyVisitor(classtemp, self).preorder(n.code, scope)
+        stmts += [Assign([AssName(n.name, 'OP_ASSIGN')], Name(classtemp))]
         return stmts
 
     def visitFunction(self, n, scope):
@@ -156,7 +156,7 @@ class DeclassifyVisitor(CopyVisitor):
     def preorder(self, tree, outside_scope, *args):
         self.assignees = self.assignee_visitor.preorder(tree)
         self.outside_scope = outside_scope
-        return super(ClassFindVisitor, self).preorder(tree, *args)
+        return super(DeclassifyVisitor, self).preorder(tree, *args)
 
     def visitAssign(self, n):
         return AttrAssign(Name(self.name), n.nodes[0].name, 
@@ -178,7 +178,7 @@ class DeclassifyVisitor(CopyVisitor):
         name = n.name
         n.name = temp
         n = self.finder.preorder(n, self.outside_scope)
-        return [n, AttrAssign(Name(self.name), name, Name(temp))]
+        return [n, AttrAssign([Name(self.name)], name, Name(temp))]
 
     def visitClass(self, n):
         temp = generate_name(n.name + '_temp')
@@ -209,5 +209,5 @@ class AssigneeVisitor(SetVisitor):
     def visitFunction(self, n):
         return set([n.name])
 
-    def visitObject(self, n):
+    def visitClass(self, n):
         return set([n.name])

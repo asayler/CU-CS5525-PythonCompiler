@@ -98,12 +98,12 @@ def main(argv=None):
         Graph_ast().writeGraph(parsedast, debugFileName)
 
     assignspecast = AssignSpecializeVisitor().preorder(parsedast)
-#    print assignspecast
+    print assignspecast
     declassifiedast = ClassFindVisitor().preorder(assignspecast, set([]))
-#    print declassifiedast
+    print declassifiedast
 
     # Uniquify
- #   uniqueast = UniquifyVisitor().preorder(parsedast)
+#    uniqueast = UniquifyVisitor().preorder(parsedast)
     # print uniqueast,'\n\n\n'
     if(debug):
         # Print parsedast
@@ -115,7 +115,7 @@ def main(argv=None):
 
     # Explicate
     monoast = ExplicateVisitor().preorder(declassifiedast)
-#    print monoast
+    print monoast
     if(debug):
         # Print monoast
         #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
@@ -126,7 +126,7 @@ def main(argv=None):
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
- #   print '\n\nheap', heapast
+    print '\n\nheap', heapast
     if(debug):
         # Print heapast
         sys.stderr.write("heapified ast = \n" + str(heapast) + "\n")
@@ -137,7 +137,7 @@ def main(argv=None):
 
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
-#    print '\n\nclosure', closedast
+    print '\n\nclosure', closedast
     if(debug):
         # Print heapast
         sys.stderr.write("closed ast = \n" + str(closedast) + "\n")

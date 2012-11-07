@@ -54,7 +54,7 @@ class AssignSpecializeVisitor(CopyVisitor):
                                    self.dispatch(n.expr))
         elif isinstance(nodes[0], AssAttr):
             return AttrAssign(nodes[0].expr,
-                               nodes[0].attrname.
+                               nodes[0].attrname,
                                self.dispatch(n.expr))
         else:
             return Assign(nodes, self.dispatch(n.expr), n.lineno)

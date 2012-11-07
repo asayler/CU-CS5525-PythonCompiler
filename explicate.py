@@ -150,6 +150,11 @@ class ExplicateVisitor(CopyVisitor):
             if((name == "input") or (name == "input_int")):
                 name = "input_int"
                 output = CallFunc(Name(name), args)
+            elif name == 'create_object' or name == 'create_class':
+                output = InjectFrom(BIG_t, CallFunc(Name(name), args))
+            elif name == 'is_class' or name == 'has_attr' or name == 'is_object' \
+                    or name == 'is_bound_method' or name == 'is_unbound_method':
+                output = InjectFrom(BOOL_t, CallFunc(Name(name), args))
             elif name in RESERVED_NAMES:
                 output = CallFunc(Name(name), args)
             else:

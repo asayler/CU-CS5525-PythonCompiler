@@ -248,6 +248,14 @@ class ClosureVisitor(CopyVisitor):
         slambdas += rslambdas
         return (SubscriptAssign(target, sub, value), slambdas)
 
+    def visitAttrAssign(self, n):
+        slambdas = []
+        (target, rslambdas) = self.dispatch(n.target)
+        slambdas += rslambdas
+        (value, rslambdas) = self.dispatch(n.value)
+        slambdas += rslambdas
+        return (AttrAssign(target, n.attr, value), slambdas)
+
     def visitSubscript(self, n):
         slambdas = []
         (expr, rslambdas) = self.dispatch(n.expr)

@@ -176,3 +176,6 @@ class SetVisitor(Visitor):
 
     def visitWhileFlat(self, n):
         return self.dispatch(n.testss) | self.dispatch(n.test) | self.dispatch(n.body) | (self.dispatch(n.else_) if n.else_ else set([]))
+
+    def visitClass(self, n):
+        return self.dispatch(n.code) | reduce(lambda x,y: x | y, map(self.dispatch, n.bases), set([]))
