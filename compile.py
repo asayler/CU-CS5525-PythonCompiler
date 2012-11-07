@@ -171,12 +171,12 @@ def main(argv=None):
         Graph_flatast().writeGraph(flatast, debugFileName)
 
     # Compile flat tree
-    assembly = InstrSelectVisitor().preorder(flatast)
+    (strings, assembly) = InstrSelectVisitor().preorder(flatast)
     if(debug):
         sys.stderr.write("pre instr ast = \n" + str(assembly) + "\n")
 
     # Reg Alloc
-    assembly = funcRegAlloc(assembly)
+    assembly = setup_strings(strings) + funcRegAlloc(assembly)
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     

@@ -22,6 +22,7 @@ import sys
 from compiler.ast import *
 from monoast import *
 from x86ast import *
+from stringfind import *
 
 # Helper Tools
 from vis import Visitor
@@ -36,6 +37,8 @@ def arg_select(ast):
         return Const86(ast.value)
     elif isinstance(ast, SLambdaLabel):
         return IndirectJumpLabel86(ast.name)
+    elif isinstance(ast, String):
+        return Const86('.LC0')
     else:
         raise Exception("InstrSelect: Invalid argument - " + str(ast))
 
@@ -59,6 +62,10 @@ class InstrSelectVisitor(Visitor):
         super(InstrSelectVisitor,self).__init__()
         #del CopyVisitor.visitWhile
     # Modules
+
+    def preorder(self, tree, *args):
+        strings = StringFindVisitor().preorder(tree)
+        return (strings, super(InstrSelectVisitor, self).preorder(tree))
 
     def visitModule(self, n):
         slambdas = []

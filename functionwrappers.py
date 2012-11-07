@@ -58,7 +58,7 @@ ISBOUNDMETHOD_n = Name('is_bound_method')
 ISUNBOUNDMETHOD_n = Name('is_unbound_method')
 ISCLASS_n = Name('is_class')
 SETATTR_n = Name('set_attr')
-GETATTR_n = Name('Get_attr')
+GETATTR_n = Name('get_attr')
 
 
 RESERVED_NAMES = [
@@ -93,7 +93,9 @@ RESERVED_NAMES = [
     ISUNBOUNDMETHOD_n.name,
     ISCLASS_n.name,
     SETATTR_n.name,
-    GETATTR_n.name
+    GETATTR_n.name,
+    'input',
+    'input_int'
     ]
 
 

@@ -69,7 +69,7 @@ class ClassFindVisitor(CopyVisitor):
 
     def preorder(self, tree, outside_scope, *args):
         scope = self.assignee_visitor.preorder(tree) | outside_scope
-        return super(ClassFindVisitor, self).preorder(tree, (scope,) + args)
+        return super(ClassFindVisitor, self).preorder(tree, scope)
 
     def preorder_expr(self, *args):
         return super(ClassFindVisitor, self).preorder(tree, *args)
@@ -96,6 +96,7 @@ class ClassFindVisitor(CopyVisitor):
         return stmts
 
     def visitFunction(self, n, scope):
+        print scope, type(scope)
         scope = scope | self.assignee_visitor.preorder(n.code)
         return Function(n.decorators, n.name, n.argnames, n.defaults,
                         n.flags, n.doc, self.dispatch(n.code, scope))
@@ -118,11 +119,20 @@ class ClassFindVisitor(CopyVisitor):
             nodes += [self.dispatch(node)]
         return Printnl(nodes, n.dest, n.lineno)
 
+    def visitSubscriptAssign(self, n, scope):
+        return SubscriptAssign(self.dispatch(n.target), self.dispatch(n.sub), self.dispatch(n.value))
+
+    def visitAttrAssign(self, n, scope):
+        return AttrAssign(self.dispatch(n.target), n.attr, self.dispatch(n.value))
+
     def visitAssign(self, n, scope):
         nodes = []
         for node in n.nodes:
             nodes += [self.dispatch(node)]
         return Assign(nodes, self.dispatch(n.expr), n.lineno)
+
+    def visitReturn(self, n, scope):
+        return Return(self.dispatch(n.value))
     
 class DeclassifyVisitor(CopyVisitor):
     def __init__(self, name, finder):

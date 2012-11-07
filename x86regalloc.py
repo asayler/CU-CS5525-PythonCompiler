@@ -28,6 +28,12 @@ debug = False
 MAXITERATIONS = 9
 MAXLOOPCNT = 3
 
+def setup_strings(strings):
+    instrs = []
+    for (location, name) in strings:
+        instrs.append(String86(location, name))
+    return instrs
+
 def regname(reg):
     if(isinstance(reg, Reg86)):
         return reg.register

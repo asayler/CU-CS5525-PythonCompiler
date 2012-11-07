@@ -30,7 +30,11 @@ class SetVisitor(Visitor):
     # Modules
 
     def visitModule(self, n):
-        return self.dispatch(n.node)
+        if isinstance(n.node, list):
+            return reduce(lambda x,y: x | y, map(self.dispatch, n.node), 
+                          set([]))
+        else:
+            return self.dispatch(n.node)
 
     # Statements    
 
@@ -68,7 +72,10 @@ class SetVisitor(Visitor):
     def visitString(self, n):
         return set([])
 
-
+    def visitInstrSeq(self, n):
+        return self.dispatch(n.expr) | reduce(lambda x,y: x | y, 
+                                              map(self.dispatch, n.nodes), 
+                                              set([]))
 
     # Non-Terminal Expressions
 
@@ -93,6 +100,19 @@ class SetVisitor(Visitor):
         return self.binary(n)
     def visitIntNotEqual(self, n):
         return self.binary(n)
+
+    def visitCompare(self, n):
+        return self.dispatch(n.expr) | reduce(lambda x,y: x | y,
+                                               map(lambda (x,y):
+                                                       self.dispatch(y),
+                                                   n.ops),
+                                               set([]))
+
+    def visitLambda(self, n):
+        return self.dispatch(n.code)
+
+    def visitNot(self, n):
+        return self.dispatch(n.expr)
 
     def visitIntUnarySub(self, n):
         return self.dispatch(n.expr)

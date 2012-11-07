@@ -264,3 +264,10 @@ class Loop86(X86Inst):
     def mnemonic(self):
         return ('\n\t'.join(map(lambda x: x.mnemonic(), self.test)) +
                 '\n\t' + '\n\t'.join(map(lambda x: x.mnemonic(), self.body)))
+
+class String86(X86Inst):
+    def __init__(self, location, name):
+        self.location = location
+        self.name = name
+    def mnemonic(self):
+        return '.%s:\n\t.string \"%s\"' % (self.location, self.name)
