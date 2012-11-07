@@ -167,5 +167,5 @@ class CopyVisitor(Visitor):
     def visitWhile(self, n):
         return While(self.dispatch(n.test),
                      self.dispatch(n.body),
-                     self.dispatch(n.else_),
+                     self.dispatch(n.else_) if n.else_ else None,
                      n.lineno)

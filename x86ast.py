@@ -270,4 +270,4 @@ class String86(X86Inst):
         self.location = location
         self.name = name
     def mnemonic(self):
-        return '.%s:\n\t.string \"%s\"' % (self.location, self.name)
+        return '%s:\n\t.string \"%s\"' % (self.location, self.name)

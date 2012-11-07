@@ -50,3 +50,6 @@ class Visitor(object):
         """Do preorder walk of tree using visitor"""
         self.visitor = self
         return self.dispatch(tree, *args)
+
+
+

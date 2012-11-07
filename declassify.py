@@ -133,6 +133,18 @@ class ClassFindVisitor(CopyVisitor):
 
     def visitReturn(self, n, scope):
         return Return(self.dispatch(n.value))
+
+    def visitIf(self, n, scope):
+        return If(map(lambda (x,y): (self.dispatch(x), self.dispatch(y, scope)), 
+                      n.tests),
+                  self.dispatch(n.else_, scope))
+
+    def visitWhile(self, n, scope):
+        return While(self.dispatch(n.test),
+                     self.dispatch(n.body, scope),
+                     self.dispatch(n.else_, scope) if n.else_ else None,
+                     n.lineno)
+
     
 class DeclassifyVisitor(CopyVisitor):
     def __init__(self, name, finder):

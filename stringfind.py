@@ -32,6 +32,6 @@ from utilities import generate_name
 
 class StringFindVisitor(SetVisitor):
     def visitString(self, n):
-        location = generate_name('string')
+        location = '.L' + generate_name('str')
         n.location = location
-        return set([(location, n.name)])
+        return set([(location, n.string)])

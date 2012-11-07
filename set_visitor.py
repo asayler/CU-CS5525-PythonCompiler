@@ -111,6 +111,9 @@ class SetVisitor(Visitor):
     def visitLambda(self, n):
         return self.dispatch(n.code)
 
+    def visitSLambdaLabel(self, n):
+        return set([])
+
     def visitNot(self, n):
         return self.dispatch(n.expr)
 
@@ -170,3 +173,6 @@ class SetVisitor(Visitor):
 
     def visitWhile(self, n):
         return self.dispatch(n.test) | self.dispatch(n.body) 
+
+    def visitWhileFlat(self, n):
+        return self.dispatch(n.testss) | self.dispatch(n.test) | self.dispatch(n.body) | (self.dispatch(n.else_) if n.else_ else set([]))

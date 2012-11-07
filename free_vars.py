@@ -21,6 +21,7 @@ import sys
 # Data Types
 from compiler.ast import *
 from monoast import *
+from functionwrappers import RESERVED_NAMES
 
 # Helper Tools
 from set_visitor import SetVisitor
@@ -29,11 +30,6 @@ def name(n):
     if isinstance(n, Name) or isinstance(n, AssName):
         return n.name
     else: raise Exception('Getting name of invalid node ' + str(n))
-
-STATIC_NAMES = ['True', 'False', 'add', 'is_int', 'is_bool', 'is_big',
-                'inject_int', 'inject_bool', 'inject_big', 'project_int',
-                'project_bool', 'project_big', 'equal', 'not_equal', 'error_pyobj',
-                'print_any', 'is_true', 'input', 'input_int']
 
 class FreeVarsVisitor(SetVisitor):
     def __init__(self):
@@ -46,7 +42,7 @@ class FreeVarsVisitor(SetVisitor):
                                               set([]))
 
     def visitName(self, n):
-        if n.name in STATIC_NAMES:
+        if n.name in RESERVED_NAMES:
             return set([])
         else: return set([name(n)])
 
