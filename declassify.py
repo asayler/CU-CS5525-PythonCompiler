@@ -178,7 +178,7 @@ class DeclassifyVisitor(CopyVisitor):
         name = n.name
         n.name = temp
         n = self.finder.preorder(n, self.outside_scope)
-        return [n, AttrAssign([Name(self.name)], name, Name(temp))]
+        return [n, AttrAssign(Name(self.name), name, Name(temp))]
 
     def visitClass(self, n):
         temp = generate_name(n.name + '_temp')
