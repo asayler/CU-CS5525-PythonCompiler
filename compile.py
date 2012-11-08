@@ -97,7 +97,6 @@ def main(argv=None):
 
     # Uniquify
     uniqueast = UniquifyVisitor().preorder(parsedast)
-    # print uniqueast,'\n\n\n'
     if(debug):
         # Print parsedast
         sys.stderr.write("parsed ast = \n" + str(compiler.parseFile(inputFilePath)) + "\n")
@@ -110,7 +109,7 @@ def main(argv=None):
     monoast = ExplicateVisitor().preorder(uniqueast)
     if(debug):
         # Print monoast
-        #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
+        sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-explicated.dot"
