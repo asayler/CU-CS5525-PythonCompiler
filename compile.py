@@ -120,8 +120,8 @@ def main(argv=None):
         Graph_declassifiedast().writeGraph(declassifiedast, debugFileName)    
 
     # Uniquify
-    # uniqueast = UniquifyVisitor().preorder(declassifiedast)
-    uniqueast = declassifiedast
+    uniqueast = UniquifyVisitor().preorder(declassifiedast)
+    # uniqueast = declassifiedast
     declassifiedast = None
     if(debug):
         # Print uniqueast

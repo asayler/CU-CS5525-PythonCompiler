@@ -39,6 +39,19 @@ class UniquifyVisitor(CopyVisitor):
         rhs = self.dispatch(n.expr, renaming)
         lhs = self.dispatch(n.nodes[0], renaming)
         return Assign([lhs], rhs, n.lineno)
+
+    def visitSubscriptAssign(self, n, renaming):
+        target = self.dispatch(n.target, renaming)
+        sub    = self.dispatch(n.sub, renaming)
+        value  = self.dispatch(n.value, renaming)
+        return SubscriptAssign(target, sub, value)
+
+    def visitAttrAssign(self, n, renaming):
+        target = self.dispatch(n.target, renaming)
+        # ToDo: Handle Attr renaming?
+        attr   = n.attr
+        value  = self.dispatch(n.value, renaming)
+        return AttrAssign(target, attr, value)
         
     def visitAssName(self, n, renaming):
         return AssName(renaming[n.name], n.flags, n.lineno)
@@ -142,9 +155,11 @@ class UniquifyVisitor(CopyVisitor):
     
     def visitLet(self, n, renaming):
         new_renaming = copy.deepcopy(renaming)
-        new_renaming[n.var] = generate_name(n.var)
-        return Let(new_renaming[n.var], self.dispatch(n.rhs, renaming),
-                   self.dispatch(n.body, new_renaming))
+        new_renaming[n.var] = generate_name(n.var.name)
+        var  = self.dispatch(n.var, new_renaming)
+        rhs  = self.dispatch(n.rhs, renaming)
+        body = self.dispatch(n.body, new_renaming)
+        return Let(var, rhs, body)
 
     def visitIf(self, n, renaming):
         tests = map(lambda (x,y): (self.dispatch(x, renaming),
@@ -157,3 +172,11 @@ class UniquifyVisitor(CopyVisitor):
         test = self.dispatch(n.test, renaming)
         body = self.dispatch(n.body, renaming)
         return While(test, body, n.else_)
+
+    def visitString(self, n, renaming):
+        # ToDo: Handle Attr renaming?
+        return String(n.string)
+
+    def visitGetattr(self, n, renaming):
+        # ToDo: Handle Attr renaming?
+        return Getattr(self.dispatch(n.expr, renaming), n.attrname)
