@@ -79,7 +79,6 @@ class UniquifyVisitor(CopyVisitor):
         right = self.dispatch(n.nodes[1], renaming)
         return And([left, right])
 
-
     def visitOr(self, n, renaming):
         left = self.dispatch(n.nodes[0], renaming)
         right = self.dispatch(n.nodes[1], renaming)
@@ -156,4 +155,3 @@ class UniquifyVisitor(CopyVisitor):
         test = self.dispatch(n.test, renaming)
         body = self.dispatch(n.body, renaming)
         return While(test, body, n.else_)
-        
