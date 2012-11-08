@@ -24,9 +24,9 @@ from monoast import *
 
 from graphvis_dot import Graphvis_dot
 
-from graph_ast import Graph_ast
+from graph_declassifiedast import Graph_declassifiedast
 
-class Graph_monoast(Graph_ast):
+class Graph_monoast(Graph_declassifiedast):
     
     # Banned Nodes
 
@@ -107,26 +107,6 @@ class Graph_monoast(Graph_ast):
         lines += Graphvis_dot().lineLabel(myid, ("IsTag(%s)" % str(n.typ.typ)))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.arg, myid)
-        return lines
-
-    def visitLet(self, n, p):
-        lines = []
-        myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("Let"))
-        lines += Graphvis_dot().linePair(p, myid)
-        lines += self.dispatch(n.var, myid)
-        lines += self.dispatch(n.rhs, myid)
-        lines += self.dispatch(n.body, myid)
-        return lines
-
-    def visitSubscriptAssign(self, n, p):
-        lines = []
-        myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("SubscriptAssign"))
-        lines += Graphvis_dot().linePair(p, myid)
-        lines += self.dispatch(n.target, myid)
-        lines += self.dispatch(n.sub, myid)
-        lines += self.dispatch(n.value, myid)
         return lines
 
     def visitSLambda(self, n, p):

@@ -45,6 +45,8 @@ from x86regalloc import *
 # Helper Tools
 from astTools import *
 from graph_ast import *
+from graph_preprocessedast import *
+from graph_declassifiedast import *
 from graph_monoast import *
 from graph_closedast import *
 from graph_expandedast import *
@@ -111,7 +113,7 @@ def main(argv=None):
         sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
-        Graph_ast().writeGraph(uniqueast, debugFileName)
+        Graph_declassifiedast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)

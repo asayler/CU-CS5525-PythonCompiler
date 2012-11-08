@@ -246,3 +246,27 @@ class Graph_ast(Visitor):
         lines += self.dispatch(n.test, myid)
         lines += self.dispatch(n.body, myid)
         return lines
+
+    def visitGetattr(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Getattr(%s)" % n.attrname))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
+
+    def visitAssAttr(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("AssAttr(%s)" % n.attrname))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
+
+    def visitClass(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Class(%s:%s)" % (n.name, n.bases)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
+        return lines
