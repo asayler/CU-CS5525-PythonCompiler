@@ -53,7 +53,7 @@ class SetVisitor(Visitor):
                                                map(lambda (x,y): self.dispatch(x) | self.dispatch(y),
                                                    n.tests),
                                                set([]))
-    
+
     # Terminal Expressions
 
     def visitConst(self, n):
@@ -64,8 +64,6 @@ class SetVisitor(Visitor):
 
     def visitAssName(self, n):
         return set([])
-
-
 
     # Non-Terminal Expressions
 
@@ -83,8 +81,10 @@ class SetVisitor(Visitor):
 
     def visitIntAdd(self, n):
         return self.binary(n)
+
     def visitIntEqual(self, n):
         return self.binary(n)
+
     def visitIntNotEqual(self, n):
         return self.binary(n)
 

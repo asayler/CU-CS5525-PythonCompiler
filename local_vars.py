@@ -86,8 +86,10 @@ class InstrSelectVisitor(Visitor):
 
     def visitIntAdd(self, n):
         return self.binary(n)
+
     def visitIntEqual(self, n):
         return self.binary(n)
+
     def visitIntNotEqual(self, n):
         return self.binary(n)
 
