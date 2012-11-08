@@ -57,7 +57,7 @@ class SetVisitor(Visitor):
                                                map(lambda (x,y): self.dispatch(x) | self.dispatch(y),
                                                    n.tests),
                                                set([]))
-    
+
     # Terminal Expressions
 
     def visitConst(self, n):
@@ -91,46 +91,56 @@ class SetVisitor(Visitor):
                                               map(self.dispatch, n.args), 
                                               set([]))
 
+    def visitCompare(self, n):
+        ls = set([])
+        for op in n.ops:
+            ls = ls | self.dispatch(op[1])
+        return ls
+
     def binary(self, n):
         return self.dispatch(n.left) | self.dispatch(n.right)
 
+    def visitAdd(self, n):
+        return self.binary(n)
+
     def visitIntAdd(self, n):
         return self.binary(n)
+
+    def visitEqual(self, n):
+        return self.binary(n)    
+
     def visitIntEqual(self, n):
         return self.binary(n)
-    def visitIntNotEqual(self, n):
+
+    def visitNotEqual(self, n):
         return self.binary(n)
 
-    def visitCompare(self, n):
-        return self.dispatch(n.expr) | reduce(lambda x,y: x | y,
-                                               map(lambda (x,y):
-                                                       self.dispatch(y),
-                                                   n.ops),
-                                               set([]))
-
-    def visitLambda(self, n):
-        return self.dispatch(n.code)
+    def visitIntNotEqual(self, n):
+        return self.binary(n)
 
     def visitSLambdaLabel(self, n):
         return set([])
 
-    def visitNot(self, n):
-        return self.dispatch(n.expr)
-
     def visitIntUnarySub(self, n):
         return self.dispatch(n.expr)
+
     def visitUnarySub(self, n):
         return self.dispatch(n.expr)
 
     def visitGetattr(self, n):
         return self.dispatch(n.expr)
 
+    def visitNot(self, n):
+        return self.dispatch(n.expr)
 
     def visitLet(self, n):
         return self.dispatch(n.var) | (self.dispatch(n.rhs) | self.dispatch(n.body))
     
     def visitIfExp(self, n):
         return self.dispatch(n.test) | self.dispatch(n.then) | self.dispatch(n.else_)
+
+    def visitLambda(self, n):
+        return self.dispatch(n.code)
 
     def visitSLambda(self, n):
         return self.dispatch(n.code)

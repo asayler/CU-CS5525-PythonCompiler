@@ -50,7 +50,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = False
+debug = True
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -103,8 +103,8 @@ def main(argv=None):
     print declassifiedast
 
     # Uniquify
-#    uniqueast = UniquifyVisitor().preorder(parsedast)
-    # print uniqueast,'\n\n\n'
+    #uniqueast = UniquifyVisitor().preorder(parsedast)
+    uniqueast = declassifiedast
     if(debug):
         # Print parsedast
         sys.stderr.write("parsed ast = \n" + str(compiler.parseFile(inputFilePath)) + "\n")
@@ -114,11 +114,11 @@ def main(argv=None):
         Graph_ast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
-    monoast = ExplicateVisitor().preorder(declassifiedast)
+    monoast = ExplicateVisitor().preorder(uniqueast)
     print monoast
     if(debug):
         # Print monoast
-        #sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
+        sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
         # Graph monoast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-explicated.dot"
