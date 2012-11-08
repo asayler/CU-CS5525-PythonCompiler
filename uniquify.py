@@ -146,10 +146,11 @@ class UniquifyVisitor(CopyVisitor):
                    self.dispatch(n.body, new_renaming))
 
     def visitIf(self, n, renaming):
-        test = self.dispatch(n.tests[0][0], renaming)
-        then = self.dispatch(n.tests[0][1], renaming)
+        tests = map(lambda (x,y): (self.dispatch(x, renaming),
+                                   self.dispatch(y, renaming)), 
+                    n.tests)
         else_ = self.dispatch(n.else_, renaming)
-        return If([(test, then)], else_)
+        return If(tests, else_)
 
     def visitWhile(self, n, renaming):
         test = self.dispatch(n.test, renaming)

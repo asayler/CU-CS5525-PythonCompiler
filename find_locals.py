@@ -1,38 +1,18 @@
 from compiler.ast import *
-from vis import Visitor
+from set_visitor import SetVisitor
 
-class FindLocalsVisitor(Visitor):
+def name(n):
+    if isinstance(n, Name) or isinstance(n, AssName):
+        return n.name
+    else: raise Exception('Getting name of invalid node ' + str(n))
 
-    def visitStmt(self, n):
-        sss  = [self.dispatch(s) for s in n.nodes]
-        return reduce(lambda a,b: a | b, sss, set([]))
-
-    def visitPrintnl(self, n):
-        return set([])
-
-    def visitAssign(self, n):
-        if isinstance(n.nodes[0], AssName):
-            return set([n.nodes[0].name])
-        else:
-            return set([])
-
-    def visitDiscard(self, n):
-        return set([])
-    
-    def visitReturn(self, n):
-        return set([])
-
-    def visitFunction(self, n):
-        return set([n.name])
-
-    def visitIf(self, n):
-        return self.dispatch(n.tests[0][1]) | self.dispatch(n.else_)
-
-    def visitWhile(self, n):
-        return self.dispatch(n.body)
+class FindLocalsVisitor(SetVisitor):
 
     def visitClass(self, n):
         return set([n.name])
 
     def visitFunction(self, n):
         return set([n.name])
+
+    def visitAssName(self, n):
+        return set([name(n)])
