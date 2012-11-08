@@ -99,24 +99,41 @@ def main(argv=None):
         debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(parsedast, debugFileName)
 
-    assignspecast = AssignSpecializeVisitor().preorder(parsedast)
-    print assignspecast
-    declassifiedast = ClassFindVisitor().preorder(assignspecast, set([]))
-    print declassifiedast
-
-    # Uniquify
-    #uniqueast = UniquifyVisitor().preorder(parsedast)
-    uniqueast = declassifiedast
+    preprocessedast = AssignSpecializeVisitor().preorder(parsedast)
+    parsedast = None
     if(debug):
         # Print parsedast
-        sys.stderr.write("parsed ast = \n" + str(compiler.parseFile(inputFilePath)) + "\n")
+        sys.stderr.write("preprocessed ast = \n" + str(preprocessedast) + "\n")
+        # Graph parsedast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-preprocessed.dot"
+        Graph_preprocessedast().writeGraph(preprocessedast, debugFileName)    
+
+    declassifiedast = ClassFindVisitor().preorder(preprocessedast, set([]))
+    preprocessedast = None
+    if(debug):
+        # Print parsedast
+        sys.stderr.write("declassified ast = \n" + str(declassifiedast) + "\n")
+        # Graph parsedast
+        debugFileName = (outputFilePath[-1:])[0]
+        debugFileName = debugFileName[:-3] + "-declassified.dot"
+        Graph_declassifiedast().writeGraph(declassifiedast, debugFileName)    
+
+    # Uniquify
+    # uniqueast = UniquifyVisitor().preorder(declassifiedast)
+    uniqueast = declassifiedast
+    declassifiedast = None
+    if(debug):
+        # Print uniqueast
         sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
+        # Graph uniqueast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-uniquified.dot"
         Graph_declassifiedast().writeGraph(uniqueast, debugFileName)
 
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
+    uniqueast = None
     print monoast
     if(debug):
         # Print monoast
@@ -128,6 +145,7 @@ def main(argv=None):
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
+    monoast = None
     print '\n\nheap', heapast
     if(debug):
         # Print heapast
@@ -139,6 +157,7 @@ def main(argv=None):
 
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
+    heapast = None
     print '\n\nclosure', closedast
     if(debug):
         # Print heapast
@@ -153,9 +172,10 @@ def main(argv=None):
 
     # Expand
     expandedast = ExpandVisitor().preorder(closedast)
+    closedast = None
     if(debug):
         # Print expandedast
-        #sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
+        sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
         # Graph expandedast
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-expanded.dot"
@@ -164,6 +184,7 @@ def main(argv=None):
     
     # Flatten Tree
     flatast = FlattenVisitor().preorder(expandedast)
+    expandedast = None
     if(debug):
         # Print flatast
         sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
@@ -174,6 +195,7 @@ def main(argv=None):
 
     # Compile flat tree
     (strings, assembly) = InstrSelectVisitor().preorder(flatast)
+    flatast = None
     if(debug):
         sys.stderr.write("pre instr ast = \n" + str(assembly) + "\n")
 
@@ -182,7 +204,6 @@ def main(argv=None):
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
-
     # Write output
     write_to_file(assembly, outputFileName)
 
