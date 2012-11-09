@@ -96,7 +96,6 @@ class ClassFindVisitor(CopyVisitor):
         return stmts
 
     def visitFunction(self, n, scope):
-        print scope, type(scope)
         scope = scope | self.assignee_visitor.preorder(n.code)
         return Function(n.decorators, n.name, n.argnames, n.defaults,
                         n.flags, n.doc, self.dispatch(n.code, scope))

@@ -52,7 +52,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = True
+debug = False
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -134,7 +134,6 @@ def main(argv=None):
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
     uniqueast = None
-    print monoast
     if(debug):
         # Print monoast
         sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
@@ -146,7 +145,6 @@ def main(argv=None):
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
     monoast = None
-    print '\n\nheap', heapast
     if(debug):
         # Print heapast
         sys.stderr.write("heapified ast = \n" + str(heapast) + "\n")
@@ -158,7 +156,6 @@ def main(argv=None):
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
     heapast = None
-    print '\n\nclosure', closedast
     if(debug):
         # Print heapast
         sys.stderr.write("closed ast = \n" + str(closedast) + "\n")
