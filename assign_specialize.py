@@ -29,18 +29,6 @@ from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
-#Reserved Names
-TRUENAME   = "True"
-TRUEVALUE  = 1
-FALSENAME  = "False"
-FALSEVALUE = 0
-TRUENODE   = InjectFrom(BOOL_t, Const(TRUEVALUE))
-FALSENODE  = InjectFrom(BOOL_t, Const(FALSEVALUE))
-
-COMPEQUAL    = '=='
-COMPNOTEQUAL = '!='
-COMPIS       = 'is'
-
 class AssignSpecializeVisitor(CopyVisitor):
     def visitAssign(self, n):
         # Separate out variable assignment from subscript assignment?
