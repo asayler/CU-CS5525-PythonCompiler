@@ -71,7 +71,7 @@ class ClassFindVisitor(CopyVisitor):
         scope = self.assignee_visitor.preorder(tree) | outside_scope
         return super(ClassFindVisitor, self).preorder(tree, scope)
 
-    def preorder_expr(self, *args):
+    def preorder_expr(self, tree, *args):
         return super(ClassFindVisitor, self).preorder(tree, *args)
 
     def visitModule(self, n, scope):
