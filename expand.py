@@ -27,6 +27,7 @@ from unitcopy import CopyVisitor
 # Helper Tools
 from vis import Visitor
 from functionwrappers import *
+from utilities import generate_name
 
 class ExpandVisitor(CopyVisitor):
     def __init__(self):
@@ -110,14 +111,15 @@ class ExpandVisitor(CopyVisitor):
             raise Exception("expand: AND expression must have at least 2 nodes")
         
         thisnode = self.dispatch(nodes[0])
+        thistmp = generate_name('and')
         
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return IfExp(CallISTRUE([thisnode]), nextnode, thisnode)
+            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), nextnode, Name(thistmp)))
         else:
             # Recurse
-            return IfExp(CallISTRUE([thisnode]), self.AndToIfExp(nodes[1:]), thisnode)
+            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), self.AndToIfExp(nodes[1:]), Name(thistmp)))
 
     def visitAnd(self, n):
         return self.AndToIfExp(n.nodes)
@@ -128,14 +130,15 @@ class ExpandVisitor(CopyVisitor):
             raise Exception("expand: OR expression must have at least 2 nodes")
         
         thisnode = self.dispatch(nodes[0])
-        
+        thistmp = generate_name('or')
+
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return IfExp(CallISTRUE([thisnode]), thisnode, nextnode)
+            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), nextnode))
         else:
             # Recurse
-            return IfExp(CallISTRUE([thisnode]), thisnode, self.AndToIfExp(nodes[1:]))
+            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), self.AndToIfExp(nodes[1:])))
 
     def visitOr(self, n):
         return self.OrToIfExp(n.nodes)
