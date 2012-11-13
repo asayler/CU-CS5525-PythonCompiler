@@ -220,6 +220,7 @@ class InstrSelectVisitor(Visitor):
         instrs = []
         cntargs = 0
         align = (STACKALIGN - (len(n.args) % STACKALIGN))
+        align %= STACKALIGN
         offset = 0
         if align != 0:
             offset += WORDLEN * align
