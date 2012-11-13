@@ -220,6 +220,7 @@ class InstrSelectVisitor(Visitor):
         instrs = []
         cntargs = 0
         align = (STACKALIGN - (len(n.args) % STACKALIGN))
+        align %= STACKALIGN
         offset = 0
         if align != 0:
             offset += WORDLEN * align
@@ -231,7 +232,7 @@ class InstrSelectVisitor(Visitor):
             offset += WORDLEN
         instrs += [Call86(n.node.name)]
         instrs += [Move86(EAX, target)]
-        if(cntargs > 0):
+        if(offset > 0):
             instrs += [Add86(Const86(offset), ESP)]
         return instrs
 

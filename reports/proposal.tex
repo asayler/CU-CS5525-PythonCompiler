@@ -1,0 +1,80 @@
+% CU CS5525
+% Fall 2012
+% Python Compiler
+%
+% proposal.tex
+% Semester Project Proposal
+%
+% Repository:
+%    https://github.com/asayler/CU-CS5525-PythonCompiler
+%
+% By :
+%    Anne Gatchell
+%       http://annegatchell.com/
+%    Andy Sayler
+%       http://www.andysayler.com
+%    Michael (Mike) Vitousek
+%       http://csel.cs.colorado.edu/~mivi2269/
+
+\documentclass[11pt]{article}
+
+\usepackage[text={6.5in, 9in}, centering]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\bibliographystyle{plain}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\newenvironment{packed_enum}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\newenvironment{packed_item}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\begin{document}
+
+\title{
+  Building a LLVM Python Compiler
+}
+
+\author{
+  Anne Gatchell \and Andrew Sayler \and Michael Vitousek\\
+  University of Colorado\\
+  \texttt{first.last@colorado.edu}
+}
+
+\date{\today}
+
+\maketitle
+
+\newpage
+
+\section{Problem Statement}
+
+\section{Approach}
+
+\section{Design}
+
+\section{Deliverables}
+
+\nocite{*}
+\bibliography{refs}
+
+\end{document}

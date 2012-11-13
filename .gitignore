@@ -1,16 +1,4 @@
 /#*
-.#*
+./#*
 *~
 .*~
-*.s
-*.o
-*.out
-*.pyc
-*.correct
-*.output
-*.diff
-*.dot
-*.svg
-submit.zip
-parsetab.py
-test/devtest*
