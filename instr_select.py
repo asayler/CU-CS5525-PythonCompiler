@@ -231,7 +231,7 @@ class InstrSelectVisitor(Visitor):
             offset += WORDLEN
         instrs += [Call86(n.node.name)]
         instrs += [Move86(EAX, target)]
-        if(cntargs > 0):
+        if(offset > 0):
             instrs += [Add86(Const86(offset), ESP)]
         return instrs
 
