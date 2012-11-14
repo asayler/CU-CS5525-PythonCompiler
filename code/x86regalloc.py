@@ -23,7 +23,7 @@ from x86ast import *
 from utilities import generate_name
 from utilities import generate_return_label
 
-debug = True
+debug = False
 
 MAXITERATIONS = 9
 MAXLOOPCNT = 3
@@ -441,7 +441,7 @@ def color(graph, colors, regOnlyVars):
 
     return colors
 
-def fixMemToMem(instrs, colors):
+def fixMemToMem(instrs, lafter, colors):
 
     regTempPrefix = "RegTmp"
 
@@ -471,10 +471,11 @@ def fixMemToMem(instrs, colors):
             raise Exception("Cannot add temp to node: " + str(instr))
     
     fixedInstrs = []
+    new_lafter = []
     regOnlyVars = []
 
     #Loop through instructions
-    for instr in instrs:
+    for instr, live in zip(instrs, lafter):
         
         # Binary read/write
         if(isinstance(instr, Add86) or
@@ -489,22 +490,28 @@ def fixMemToMem(instrs, colors):
                     # Add temp var
                     tmp = Var86(generate_name(regTempPrefix))
                     fixedInstrs += addTemp(instr, tmp)
+                    new_lafter += [live | set([name(tmp)]), live]
                     regOnlyVars += [tmp.name]
                 else:
                     fixedInstrs += [instr]
+                    new_lafter += [live]
             elif validNode(instr.target) and isinstance(instr.value, Mem86):
                 if(colors[name(instr.target)] >= len(REGCOLORS)):
                     tmp = Var86(generate_name(regTempPrefix))
                     fixedInstrs += addTemp(instr, tmp)
+                    new_lafter += [live | set([name(tmp)]), live]
                     regOnlyVars += [tmp.name]
                 else:
                     fixedInstrs += [instr]   
+                    new_lafter += [live]
             else:
                 fixedInstrs += [instr]
+                new_lafter += [live]
         else:
             fixedInstrs += [instr]
+            new_lafter += [live]
 
-    return (fixedInstrs, regOnlyVars)
+    return (fixedInstrs, new_lafter, regOnlyVars)
 
 def varReplace(instrs, colors):
 
@@ -657,7 +664,8 @@ def regAlloc(instrs, regOnlyVars, funcName):
     iterations = 0
     while(1):
 
-        (instrseq, newRegOnlyVars) = fixMemToMem(instrseq, colors)
+        (instrseq, lafter, newRegOnlyVars) = fixMemToMem(instrseq, lafter, 
+                                                         colors)
         fixcnt = len(newRegOnlyVars)
         regOnlyVars += newRegOnlyVars
 
@@ -669,9 +677,9 @@ def regAlloc(instrs, regOnlyVars, funcName):
         if(fixcnt == 0):
             break
 
-        lafter, instrseq = liveness(instrseq)
         graph = interference(instrseq, lafter)
         colors = color(graph, colors, regOnlyVars)
+        
         iterations += 1
 
         if(iterations > MAXITERATIONS):

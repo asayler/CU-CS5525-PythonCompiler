@@ -71,9 +71,12 @@ class ExpandVisitor(CopyVisitor):
         return Discard(CallPRINTANY([self.dispatch(n.nodes[0])]), n.lineno)
 
     def visitSubscriptAssign(self, n):
-        return Discard(CallSETSUB([self.dispatch(n.target),
-                                   self.dispatch(n.sub),
-                                   self.dispatch(n.value)]))
+        name = generate_name('sub')
+        return Discard(Let(Name(name), 
+                           self.dispatch(n.value),
+                           CallSETSUB([self.dispatch(n.target),
+                                       self.dispatch(n.sub),
+                                       Name(name)])))
 
 
     def visitAttrAssign(self, n):

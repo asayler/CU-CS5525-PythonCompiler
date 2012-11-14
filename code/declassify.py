@@ -65,6 +65,7 @@ class ClassFindVisitor(CopyVisitor):
         del CopyVisitor.visitAssAttr
         CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
         CopyVisitor.visitAttrAssign = AttrAssign.visitAttrAssign
+        CopyVisitor.visitLet = Let.visitLet
         self.assignee_visitor = AssigneeVisitor()
 
     def preorder(self, tree, outside_scope, *args):
