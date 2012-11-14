@@ -23,7 +23,7 @@ from x86ast import *
 from utilities import generate_name
 from utilities import generate_return_label
 
-debug = True
+debug = False
 
 MAXITERATIONS = 9
 MAXLOOPCNT = 3

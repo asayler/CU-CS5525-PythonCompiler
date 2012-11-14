@@ -52,7 +52,7 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
-debug = True
+debug = False
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
