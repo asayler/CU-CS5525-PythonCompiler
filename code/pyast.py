@@ -184,21 +184,41 @@ class WhileFlat(PyNode):
                                               repr(self.body), repr(self.else_))
     @staticmethod
     def copy(self, n, *args):
-        return WhileFlat(self.dispatch(n.testss, *args),
+        return WhileFlat(map_dispatch(self, n.testss, *args),
                          self.dispatch(n.test, *args),
+                         map_dispatch(self, n.body, *args),
+                         map_dispatch(self, n.else_, *args) if n.else_ else n.else_)
+    @staticmethod
+    def list(self, n, *args):
+        testss = list_dispatch(self, n.testss, *args)
+        test, ss = self.dispatch(n.test, *args),
+        return [WhileFlat(testss + ss
+                         test,
+                         list_dispatch(self, n.body, *args),
+                         list_dispatch(self, n.else_, *args) if n.else_ else n.else_)]
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.testss, *args) | self.dispatch(n.test, *args) | accumulate(self, n.body, *args) | (accumulate(self, n.else_, *args) if n.else_ else set([]))
+
+class While(PyNode):
+    def __init__(self, test, body, else_):
+        self.test = test
+        self.body = body
+        self.else_ = else_
+    def __repr__(self):
+        return "While(,%s, %s, %s)" % (repr(self.test),
+                                           repr(self.body), repr(self.else_))
+    @staticmethod
+    def copy(self, n, *args):
+        return While(self.dispatch(n.test, *args),
                          self.dispatch(n.body, *args),
                          self.dispatch(n.else_, *args) if n.else_ else n.else_)
     @staticmethod
     def list(self, n, *args):
-        testss = self.dispatch(n.testss, *args)
-        test, ss = self.dispatch(n.test, *args),
-        return [WhileFlat(testss + ss
-                         test,
-                         self.dispatch(n.body, *args),
-                         self.dispatch(n.else_, *args) if n.else_ else n.else_)]
+        raise Exception('Default list visitor not applicable for While')
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.testss, *args) | self.dispatch(n.test, *args) | self.dispatch(n.body, *args) | (self.dispatch(n.else_, *args) if n.else_ else set([]))
+        return self.dispatch(n.test, *args) | accumulate(self, n.body, *args) | (accumulate(self, n.else_, *args) if n.else_ else set([]))
 
 class VarAssign(PyNode):
     def __init__(self, target, value):
@@ -294,7 +314,246 @@ class Name(PyNode):
     def find(self, n, *args):
         return set([])
 
- # NEXT IS GETATTR #
+class GetAttr(PyNode):
+    def __init__(self, expr, attr):
+        self.expr = expr
+        self.attr = attr
+    def __repr__(self):
+        return 'GetAttr(%s,%s)' % (self.expr, self.attr)
+
+    @staticmethod
+    def copy(self, n, *args):
+        return GetAttr(self.dispatch(n.expr, *args), n.attr)
+    @staticmethod
+    def list(self, n, *args):
+        expr, ss = self.dispatch(n.expr, *args)
+        return (GetAttr(expr, n.attr), ss)
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.expr, *args)
+
+class Compare(PyNode):
+    def __init__(self, expr, ops):
+        self.expr = expr
+        self.ops = ops
+    def __repr__(self):
+        return 'Compare(%s,%s)' % (self.expr, self.ops)
+    
+    @staticmethod
+    def copy(self, n, *args):
+        return Compare(self.dispatch(n.expr, *args), map(lambda (x,y): (x, self.dispatch(y, *args)), n.ops))
+    @staticmethod
+    def list(self, n, *args):
+        expr, ss1 = self.dispatch(n.expr, *args)
+        ops = []
+        ss2 = []
+        for (x, y) in n.ops:
+            op, ssn = self.dispatch(y, *args)
+            ops += [(x, op)]
+            ss2 += ssn
+        return (Compare(expr, ops), ss1 + ss2)
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.expr, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(y, *args), ops), set([]))
+
+class Lambda(PyNode):
+    def __init__(self, args, expr):
+        self.args = argnames
+        self.expr = expr
+    def __repr__(self):
+        return 'Lambda(%s,%s)' % (self.args, self.expr)
+
+    @staticmethod
+    def copy(self, n, *args):
+        return Lambda(n.args, self.dispatch(n.expr))
+    @staticmethod
+    def list(self, n, *args):
+        raise Exception('Default list visitor not applicable for Lambda')
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.expr, *args)
+
+class List(PyNode):
+    def __init__(self, nodes):
+        self.nodes = nodes
+    def __repr__(self):
+        return 'List(%s)' % self.nodes
+
+    @staticmethod
+    def copy(self, n, *args):
+        return List(map_dispatch(self, n.nodes, *args))
+    @staticmethod
+    def list(self, n, *args):
+        plist = map_dispatch(self, n.nodes, *args)
+        return (List(fst(plist)), snd(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.nodes, *args)
+
+class Dict(PyNode):
+    def __init__(self, items):
+        self.items = items
+    def __repr__(self):
+        return 'Dict(%s)' % self.items
+
+    @staticmethod
+    def copy(self, n, *args):
+        return Dict(map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), self.items))
+    @staticmethod
+    def list(self, n, *args):
+        plist = map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), self.items)
+        ss = []
+        items = []
+        for ((key, ks), (val, vs)) in plist:
+            ss += vs + ks
+            items += [(key, val)]
+        return (Dict(items), ss)
+    @staticmethod
+    def find(self, n, *args):
+        return reduce(lambda x, y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), self.items))
+
+class Subscript(PyNode):
+    def __init__(self, expr, subs):
+        self.expr = expr
+        self.subs = subs
+    def __repr__(self):
+        return 'Subscript(%s,%s)' % (self.expr, self.subs)
+    
+    @staticmethod
+    def copy(self, n, *args):
+        return Subscript(self.dispatch(n.expr, *args), map_dispatch(self, n.subs, *args))
+    @staticmethod
+    def list(self, n, *args):
+        expr, ss = self.dispatch(n.expr, *args)
+        plist = map_dispatch(self, n.subs, *args)
+        return (Subscript(expr, fst(plist)), ss + snd(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.subs, *args) | self.dispatch(n.expr, *args)
+
+class Add(PyNode):
+    def __init__(self, (left, right)):
+        self.left = left
+        self.right = right
+    def __repr__(self):
+        return 'Add((%s, %s))' % (self.left, self.right)
+    
+    @staticmethod
+    def copy(self, n, *args):
+        return Add((self.dispatch(left, *args), self.dispatch(right, *args)))
+    @staticmethod
+    def list(self, n, *args):
+        left, ss1 = self.dispatch(n.left, *args)
+        right, ss2 = self.dispatch(n.right, *args)
+        return (Add((left,right)), ss1 + ss2)
+    @staticmethod
+    def find(self, n, *args):
+        return binary(self, n, *args)
+
+class Or(PyNode):
+    def __init__(self, nodes):
+        self.nodes = nodes
+    def __repr__(self):
+        return 'Or(%s)' % self.nodes
+
+    @staticmethod
+    def copy(self, n, *args):
+        return Or(map_dispatch(self, n.nodes, *args))
+    @staticmethod
+    def list(self, n, *args):
+        plist = map_dispatch(self, n.nodes, *args)
+        return (Or(fst(plist)), snd(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.nodes, *args)
+
+class And(PyNode):
+    def __init__(self, nodes):
+        self.nodes = nodes
+    def __repr__(self):
+        return 'And(%s)' % self.nodes
+
+    @staticmethod
+    def copy(self, n, *args):
+        return And(map_dispatch(self, n.nodes, *args))
+    @staticmethod
+    def list(self, n, *args):
+        plist = map_dispatch(self, n.nodes, *args)
+        return (And(fst(plist)), snd(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.nodes, *args)
+
+class Not(PyNode):
+    def __init__(self, expr):
+        self.expr = expr
+    def __repr__(self):
+        return 'Not(%s)' % self.expr
+
+    @staticmethod
+    def copy(self, n, *args):
+        return Not(self.dispatch(n.expr, *args))
+    @staticmethod
+    def list(self, n, *args):
+        expr, ss = self.dispatch(n.expr, *args)
+        return (Not(expr), ss)
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.expr, *args)
+
+class UnarySub(PyNode):
+    def __init__(self, expr):
+        self.expr = expr
+    def __repr__(self):
+        return 'UnarySub(%s)' % self.expr
+
+    @staticmethod
+    def copy(self, n, *args):
+        return UnarySub(self.dispatch(n.expr, *args))
+    @staticmethod
+    def list(self, n, *args):
+        expr, ss = self.dispatch(n.expr, *args)
+        return (UnarySub(expr), ss)
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.expr, *args)
+
+class IfExp(PyNode):
+    def __init__(self, test, then, else_):
+        self.test = test
+        self.then = then
+        self.else_ = else_
+    def __repr__(self):
+        return 'IfExp(%s,%s,%s)' % (self.test, self.then, self.else_)
+    
+    @staticmethod
+    def copy(self, n, *args):
+        return IfExp(self.dispatch(n.test, *args), self.dispatch(n.then, *args), self.dispatch(n.else_, *args))
+    @staticmethod
+    def list(self, n, *args):
+        raise Exception('Default list visitor not applicable for IfExp')
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.then, *args) | self.dispatch(n.test, *args) | self.dispatch(n.else_, *args)
+
+class IfExpFlat(PyNode):
+    def __init__(self, test, then, else_):
+        self.test = test
+        self.then = then
+        self.else_ = else_
+    def __repr__(self):
+        return 'IfExpFlat(%s,%s,%s)' % (self.test, self.then, self.else_)
+    
+    @staticmethod
+    def copy(self, n, *args):
+        return IfExpFlat(self.dispatch(n.test, *args), map_dispatch(self, n.then, *args), map_dispatch(self, n.else_, *args))
+    @staticmethod
+    def list(self, n, *args):
+        test, ss = self.dispatch(n.test, *args)
+        return (IfExpFlat(test, list_dispatch(self, n.then, *args), list_dispatch(self, n.else_, *args)), ss)
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.test, *args) | accumulate(self, n.then, *args) | accumulate(self, n.else_, *args)
 
 class SLambda(PyNode):
     def __init__(self, params, code, label=None):
@@ -305,10 +564,10 @@ class SLambda(PyNode):
         return 'SLambda(%s, %s, %s)' % (self.params, self.code, self.label) 
     @staticmethod
     def copy(self, n, *args):
-        return SLambda(n.params, self.dispatch(n.code, *args), n.label)
+        return SLambda(n.params, map_dispatch(self, n.code, *args), n.label)
     @staticmethod
     def list(self, n, *args):
-        return (SLambda(n.params, self.dispatch(code, *args), n.label), [])
+        return (SLambda(n.params, list_dispatch(self, n.code, *args), n.label), [])
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.code, *args)
@@ -343,6 +602,26 @@ class IndirectCallFunc(PyNode):
         (node, ss) = self.dispatch(node, *args)
         plist = map_dispatch(self, n.args, *args)
         return (IndirectCallFunc(node, fst(plist)), ss + snd(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.node, *args) | reduce(lambda x,y: x | y, 
+                                                     map_dispatch(self, n.args, *args), 
+                                                     set([]))
+
+class CallFunc(PyNode):
+    def __init__(self, node, args):
+        self.node = node
+        self.args = args
+    def __repr__(self):
+        return 'CallFunc(%s, %s)' % (self.node, self.args)
+    @staticmethod
+    def copy(self, n, *args):
+        return CallFunc(self.dispatch(n.node, args, *args), map_dispatch(self, n.args, *args))
+    @staticmethod
+    def list(self, n, *args):
+        (node, ss) = self.dispatch(node, *args)
+        plist = map_dispatch(self, n.args, *args)
+        return (CallFunc(node, fst(plist)), ss + snd(plist))
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.node, *args) | reduce(lambda x,y: x | y, 

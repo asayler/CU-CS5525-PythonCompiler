@@ -44,7 +44,6 @@ COMPIS       = 'is'
 class ExplicateVisitor(CopyVisitor):
     def __init__(self):
         super(ExplicateVisitor,self).__init__()
-        CopyVisitor.visitLet = Let.visitLet
         
     # Helper Functions
 
