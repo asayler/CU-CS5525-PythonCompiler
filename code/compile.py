@@ -102,6 +102,7 @@ def main(argv=None):
     
     # Declassify
     declassifiedast = ClassFindVisitor().preorder(parsedast, set([]))
+    return 0
     parsedast = None
     if(debug):
         # Print parsedast

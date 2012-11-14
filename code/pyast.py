@@ -74,7 +74,7 @@ class Module(PyNode):
 
 class StmtList(PyNode):
     def __init__(self, nodes):
-        self.node = nodes
+        self.nodes = nodes
     def __repr__(self):
         return 'StmtList(%s)' % self.node
     @staticmethod
@@ -456,7 +456,7 @@ class Add(PyNode):
     
     @staticmethod
     def copy(self, n, *args):
-        return Add((self.dispatch(left, *args), self.dispatch(right, *args)))
+        return Add((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
     @staticmethod
     def list(self, n, *args):
         left, ss1 = self.dispatch(n.left, *args)

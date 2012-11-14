@@ -3,6 +3,7 @@ from vis import *
 
 class CopyVisitor(Visitor):
     visitModule = Module.copy
+    visitStmtList = StmtList.copy
     visitDiscard = Discard.copy
     visitIf = If.copy
     visitClass = Class.copy
