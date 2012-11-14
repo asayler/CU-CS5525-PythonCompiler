@@ -87,8 +87,11 @@ clean:
 	$(RM) $(BUILDDIR)*.s
 	$(RM) $(BUILDDIR)*.output
 	$(RM) $(BUILDDIR)*.correct
-	$(RM) $(BUILDDIR)*.diff	
+	$(RM) $(BUILDDIR)*.diff
 	$(RM) *~
+	$(RM) $(TESTDIR)*~
+	$(RM) $(BUILDDIR)*~
+	$(RM) $(HELPERDIR)*~
 	$(RM) \#*\#
 	$(RM) *.s
 	$(RM) *.pyc
@@ -96,5 +99,4 @@ clean:
 	$(RM) *.dot
 	$(RM) *.svg
 	$(RM) submit.zip
-	$(RM) parsetab.py
 	$(RM) -r $(SUBMISSIONDIR)

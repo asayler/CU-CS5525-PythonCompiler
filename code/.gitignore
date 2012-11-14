@@ -8,5 +8,4 @@
 *.dot
 *.svg
 submit.zip
-parsetab.py
 test/devtest*
