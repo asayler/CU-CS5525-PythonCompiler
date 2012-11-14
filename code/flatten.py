@@ -209,7 +209,8 @@ class FlattenVisitor(CopyVisitor):
         myss += ss
         # Add each dict memeber
         for item in n.items:
-            myss += self.dispatch(Discard(CallSETSUB([expr, item[0], item[1]])))            
+            valname = generate_name('item')
+            myss += self.dispatch(Discard(Let(Name(valname), item[1], CallSETSUB([expr, item[0], Name(valname)]))))   
         return (expr, myss)
 
     

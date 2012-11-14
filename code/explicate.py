@@ -133,10 +133,11 @@ class ExplicateVisitor(CopyVisitor):
         exprvar = Name(varname)
         t = Let(exprvar,
                 self.dispatch(n.expr),
-                IfExp(Or([IsTag(INT_t, exprvar),
-                          IsTag(BOOL_t, exprvar)]),
+                IfExp(IsTag(INT_t, exprvar),
                       InjectFrom(INT_t, IntUnarySub(ProjectTo(INT_t, exprvar))),
-                      CallTERROR([])))
+                      IfExp(IsTag(BOOL_t, exprvar),
+                            InjectFrom(INT_t, IntUnarySub(ProjectTo(BOOL_t, exprvar))),
+                            CallTERROR([]))))
         return t
 
     # Explicate P1 Pyobj functions

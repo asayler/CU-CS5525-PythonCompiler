@@ -65,13 +65,14 @@ class ClassFindVisitor(CopyVisitor):
         del CopyVisitor.visitAssAttr
         CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
         CopyVisitor.visitAttrAssign = AttrAssign.visitAttrAssign
+        CopyVisitor.visitLet = Let.visitLet
         self.assignee_visitor = AssigneeVisitor()
 
     def preorder(self, tree, outside_scope, *args):
         scope = self.assignee_visitor.preorder(tree) | outside_scope
         return super(ClassFindVisitor, self).preorder(tree, scope)
 
-    def preorder_expr(self, *args):
+    def preorder_expr(self, tree, *args):
         return super(ClassFindVisitor, self).preorder(tree, *args)
 
     def visitModule(self, n, scope):
