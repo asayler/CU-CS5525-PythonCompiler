@@ -228,15 +228,14 @@ class VarAssign(PyNode):
         return "VarAssign(%s, %s)" % (repr(self.target), repr(self.value))
     @staticmethod
     def copy(self, n, *args):
-        return VarAssign(self.dispatch(n.target, *args), self.dispatch(n.value, *args))
+        return VarAssign(n.target, self.dispatch(n.value, *args))
     @staticmethod
     def list(self, n, *args):
-        target, ss1 = self.dispatch(n.target, *args)
-        value, ss2 = self.dispatch(n.value, *args)
-        return ss1 + ss2 + ss3 + [VarAssign(target, value)]
+        value, ss = self.dispatch(n.value, *args)
+        return ss + [VarAssign(n.target, value)]
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.target, *args) | self.dispatch(n.value, *args)
+        return self.dispatch(n.value, *args)
 
 class SubscriptAssign:
     '''Assignment statement for subscription'''
