@@ -19,11 +19,10 @@
 import sys
 
 # Data Types
-from compiler.ast import *
-from monoast import *
-from set_visitor import *
+from pyast import *
+from set_visitor import SetVisitor
 
-from unitcopy import CopyVisitor
+from copy_visitor import CopyVisitor
 
 # Helper Types
 from vis import Visitor
@@ -33,7 +32,7 @@ from utilities import generate_name
 # OFF DA HOOK #
 def specializeCallFunc(self, n):
     if isinstance(n.node, Name) and n.node.name in RESERVED_NAMES:
-        return CallFunc(self.dispatch(n.node), map(self.dispatch, n.args),  n.star_args, n.dstar_args, n.lineno)
+        return CallFunc(self.dispatch(n.node), map(self.dispatch, n.args))
     ftemp = generate_name('func')
     def gen_arg(args, vals):
         if args:
@@ -48,24 +47,20 @@ def specializeCallFunc(self, n):
                              Let(Name(objtemp), CallCREATEOBJECT([Name(ftemp)]),
                                  IfExp(CallHASATTR([Name(ftemp), String('__init__')]),
                                        Let(Name(discardtemp), CallFunc(CallGETFUNCTION([Getattr(Name(ftemp), '__init__')]), 
-                                                                       [Name(objtemp)]+vals, n.star_args, n.dstar_args, n.lineno),
+                                                                       [Name(objtemp)]+vals),
                                            Name(objtemp)),
                                        Name(objtemp))),
                          IfExp(CallISBOUNDMETHOD([Name(ftemp)]),
                                    CallFunc(CallGETFUNCTION([Name(ftemp)]), 
-                                            [CallGETRECEIVER([Name(ftemp)])]+vals, n.star_args, n.dstar_args, n.lineno),
+                                            [CallGETRECEIVER([Name(ftemp)])]+vals),
                                IfExp(CallISUNBOUNDMETHOD([Name(ftemp)]),
-                                     CallFunc(CallGETFUNCTION([Name(ftemp)]), vals, n.star_args, n.dstar_args, n.lineno),
-                                     CallFunc(Name(ftemp), vals, n.star_args, n.dstar_args, n.lineno))))
+                                     CallFunc(CallGETFUNCTION([Name(ftemp)]), vals),
+                                     CallFunc(Name(ftemp), vals))))
     return Let(Name(ftemp), self.dispatch(n.node), gen_arg(n.args, []))
     
 class ClassFindVisitor(CopyVisitor):
     def __init__(self):
         super(ClassFindVisitor,self).__init__()
-        del CopyVisitor.visitAssAttr
-        CopyVisitor.visitSubscriptAssign = SubscriptAssign.visitSubscriptAssign
-        CopyVisitor.visitAttrAssign = AttrAssign.visitAttrAssign
-        CopyVisitor.visitLet = Let.visitLet
         self.assignee_visitor = AssigneeVisitor()
 
     def preorder(self, tree, outside_scope, *args):

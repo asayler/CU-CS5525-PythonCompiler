@@ -19,7 +19,7 @@ class ParseConvert(Visitor):
         nodes = []
         for s in n.nodes:
             nodes += [self.dispatch(s)]
-        return nodes
+        return pyast.StmtList(nodes)
 
     def visitPrintnl(self, n):
         nodes = []
@@ -30,13 +30,13 @@ class ParseConvert(Visitor):
     def visitAssign(self, n):
         if isinstance(n.nodes[0], Subscript):
             return pyast.SubscriptAssign(self.dispatch(n.nodes[0].expr), 
-                                         map(self.dispatch, n.subs),
+                                         map(self.dispatch, n.nodes[0].subs),
                                          self.dispatch(n.expr))
         elif isinstance(n.nodes[0], AssAttr):
             return pyast.AttrAssign(self.dispatch(n.nodes[0].expr), 
-                                    n.attrname,
+                                    n.nodes[0].attrname,
                                     self.dispatch(n.expr))
-        return pyast.VarAssign(nodes[0].name, self.dispatch(n.expr))
+        return pyast.VarAssign(n.nodes[0].name, self.dispatch(n.expr))
 
     def visitIf(self, n):
         return pyast.If(map(lambda (x,y): (self.dispatch(x), self.dispatch(y)), 

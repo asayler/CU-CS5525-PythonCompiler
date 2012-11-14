@@ -41,6 +41,7 @@ from expand import *
 from flatten import *
 from instr_select import *
 from x86regalloc import *
+from depr_parse import *
 
 # Helper Tools
 from astTools import *
@@ -90,7 +91,7 @@ def main(argv=None):
         sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
     
     # Parse inputFile
-    parsedast = compiler.parseFile(inputFilePath)
+    parsedast = parse(inputFilePath)
     if(debug):
         # Print parsedast
         sys.stderr.write("parsed ast = \n" + str(parsedast) + "\n")
@@ -98,19 +99,10 @@ def main(argv=None):
         debugFileName = (outputFilePath[-1:])[0]
         debugFileName = debugFileName[:-3] + "-parsed.dot"
         Graph_ast().writeGraph(parsedast, debugFileName)
-
-    preprocessedast = AssignSpecializeVisitor().preorder(parsedast)
+    
+    # Declassify
+    declassifiedast = ClassFindVisitor().preorder(parsedast, set([]))
     parsedast = None
-    if(debug):
-        # Print parsedast
-        sys.stderr.write("preprocessed ast = \n" + str(preprocessedast) + "\n")
-        # Graph parsedast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-preprocessed.dot"
-        Graph_preprocessedast().writeGraph(preprocessedast, debugFileName)    
-
-    declassifiedast = ClassFindVisitor().preorder(preprocessedast, set([]))
-    preprocessedast = None
     if(debug):
         # Print parsedast
         sys.stderr.write("declassified ast = \n" + str(declassifiedast) + "\n")

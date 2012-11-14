@@ -38,6 +38,8 @@ TESTTEST        = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.test, $(TESTCASESASSEM
 
 all: Tests
 
+Assemb: $(TESTCASESASSEMB)
+
 Tests: $(TESTCASES)
 
 TestsRun: $(TESTDIFFS)
