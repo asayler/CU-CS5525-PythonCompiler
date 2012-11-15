@@ -34,5 +34,5 @@ class FindLocalsVisitor(SetVisitor):
     def visitFunction(self, n):
         return set([n.name])
 
-    def visitAssName(self, n):
-        return set([name(n)])
+    def visitVarAssign(self, n):
+        return set([n.target])

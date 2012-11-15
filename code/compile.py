@@ -102,7 +102,6 @@ def main(argv=None):
     
     # Declassify
     declassifiedast = ClassFindVisitor().preorder(parsedast, set([]))
-    return 0
     parsedast = None
     if(debug):
         # Print parsedast
@@ -162,6 +161,7 @@ def main(argv=None):
 
     # Expand
     expandedast = ExpandVisitor().preorder(closedast)
+    return 0
     closedast = None
     if(debug):
         # Print expandedast

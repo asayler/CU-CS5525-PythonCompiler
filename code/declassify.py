@@ -84,7 +84,7 @@ class ClassFindVisitor(CopyVisitor):
         bases = map(self.dispatch, n.bases)
         stmts = [VarAssign(classtemp, 
                         CallCREATECLASS([List(bases)]))]
-        stmts += DeclassifyVisitor(classtemp, self).preorder(n.code, scope)
+        stmts += DeclassifyVisitor(classtemp, self).preorder(n.code, scope).nodes
         stmts += [VarAssign(n.name, Name(classtemp))]
         return stmts
 
@@ -108,8 +108,8 @@ class DeclassifyVisitor(CopyVisitor):
         return super(DeclassifyVisitor, self).preorder(tree, *args)
 
     def visitVarAssign(self, n):
-        return AttrAssign(Name(self.name), n.nodes[0].name, 
-                          self.dispatch(n.expr))
+        return AttrAssign(Name(self.name), n.target, 
+                          self.dispatch(n.value))
         
     def visitName(self, n):
         if n.name in self.assignees:
@@ -146,7 +146,7 @@ class DeclassifyVisitor(CopyVisitor):
                 nodes += self.dispatch(s)
             else:
                 nodes += [self.dispatch(s)]
-        return StmtList(nodes, n.lineno)
+        return StmtList(nodes)
 
     def visitCallFunc(self, n):
         return specializeCallFunc(self, n) 

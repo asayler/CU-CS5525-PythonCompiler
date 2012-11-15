@@ -9,7 +9,7 @@ def map_dispatch(self, targets, *args):
 def binary(self, n, *args):
     return self.dispatch(n.left, *args) | self.dispatch(n.right, *args)
 def accumulate(self, n, *args):
-    return reduce(lambda x,y : x | y, map_dispatch(self, n, *args))
+    return reduce(lambda x,y : x | y, map_dispatch(self, n, *args), set([]))
 def list_dispatch(self, n, *args):
     return sum(map_dispatch(self, n, *args), [])
 
@@ -64,7 +64,7 @@ class Module(PyNode):
         return 'Module(%s)' % self.node
     @staticmethod
     def copy(self, n, *args):
-        return Module(self.dispatch(n.nodes, *args))
+        return Module(self.dispatch(n.node, *args))
     @staticmethod
     def list(self, n, *args):
         return Module(self.dispatch(n.node, *args))
@@ -76,7 +76,7 @@ class StmtList(PyNode):
     def __init__(self, nodes):
         self.nodes = nodes
     def __repr__(self):
-        return 'StmtList(%s)' % self.node
+        return 'StmtList(%s)' % self.nodes
     @staticmethod
     def copy(self, n, *args):
         return StmtList(map_dispatch(self, n.nodes, *args))
@@ -117,7 +117,7 @@ class If(PyNode):
         return 'If(%s,%s)' % (self.tests, self.else_)
     @staticmethod
     def copy(self, n, *args):
-        return If(map(lambda (x, y): (self.dispatch(x, *args), self.dispatch(y, *args))), self.dispatch(n.else_, *args))
+        return If(map(lambda (x, y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.tests), self.dispatch(n.else_, *args))
     @staticmethod
     def list(self, n, *args):
         plist = map(lambda (x, y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.tests)
@@ -130,7 +130,7 @@ class If(PyNode):
         return ss + [If(tests, else_)]
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.else_, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args)))
+        return self.dispatch(n.else_, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), n.tests), set([]))
 
 class Class(PyNode):
     def __init__(self, name, bases, code):
@@ -370,7 +370,7 @@ class Compare(PyNode):
         return (Compare(expr, ops), ss1 + ss2)
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.expr, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(y, *args), ops), set([]))
+        return self.dispatch(n.expr, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(y, *args), n.ops), set([]))
 
 class Lambda(PyNode):
     def __init__(self, args, expr):
@@ -414,10 +414,10 @@ class Dict(PyNode):
 
     @staticmethod
     def copy(self, n, *args):
-        return Dict(map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), self.items))
+        return Dict(map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.items))
     @staticmethod
     def list(self, n, *args):
-        plist = map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), self.items)
+        plist = map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.items)
         ss = []
         items = []
         for ((key, ks), (val, vs)) in plist:
@@ -426,7 +426,7 @@ class Dict(PyNode):
         return (Dict(items), ss)
     @staticmethod
     def find(self, n, *args):
-        return reduce(lambda x, y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), self.items))
+        return reduce(lambda x, y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), n.items), set([]))
 
 class Subscript(PyNode):
     def __init__(self, expr, subs):
@@ -612,7 +612,7 @@ class IndirectCallFunc(PyNode):
         return 'IndirectCallFunc(%s, %s)' % (self.node, self.args)
     @staticmethod
     def copy(self, n, *args):
-        return IndirectCallFunc(self.dispatch(n.node, args, *args), map_dispatch(self, n.args, *args))
+        return IndirectCallFunc(self.dispatch(n.node, *args), map_dispatch(self, n.args, *args))
     @staticmethod
     def list(self, n, *args):
         (node, ss) = self.dispatch(node, *args)
@@ -632,10 +632,10 @@ class CallFunc(PyNode):
         return 'CallFunc(%s, %s)' % (self.node, self.args)
     @staticmethod
     def copy(self, n, *args):
-        return CallFunc(self.dispatch(n.node, args, *args), map_dispatch(self, n.args, *args))
+        return CallFunc(self.dispatch(n.node, *args), map_dispatch(self, n.args, *args))
     @staticmethod
     def list(self, n, *args):
-        (node, ss) = self.dispatch(node, *args)
+        (node, ss) = self.dispatch(n.node, *args)
         plist = map_dispatch(self, n.args, *args)
         return (CallFunc(node, fst(plist)), ss + snd(plist))
     @staticmethod

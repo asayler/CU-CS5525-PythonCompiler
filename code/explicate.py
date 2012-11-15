@@ -19,10 +19,9 @@
 import sys
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 
-from unitcopy import CopyVisitor
+from copy_visitor import CopyVisitor
 
 # Helper Types
 from vis import Visitor
@@ -87,7 +86,7 @@ class ExplicateVisitor(CopyVisitor):
 
     def visitConst(self, n):
         # ToDo: Create IntConst type for use after explicate
-        return InjectFrom(INT_t, Const(n.value, n.lineno))
+        return InjectFrom(INT_t, Const(n.value))
 
     def visitName(self, n):
         if(n.name == TRUENAME):
@@ -95,7 +94,7 @@ class ExplicateVisitor(CopyVisitor):
         elif(n.name == FALSENAME):
             return FALSENODE
         else:
-            return Name(n.name, n.lineno)
+            return Name(n.name)
 
     # Non-Terminal Expressions
         
@@ -169,8 +168,8 @@ class ExplicateVisitor(CopyVisitor):
         return output
 
     def visitLambda(self, n):
-        return SLambda(n.argnames, Stmt([Return(self.dispatch(n.code))]))
+        return SLambda(n.args, StmtList([Return(self.dispatch(n.expr))]))
 
     def visitFunction(self, n):
-        return Assign([AssName(n.name, 'OP_ASSIGN')],
-                      SLambda(n.argnames, self.dispatch(n.code)))
+        return VarAssign(n.name,
+                      SLambda(n.args, self.dispatch(n.code)))

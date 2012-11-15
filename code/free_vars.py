@@ -19,15 +19,14 @@
 import sys
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 from functionwrappers import RESERVED_NAMES
 
 # Helper Tools
 from set_visitor import SetVisitor
 
 def name(n):
-    if isinstance(n, Name) or isinstance(n, AssName):
+    if isinstance(n, Name):
         return n.name
     else: raise Exception('Getting name of invalid node ' + str(n))
 
@@ -36,18 +35,13 @@ class FreeVarsVisitor(SetVisitor):
         super(FreeVarsVisitor,self).__init__()
         self.local_visitor = LocalVarsVisitor()
 
-    def visitAssign(self, n):
-        return self.dispatch(n.expr) - reduce(lambda x,y: x | y, 
-                                              map(self.dispatch, n.nodes), 
-                                              set([]))
+    def visitVarAssign(self, n):
+        return self.dispatch(n.value) - set([n.target])
 
     def visitName(self, n):
         if n.name in RESERVED_NAMES:
             return set([])
         else: return set([name(n)])
-
-    def visitAssName(self, n):
-        return set([name(n)])
 
     # Non-Terminal Expressions
 
@@ -67,8 +61,8 @@ class LocalVarsVisitor(SetVisitor):
         n.local_vars = self.dispatch(n.code) - set(n.params)
         return set([])
 
-    def visitAssName(self, n):
-        return set([name(n)])
+    def visitVarAssign(self, n):
+        return set([n.target]) | self.dispatch(n.value)
 
 class NestedFreeVarsVisitor(SetVisitor):
     def visitSLambda(self, n):
