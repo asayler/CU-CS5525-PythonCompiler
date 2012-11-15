@@ -23,6 +23,7 @@ from pyast import *
 from vis import Visitor
 
 class SetVisitor(Visitor):
+    visitProgram = Program.find
     visitModule = Module.find    
     visitStmtList = StmtList.find
     visitDiscard = Discard.find

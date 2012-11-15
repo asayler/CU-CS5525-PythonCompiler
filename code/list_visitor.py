@@ -1,7 +1,8 @@
 from pyast import *
 from vis import *
 
-class ListVisitor(Visitor):
+class ListVisitor(Visitor):    
+    visitProgram = Program.list
     visitModule = Module.list
     visitStmtList = StmtList.list
     visitDiscard = Discard.list

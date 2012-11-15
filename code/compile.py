@@ -42,6 +42,7 @@ from flatten import *
 from instr_select import *
 from x86regalloc import *
 from depr_parse import *
+from stringfind import *
 
 # Helper Tools
 from astTools import *
@@ -52,6 +53,7 @@ from graph_monoast import *
 from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
+
 
 debug = False
 
@@ -161,7 +163,6 @@ def main(argv=None):
 
     # Expand
     expandedast = ExpandVisitor().preorder(closedast)
-    return 0
     closedast = None
     if(debug):
         # Print expandedast
@@ -173,7 +174,7 @@ def main(argv=None):
 
     
     # Flatten Tree
-    flatast = FlattenVisitor().preorder(expandedast)
+    flatast = FlattenVisitor().preorder(expandedast, True)
     expandedast = None
     if(debug):
         # Print flatast

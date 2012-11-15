@@ -72,6 +72,22 @@ class Module(PyNode):
     def find(self, n, *args):
         return self.dispatch(n.node, *args)
 
+class Program(PyNode):
+    def __init__(self, nodes):
+        self.nodes = nodes
+    def __repr__(self):
+        return 'Program(%s)' % self.nodes
+    @staticmethod
+    def copy(self, n, *args):
+        return Program(map_dispatch(self, n.nodes, *args))
+    @staticmethod
+    def list(self, n, *args):
+        plist = map_dispatch(self, n.nodes, *args)
+        return Program(fst(plist))
+    @staticmethod
+    def find(self, n, *args):
+        return accumulate(self, n.nodes, *args)
+
 class StmtList(PyNode):
     def __init__(self, nodes):
         self.nodes = nodes
@@ -82,10 +98,7 @@ class StmtList(PyNode):
         return StmtList(map_dispatch(self, n.nodes, *args))
     @staticmethod
     def list(self, n, *args):
-        plist = map_dispatch(self, n.nodes, *args)
-        nodes = []
-        for node, ss in plist:
-            nodes += ss + [node]
+        nodes = list_dispatch(self, n.nodes, *args)
         return StmtList(nodes)
     @staticmethod
     def find(self, n, *args):
@@ -125,7 +138,7 @@ class If(PyNode):
         tests = []
         ss = []
         for ((test, ssn), body) in plist:
-            ss += [ssn]
+            ss += ssn
             tests += [(test, body)]
         return ss + [If(tests, else_)]
     @staticmethod
@@ -645,14 +658,14 @@ class CallFunc(PyNode):
                                                      set([]))
 
 class InstrSeq(PyNode):
-    def __init__(self, nodes, expr):
+    def __init__(self, node, expr):
         self.node = node
         self.expr = expr
     def __repr__(self):
-        return "InstrSeq(%s, %s)" % (repr(self.nodes), repr(self.expr))
+        return "InstrSeq(%s, %s)" % (repr(self.node), repr(self.expr))
     @staticmethod
     def copy(self, n, *args):
-        return InstrSeq(self.dispatch(n.nodes, *args), self.dispatch(n.expr, *args))
+        return InstrSeq(self.dispatch(n.node, *args), self.dispatch(n.expr, *args))
     @staticmethod
     def list(self, n, *args):
         expr, ss = self.dispatch(n.expr, *args)

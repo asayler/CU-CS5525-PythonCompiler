@@ -18,7 +18,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-from compiler.ast import *
+from pyast import *
 
 counter = 1
 
@@ -29,7 +29,7 @@ def generate_name(x):
     return name
 
 def make_assign(lhs, rhs):
-    return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
+    return VarAssign(lhs, rhs)
 
 def generate_return_label(funcName):
     return "l_%s_return" % funcName

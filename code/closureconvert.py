@@ -38,7 +38,7 @@ class ClosureVisitor(ListVisitor):
     # Module
 
     def visitModule(self, n):
-        return Module(self.dispatch(n.node, True))
+        return Program(self.dispatch(n.node, True))
 
     # Staments
 

@@ -25,7 +25,7 @@ class ParseConvert(Visitor):
         nodes = []
         for node in n.nodes:
             nodes += [self.dispatch(node)]
-        return pyast.Discard(pyast.CallFunc(pyast.Name('print'), nodes))
+        return pyast.Discard(pyast.CallFunc(pyast.Name('print_any'), nodes))
 
     def visitAssign(self, n):
         if isinstance(n.nodes[0], Subscript):

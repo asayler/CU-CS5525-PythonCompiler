@@ -34,7 +34,7 @@ class Visitor(object):
 
     def dispatch(self, node, *args):
         if debug:
-            print 'dispatching for ' + repr(node.__class__)
+            print repr(self.__class__) + 'dispatching for ' + repr(node.__class__)
             print '   ' + repr(node) + ' in ' \
                   + self.__class__.__name__
         self.node = node

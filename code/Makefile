@@ -60,7 +60,7 @@ $(BUILDDIR)%.out: $(BUILDDIR)%.s $(BUILDDIR)runtime.o $(BUILDDIR)hashtable.o $(B
 
 $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(PC) $<
-#	$(MV) $(@F) $(BUILDDIR)
+	$(MV) $(@F) $(BUILDDIR)
 
 $(BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
 	$(CC) $(CFLAGS) $< -o $@

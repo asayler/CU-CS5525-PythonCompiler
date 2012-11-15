@@ -19,8 +19,7 @@
 import sys
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 from set_visitor import *
 
 from unitcopy import CopyVisitor

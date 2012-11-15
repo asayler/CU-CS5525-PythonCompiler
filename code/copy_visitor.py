@@ -2,6 +2,7 @@ from pyast import *
 from vis import *
 
 class CopyVisitor(Visitor):
+    visitProgram = Program.copy
     visitModule = Module.copy
     visitStmtList = StmtList.copy
     visitDiscard = Discard.copy

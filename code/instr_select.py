@@ -67,9 +67,9 @@ class InstrSelectVisitor(Visitor):
         strings = StringFindVisitor().preorder(tree)
         return (strings, super(InstrSelectVisitor, self).preorder(tree))
 
-    def visitModule(self, n):
+    def visitProgram(self, n):
         slambdas = []
-        for node in n.node:
+        for node in n.nodes:
             slambdas += [self.dispatch(node)]
         return slambdas
 
@@ -87,14 +87,14 @@ class InstrSelectVisitor(Visitor):
 
     # Statements    
 
-    def visitStmt(self, n, funcName):
+    def visitStmtList(self, n, funcName):
         instrs = []
         for s in n.nodes:
             instrs += self.dispatch(s, funcName)
         return instrs
 
-    def visitAssign(self, n, funcName):
-        return self.dispatch(n.expr, Var86(n.nodes[0].name))
+    def visitVarAssign(self, n, funcName):
+        return self.dispatch(n.value, Var86(n.target))
 
     def visitDiscard(self, n, funcName):
         tmp = Var86(generate_name(DISCARDTEMP))
@@ -194,7 +194,7 @@ class InstrSelectVisitor(Visitor):
                 return instrs
         return make_branches(n.tests, caselabels, n.else_)
 
-    def visitIfExp(self, n, target):
+    def visitIfExpFlat(self, n, target):
         #Setup Label
         global IfThenLabelCnt
         ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
@@ -257,8 +257,6 @@ class InstrSelectVisitor(Visitor):
         return instrs
 
     def visitInstrSeq(self, n, target):
-        instrs = []
-        for node in n.nodes:
-            instrs += self.dispatch(node, None)
+        instrs = self.dispatch(n.node, None)
         instrs += [Move86(Var86(n.expr.name), target)]
         return instrs
