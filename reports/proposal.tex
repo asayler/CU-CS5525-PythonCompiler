@@ -105,12 +105,67 @@ compiler.
 % compiling runtime functions to LLVM and linking in LLVM, comparing
 % LLVM performance vs x86 performance, playing with non-x86 LLVM
 % targets, playing with various LLVM runtypes, etc
+The primary goal will be to add support to enable compilation to the LLVM assembly language. 
+We will need to add new intermediate LLVM instruction nodes to our compiler that will lend themselves to 
+the LLVM format. A key aspect for us to investigate is how we compile our runtime
+functions and link them to our intermediate representation output.
+We will need to alter our Makefile to allow for both the x86 compilation and the LLVM
+compilation to be run. Since it will be interesting to analyze the performance differences 
+between our x86 representation and our LLVM representation, we will also need to
+add support for recording and comparing runtimes for the compiled programs. 
+We would also like to test our implementation on non-x86 targets, so that we can demonstrate
+the benefit and universality of using LLVM.
 
 \section{Design}
 
 % Mention keeping most of the re-factored HW6, p3 design, but changing
 % instruction selection, ability to forgo register allocation, need to
 % add SSA form conversion pass, etc
+We have been working on refactoring the HW6, and we plan on keeping the refactored
+design, along with the design of p3. The most major changes will happen as we change 
+instruction selection and forego register allocation. A significant difference between
+our current x86 compiler and our projected LLVM compiler is that the LLVM compiler 
+uses variable names in its instructions, much like our current p3 compiler is at the state
+prior to register allocation. So, instruction selection and the intermediate nodes will need to be
+altered to lend themselves to the LLVM format. 
+
+We will need to add a pass in our compiler that will convert to the SSA format, meaning
+that each variable is assigned to exactly once. In many ways, this will be similar to our Flatten pass.
+
+Since LLVM is a typed representation, so we will need to incorporate this information into 
+our representation, which will require a fresh look at the interaction of the runtime functions 
+and our compiler pass. Since type definition is allowed in LLVM, perhaps we will define types
+for pyobjs to deal wight he typing issue and allow us to still link to our runtime functions a similar way.
+This also might mean that we can do away with the bit manipulation in the runtime functions, allowing
+us to keep a higher precision for our integers.
+
+All in all, there are many similarities between our current implementation and LLVM, but the typing and
+linking will be significant factors to address.
+
+For reference, below is an LLVM hello world program, taken from the LLVM Reference Manual.
+(Comments are delimited with a \verb|';'| and go until the end of the line)\\
+\begin{lstlisting}
+; Declare the string constant as a global constant. 
+@.str = private unnamed_addr constant [13 x i8] c"hello world\0A\00" 
+
+; External declaration of the puts function 
+declare i32 @puts(i8* nocapture) nounwind 
+
+; Definition of main function
+define i32 @main() {   ; i32()*  
+  ; Convert [13 x i8]* to i8  *... 
+  %cast210 = getelementptr [13 x i8]* @.str, i64 0, i64 0
+
+  ; Call puts function to write out the string to stdout. 
+  call i32 @puts(i8* %cast210)
+  ret i32 0 
+}
+
+; Named metadata
+!1 = metadata !{i32 42}
+!foo = !{!1, null}
+\end{lstlisting}
+
 
 \section{Deliverables}
 
@@ -121,6 +176,7 @@ compiler.
 % 5. (if time) Compare LLVM runtypes (interpreted, compiled, etc)
 % 6. (if time) Test LLVM implementation on x64 and ARM architectures
 % 7. (if time) Look into adding LLVM optimization for typing, JIT, etc
+
 
 \nocite{*}
 \bibliography{refs}
