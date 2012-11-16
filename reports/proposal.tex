@@ -68,13 +68,66 @@
 
 \section{Problem Statement}
 
+While the existing HW6, P3-compliant compiler supports 32-bit,
+x86 code generation, it does not support generating code for the variety
+of non-x86 architectures and assembly languages common today (x64, ARM,
+etc). While we could remedy
+this deficiency by adding additional native code generation for non-x86
+architectures directly to our compiler, this approach would duplicate a
+wide range of existing effort, force us to work in assembly languages
+with which we are not experts, and would require continued maintain to
+support new architectures and assembly languages as they arise.
+
+Instead, we aim to leverage the existing work done by the LLVM project to
+convert our HW6 compiler from an x86 targeted compiler to
+an LLVM targeted compiler. We will maintain the current x86 targeting
+and add LLVM intermediate form as an additional targeting option. In
+this way, we will be able to compare our natively generated x86 code
+with the LLVM-assembler generated x86 code. We will also be able to
+experiment with compiling our LLVM intermediate form files to assembly
+languages other than x86 such as x64 and ARM.
+
+LLVM is quickly becoming the de facto standard target for most modern
+compilers and high level languages.
+It provides mutli-platform support, multi-runtype support
+(compiled, interpreted, JIT compiled, etc), and access to a
+range of existing optimization tools and techniques. Through this
+project, we hope to become
+familiar with the LLVM intermediate form and LLVM system architecture
+while gaining insight into the benefits of building an LLVM-targeted
+compiler. 
+
 \section{Approach}
+
+% Mention something about the various steps involved. I.e. add support
+% for SSA form, add LLVM instruction nodes, add LLVM instruction
+% selection, convert Makefile to support LLVM builds, investigate
+% compiling runtime functions to LLVM and linking in LLVM, comparing
+% LLVM performance vs x86 performance, playing with non-x86 LLVM
+% targets, playing with various LLVM runtypes, etc
 
 \section{Design}
 
+% Mention keeping most of the re-factored HW6, p3 design, but changing
+% instruction selection, ability to forgo register allocation, need to
+% add SSA form conversion pass, etc
+
 \section{Deliverables}
+
+% 1. Basic SSA form support with native x86 code
+% 2. Basic LLVM instruction selection support
+% 3. Pass all current test cases using LLVM
+% 4. (if time) Compare LLVM performance to native x86 performance
+% 5. (if time) Compare LLVM runtypes (interpreted, compiled, etc)
+% 6. (if time) Test LLVM implementation on x64 and ARM architectures
+% 7. (if time) Look into adding LLVM optimization for typing, JIT, etc
 
 \nocite{*}
 \bibliography{refs}
+
+% If anyone finds one, we could use one or more good SSA reference in
+% the bibtek file. Also, the more LLVM reference, tutorials, etc the
+% better. Maybe the original LLVM papers? LLVM ``Hello World''
+% examples? Reports on other systems that use LLVM (Apple, Obj-C, etc)?
 
 \end{document}
