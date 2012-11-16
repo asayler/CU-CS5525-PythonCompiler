@@ -134,10 +134,11 @@ that each variable is assigned to exactly once. In many ways, this will be simil
 
 Since LLVM is a typed representation, so we will need to incorporate this information into 
 our representation, which will require a fresh look at the interaction of the runtime functions 
-and our compiler pass. Since type definition is allowed in LLVM, perhaps we will define types
-for pyobjs to deal wight he typing issue and allow us to still link to our runtime functions a similar way.
-This also might mean that we can do away with the bit manipulation in the runtime functions, allowing
-us to keep a higher precision for our integers.
+and our compiler pass. Since verb{struct} type definition is allowed in LLVM, perhaps we will define types
+for pyobjs to deal with the typing issue and allow us to still link to our runtime functions a similar way.
+This also might mean that we can do away with the bit manipulation in the runtime functions in favor of 
+introspection on LLVM structs, allowing us to keep a higher precision for our integers, since the flag would
+just be an 8 bit integer in the pyobj struct.
 
 All in all, there are many similarities between our current implementation and LLVM, but the typing and
 linking will be significant factors to address.
