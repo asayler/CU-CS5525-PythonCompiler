@@ -25,6 +25,8 @@ USAGE:
 
 import sys, compiler
 
+
+
 # Data Types
 from compiler.ast import *
 from monoast import *
@@ -41,7 +43,6 @@ from expand import *
 from flatten import *
 from instr_select import *
 from x86regalloc import *
-from depr_parse import *
 from stringfind import *
 
 # Helper Tools
@@ -54,6 +55,14 @@ from graph_closedast import *
 from graph_expandedast import *
 from graph_flatast import *
 
+parser = 'CURRENT'
+
+if parser == 'DEPRECATED':
+    from depr_parse import *
+elif parser == 'CURRENT':
+    from py3parse import *
+else:
+    raise Exception('Invalid parser name')
 
 debug = False
 
