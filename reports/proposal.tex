@@ -34,6 +34,72 @@
     urlcolor=black
 }
 
+\lstset{
+  language={},
+  basicstyle=\footnotesize,
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  frameround=tttt
+}
+
+\lstdefinelanguage{llvm}{
+  morecomment = [l]{;},
+  morestring=[b]'', 
+  sensitive = true,
+  classoffset=0,
+  morekeywords={
+    define, declare, global, constant,
+    internal, external, private,
+    linkonce, linkonce_odr, weak, weak_odr, appending,
+    common, extern_weak,
+    thread_local, dllimport, dllexport,
+    hidden, protected, default,
+    except, deplibs,
+    volatile, fastcc, coldcc, cc, ccc,
+    x86_stdcallcc, x86_fastcallcc,
+    ptx_kernel, ptx_device,
+    signext, zeroext, inreg, sret, nounwind, noreturn,
+    nocapture, byval, nest, readnone, readonly, noalias, uwtable,
+    inlinehint, noinline, alwaysinline, optsize, ssp, sspreq,
+    noredzone, noimplicitfloat, naked, alignstack,
+    module, asm, align, tail, to,
+    addrspace, section, alias, sideeffect, c, gc,
+    target, datalayout, triple,
+    blockaddress
+  },
+  classoffset=1,
+  morekeywords={
+    fadd, sub, fsub, mul, fmul,
+    sdiv, udiv, fdiv, srem, urem, frem,
+    and, or, xor,
+    icmp, fcmp,
+    eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
+    oeq, ogt, oge, olt, ole, one, ord, ueq, ugt, uge,
+    ult, ule, une, uno,
+    nuw, nsw, exact, inbounds,
+    phi, call, select, shl, lshr, ashr, va_arg,
+    trunc, zext, sext,
+    fptrunc, fpext, fptoui, fptosi, uitofp, sitofp,
+    ptrtoint, inttoptr, bitcast,
+    ret, br, indirectbr, switch, invoke, unwind, unreachable,
+    malloc, alloca, free, load, store, getelementptr,
+    extractelement, insertelement, shufflevector,
+    extractvalue, insertvalue,
+  },
+  alsoletter={\%},
+  keywordsprefix={\%},
+}
+
 \newenvironment{packed_enum}{
 \begin{enumerate}
   \setlength{\itemsep}{1pt}
@@ -155,24 +221,13 @@ significant factors to address.
 
 For reference, below is an LLVM hello world program, taken from the
 LLVM Reference Manual.  (Comments are delimited with a \verb|';'| and
-go until the end of the line)\\
-\begin{lstlisting}
-; Declare the string constant as a global constant.  @.str = private
-  unnamed_addr constant [13 x i8] c"hello world\0A\00"
+go until the end of the line.)
 
-; External declaration of the puts function declare i32 @puts(i8*
-  nocapture) nounwind
-
-; Definition of main function define i32 @main() { ; i32()* ; Convert
-    [13 x i8]* to i8 *...  %cast210 = getelementptr [13 x i8]* @.str,
-    i64 0, i64 0
-
-  ; Call puts function to write out the string to stdout.  call i32
-    @puts(i8* %cast210) ret i32 0 }
-
-; Named metadata !1 = metadata !{i32 42} !foo = !{!1, null}
-\end{lstlisting}
-
+\lstinputlisting[
+  language=llvm,
+  label=lst:llvmhello,
+  caption={LLVM Assembly - Hello World Example}
+]{hello.ll}
 
 \section{Deliverables}
 
