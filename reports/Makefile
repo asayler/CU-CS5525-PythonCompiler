@@ -37,6 +37,8 @@ all: proposal.pdf clean
 clean:
 	$(RM) *.aux *.bbl *.blg *.dvi *.log *.out *.nav *.snm *.toc *.vrb *~
 	$(RM) $(INCLUDE_DIR)/*.pdf
+	$(RM) *-blx.bib
+	$(RM) *.xml
 
 cleanall: clean
 	$(RM) proposal.pdf
@@ -51,10 +53,10 @@ proposal.pdf: proposal.aux proposal.bbl
 	@touch $^ $@
 
 proposal.bbl: proposal.aux refs.bib
-	$(BIBTEX) proposal.aux
+	$(BIBTEX) $<
 
 proposal.aux: proposal.tex $(PROPOSAL_INCLUDES)
-	$(LATEX) $(LATEXFIRST) proposal.tex
+	$(LATEX) $(LATEXFIRST) $<
 
 %.pdf:%-src.svg
 	$(INKSCAPE) $< -D --export-pdf=$(INCLUDE_DIR)/$@

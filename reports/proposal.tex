@@ -23,8 +23,8 @@
 \usepackage{url}
 \usepackage{listings}
 \usepackage{hyperref}
-
-\bibliographystyle{plain}
+\usepackage{biblatex}
+\bibliography{refs}
 
 \hypersetup{
     colorlinks,
@@ -239,7 +239,7 @@ LLVM Reference Manual.
 \lstinputlisting[
   language=llvm,
   label=lst:llvm-example_hell0.ll,
-  caption={LLVM Assembly - Hello World Example}
+  caption={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
 ]{../code/llvm-examples/hello0.ll}
 
 \section{Deliverables}
@@ -254,7 +254,8 @@ LLVM Reference Manual.
 
 
 
-\nocite{*} \bibliography{refs}
+\nocite{*}
+\printbibliography
 
 % If anyone finds one, we could use one or more good SSA reference in
 % the bibtek file. Also, the more LLVM reference, tutorials, etc the
