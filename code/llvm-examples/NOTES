@@ -1,0 +1,14 @@
+To Assemble to LLVM Bytecoide:
+    llvm-as <inputfile.ll>
+
+To Interpret:
+   lli <inputfile.bc>
+
+To Compile to .s:
+   llc <inputfile.bc>
+
+To Compile to Executable
+   gcc <inputfile.s>
+   Note: There is probably also a way to do thsi directly with llc,
+         but there may be an advantge to keeping the .s output
+         so we can use our exisitng makefile and linking system in GCC.
