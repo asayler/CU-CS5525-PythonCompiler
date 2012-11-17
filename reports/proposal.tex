@@ -244,6 +244,25 @@ LLVM Reference Manual.
 
 \section{Deliverables}
 
+The basic deliverable that we intend to produce for this project is a
+version of our p3 Python complier that compiles to LLVM intermediate
+representation. This compiler will need to be modified to use the SSA
+form, and modifying out current compiler to be SSA will be primary
+pre-instruction selection modification --- and therefore we will be
+able to emit x86 code using the current instruction selection that
+will be in SSA form as well. Once complete, our generated LLVM
+binaries will pass all current, valid p3 test cases. This is our
+baseline target for this project.
+
+If we have additional time, we will use this basic LLVM complier as a
+foundation to implement additional optimizations or features. These
+may include type specialization or even explicit static types, and
+supporting LLVM's powerful JIT. Other modifications we are interested
+in include implementing an LLVM compiler on x64 and ARM
+architectures. We are interested in the practical results of these
+optimizations, and will compare the runtime performance of our LLVM
+compiler to that of our original x86 compiler. Finally, we may modify
+the compiler to support Python 3 source code. 
 % 1. Basic SSA form support with native x86 code
 % 2. Basic LLVM instruction selection support
 % 3. Pass all current test cases using LLVM
