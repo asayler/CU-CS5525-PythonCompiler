@@ -121,120 +121,154 @@
 }
 
 \author{
-  Anne Gatchell \and Andrew Sayler \and Michael Vitousek\\
-  University of Colorado\\
-  \texttt{first.last@colorado.edu}
+  Anne Gatchell    \\ \texttt{anne.gatchell@colorado.edu} \and
+  Andy Sayler      \\ \texttt{andrew.sayler@colorado.edu} \and
+  Michael Vitousek \\ \texttt{michael.vitousek@colorado.edu}
 }
 
 \date{\today}
 
 \maketitle
 
-\newpage
-
 \section{Problem Statement}
 
-While the existing HW6, P3-compliant compiler supports 32-bit,
+While the existing HW6, p3-compliant compiler supports 32-bit,
 x86 code generation, it does not support generating code for the variety
 of non-x86 architectures and assembly languages common today (x64, ARM,
 etc). While we could remedy
 this deficiency by adding additional native code generation for non-x86
 architectures directly to our compiler, this approach would duplicate a
 wide range of existing effort, force us to work in assembly languages
-with which we are not experts, and would require continued maintain to
+with which we are not experts, and would require continued maintenance to
 support new architectures and assembly languages as they arise.
 
-Instead, we aim to leverage the existing work done by the LLVM project to
-convert our HW6 compiler from an x86 targeted compiler to
-an LLVM targeted compiler. We will maintain the current x86 targeting
-and add LLVM intermediate form as an additional targeting option. In
+Instead, we aim to leverage the existing work done by the LLVM project
+\cite{llvm.org} to
+convert our HW6 compiler from an x86-targeted compiler to
+an LLVM-targeted compiler. We will maintain the current x86 targeting
+and add LLVM Assembly\cite{lattner-llvmlangref}
+as an additional targeting option. In
 this way, we will be able to compare our natively generated x86 code
 with the LLVM-assembler generated x86 code. We will also be able to
-experiment with compiling our LLVM intermediate form files to assembly
+experiment with compiling our LLVM byte-code files to assembly
 languages other than x86 such as x64 and ARM.
 
 LLVM is quickly becoming the de facto standard target for most modern
-compilers and high level languages.
-It provides mutli-platform support, multi-runtype support
+compilers for high level languages.
+It provides multi-platform support, multi-runtype support
 (compiled, interpreted, JIT compiled, etc), and access to a
 range of existing optimization tools and techniques. Through this
 project, we hope to become
-familiar with the LLVM intermediate form and LLVM system architecture
+familiar with the LLVM Assembly Language and LLVM system architecture
 while gaining insight into the benefits of building an LLVM-targeted
 compiler. 
 
 \section{Approach}
 
-% Mention something about the various steps involved. I.e. add support
-% for SSA form, add LLVM instruction nodes, add LLVM instruction
-% selection, convert Makefile to support LLVM builds, investigate
-% compiling runtime functions to LLVM and linking in LLVM, comparing
-% LLVM performance vs x86 performance, playing with non-x86 LLVM
-% targets, playing with various LLVM runtypes, etc
+Our primary goal is to add support for compilation to the
+LLVM assembly language to our existing p3 compiler. To achieve this
+goal, we will advance through the following development steps:
 
-The primary goal will be to add support to enable compilation to the
-LLVM assembly language.  We will need to add new intermediate LLVM
-instruction nodes to our compiler that will lend themselves to the
-LLVM format. A key aspect for us to investigate is how we compile our
-runtime functions and link them to our intermediate representation
-output.  We will need to alter our Makefile to allow for both the x86
-compilation and the LLVM compilation to be run. Since it will be
-interesting to analyze the performance differences between our x86
-representation and our LLVM representation. We will also need to add
-support for recording and comparing runtimes for the compiled
-programs.  We would like to test our implementation on non-x86
-targets, so that we can demonstrate the benefit and universality of
-using LLVM.
+\begin{packed_enum}
+\item Fix bugs in existing p3 compiler until we pass all valid student
+  and instructor provided p3 test cases. This step has been completed.
+\item Re-factor existing p3 compiler to better handle common visitor
+  functions, support a modular parser-interface, and reduce code
+  complexity. This step is \emph{in progress and near complete}.
+\item Become familiar with LLVM Assembly language by manually translating
+  a few basic Python programs to LLVM and ensuring that when run, the compiled
+  and linked output matches the behavior of the Python interpreter. This
+  step is \emph{in progress}.
+\item Add an additional compilation pass that translates the flattened
+  AST into SSA form. This step has \emph{not been started}.
+\item Add an alternate instruction selection pass that generates LLVM
+  assembly instead of x86 assembly. This step has \emph{not been started}.
+\item Add the necessary top-level compiler control handling to switch
+  between LLVM and x86 generation based on an input parameter. This
+  step has \emph{not been started}.
+\item Modify the existing Makefile, build, and test systems to handle both x86
+  and LLVM code generation. Convert test infrastructure to performing
+  3-way compares between native Python execution, x86 execution, and
+  LLVM execution. This step has \emph{not been started}.
+\item Confirm behavior of LLVM generated code matches that of the
+  native Python interpreter, as well as that of the x86 generated
+  code. Identify and fix bugs as necessary. This step has \emph{not been started}.
+\end{packed_enum}
+
+Should we have additional time, we also intend to pursue one or more
+of the following extensions to the core LLVM implementation:
+
+\begin{packed_item}
+\item Compare both the compile-time and the run-time performance of
+  targeting LLVM vs targeting native x86. Compare run-time performance
+  of both against that of the native Python interpreter.
+\item Experiment with compiling the C run-time helper function to LLVM
+  via clang\cite{clang.llvm.org}
+  and linking the resulting LLVM byte-code and the output
+  from our compiler natively. This would allow us to run the compiler
+  in the LLVM interpreter and take advantage of the LLVM JIT features.
+\item Compare the run-time performance of compiled LLVM code vs
+  interpreted LLVM code. This would require completing the previous
+  extension as well. Compare run-time performance
+  of both against the native Python interpreter.
+\item Test our compiler on x64 and ARM based systems to verify and
+  observe the portable, multi-platform benefits of LLVM Assembly.
+\item Take advantage of LLVM type system and decorator extensions to
+  produce more optimized code than our initial revision is capable of.
+  Compare the performance gains vs the initial, ``naively'' generated
+  LLVM code.
+\item Add support for the Python 3 p3-equivalent language subset.
+\end{packed_item}
 
 \section{Design}
 
-% Mention keeping most of the re-factored HW6, p3 design, but changing
-% instruction selection, ability to forgo register allocation, need to
-% add SSA form conversion pass, etc
-
-We have been working on refactoring our HW6, p3 compiler,
+We have been working on re-factoring our HW6, p3 compiler,
 and we plan on keeping
-the refactored design through the end of the flatten pass. The major
-changes will happen in the instruction selection and related passes
+the re-factored design through the end of the flatten pass. The major
+changes will happen after flatten in the instruction selection and related passes
 A significant difference between our current x86
-compiler and our projected LLVM compiler is that the LLVM compiler
-uses variable names in its instructions, much like our current p3
-compiler is at the state prior to register allocation. So, instruction
+compiler and our planned LLVM compiler is that the LLVM compiler
+uses variable names, not pre-defined registers, in its instructions;
+much like our current p3
+compiler does at the state prior to register allocation. Instruction
 selection and the intermediate nodes will need to be altered to lend
-themselves to the LLVM format.
+themselves to the LLVM Assembly format.
 
-LLVM also requires Static Single Assignment form.
+LLVM also requires Static Single Assignment form,
+meaning that each variable is assigned to exactly once.
 We will need to add a pass in our compiler that will convert to the
-SSA format, meaning that each variable is assigned to exactly once. We
+SSA format. We
 intend to add this pass after flatten but before instruction
 selection.
 
+Our compiler will employ a modular design to maximize code resuse between
+various target languages. 
 We intend for our compiler passes up through flatten to be
 target-agnostic. It is only the post-flatten passes that will differ
 based on the compilation target (x86 or LLVM). We have also created a
 new initial compiler pass that converts the AST nodes from whatever
-format a given parser uses to a uniform set of AST nodes used through
-the reset of the compiler. This allows us to switch parsing
+format a given parser uses to a uniform set of internal AST nodes used throughout
+the rest of the compiler. This allows us to switch parsing
 infrastructures without needing to change the core compiler code. We are
-exploring moving away from the deprecated Python compiler package used
-through the course assignments thus far in
-favor of the built-in AST and paring infrastructure inherent in Python
+in the process of moving away from the deprecated Python compiler package used
+for the course assignments thus far in
+favor of the built-in AST and parsing infrastructure inherent in Python
 2.7+. We are also considering updating our compiler to support the
-Python 3 p3 equivalent.
+Python3 p3 equivalent.
 
-Since LLVM is a typed representation, so we will need to incorporate
-this information into our representation, which will require a fresh
-look at the interaction of the runtime functions and our compiler
-pass. Since verb{struct} type definition is allowed in LLVM, perhaps
-we will define types for pyobjs to deal with the typing issue and
-allow us to still link to our runtime functions a similar way.  This
-also might mean that we can do away with the bit manipulation in the
-runtime functions in favor of introspection on LLVM structs, allowing
-us to keep a higher precision for our integers, since the flag would
-just be an 8 bit integer in the pyobj struct.
+Since LLVM is a typed representation, we will need to incorporate
+type information into our representation. Initially, we intend to keep
+the use of explicit LLVM types to a minimum to simplify implementation
+and best mimic the behavior of the native x86 compiler. Should we have
+time, the LLVM typing system might allow us to take a more nuanced
+typing approach, and in doing so, take advantage of some of the LLVM
+type-based optimizations. This may also necessitate rewriting the run-time
+C library to better meld with LLVM's capabilities.
 
-For reference, below is an LLVM hello world program, taken from the
-LLVM Reference Manual.
+Our initial task is simply to gain more familiarity with the LLVM language
+format. Listing \ref{lst:llvm-example_hell0.ll} shows
+a simple LLVM hello world program as an example of
+what LLVM Assembly language looks like.
 
 \lstinputlisting[
   language=llvm,
@@ -245,40 +279,24 @@ LLVM Reference Manual.
 \section{Deliverables}
 
 The basic deliverable that we intend to produce for this project is a
-version of our p3 Python complier that compiles to LLVM intermediate
-representation. This compiler will need to be modified to use the SSA
-form, and modifying out current compiler to be SSA will be primary
-pre-instruction selection modification --- and therefore we will be
-able to emit x86 code using the current instruction selection that
-will be in SSA form as well. Once complete, our generated LLVM
-binaries will pass all current, valid p3 test cases. This is our
-baseline target for this project.
+version of our p3 Python compiler that compiles to LLVM Assembly
+in addition to native x86 Assembly. This compiler will be capable of
+passing all valid p3 instructor and student test cases when emitting either
+LLVM or x86 code.
 
-If we have additional time, we will use this basic LLVM complier as a
-foundation to implement additional optimizations or features. These
+If we have additional time, we will expand our basic LLVM compiler
+to include additional optimizations and/or features. These
 may include type specialization or even explicit static types, and
-supporting LLVM's powerful JIT. Other modifications we are interested
-in include implementing an LLVM compiler on x64 and ARM
-architectures. We are interested in the practical results of these
-optimizations, and will compare the runtime performance of our LLVM
-compiler to that of our original x86 compiler. Finally, we may modify
-the compiler to support Python 3 source code. 
-% 1. Basic SSA form support with native x86 code
-% 2. Basic LLVM instruction selection support
-% 3. Pass all current test cases using LLVM
-% 4. (if time) Compare LLVM performance to native x86 performance
-% 5. (if time) Compare LLVM runtypes (interpreted, compiled, etc)
-% 6. (if time) Test LLVM implementation on x64 and ARM architectures
-% 7. (if time) Look into adding LLVM optimization for typing, JIT, etc
-
-
+support for LLVM's powerful interpreter and JIT.
+We are interested in the practical results of these
+optimizations and tests, and will compare the run-time performance of
+our ``advanced'' LLVM
+compiler to that of our original x86 compiler. Other modifications we are interested
+in include testing our LLVM compiler on x64 and ARM
+architectures, supporting Python3, and possibly replacing the run-time
+helper functions with more LLVM-compatible equivalents.
 
 \nocite{*}
 \printbibliography
-
-% If anyone finds one, we could use one or more good SSA reference in
-% the bibtek file. Also, the more LLVM reference, tutorials, etc the
-% better. Maybe the original LLVM papers? LLVM ``Hello World''
-% examples? Reports on other systems that use LLVM (Apple, Obj-C, etc)?
 
 \end{document}
