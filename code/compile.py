@@ -28,8 +28,8 @@ import sys, compiler
 
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+#from compiler.ast import *
+#from monoast import *
 from x86ast import *
 
 # Compiler Stages
