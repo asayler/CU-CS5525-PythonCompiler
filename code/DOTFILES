@@ -1,0 +1,17 @@
+To generte graphs of the AST at each stage, set the 'debug' flag
+in "compile.py" to 'True'. The run 'make' to build the GraphVis
+dot files for each test case.
+
+To view the graphvis dot files, do one of teh folloinwg:
+
+Generate SVG images from each:
+	 dot -Tsvg *.dot -O
+
+Generate JPG images from each:
+	 dot -Tjpg *.dot -O
+
+Open them directly using a program like xdot:
+	 xdot *.dot
+
+Note: Very large ASTs may fail to properly convert to svg or jpg images
+      Use xdot to view such files
