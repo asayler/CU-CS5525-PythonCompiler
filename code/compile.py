@@ -28,12 +28,9 @@ import sys, compiler
 
 
 # Data Types
-#from compiler.ast import *
-#from monoast import *
 from x86ast import *
 
 # Compiler Stages
-from assign_specialize import *
 from declassify import *
 from uniquify import *
 from explicate import *
