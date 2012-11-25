@@ -20,8 +20,7 @@ import sys, uuid
 import compiler
 
 from compiler.ast import *
-from monoast import *
-
+from pyast import *
 from vis import Visitor
 from graphvis_dot import Graphvis_dot
 

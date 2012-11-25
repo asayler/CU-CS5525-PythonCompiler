@@ -20,7 +20,7 @@ import sys
 import compiler
 
 from compiler.ast import *
-from monoast import *
+from pyast import *
 
 from graphvis_dot import Graphvis_dot
 

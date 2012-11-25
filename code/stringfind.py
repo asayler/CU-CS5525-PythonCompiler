@@ -22,8 +22,6 @@ import sys
 from pyast import *
 from set_visitor import *
 
-from unitcopy import CopyVisitor
-
 # Helper Types
 from vis import Visitor
 from functionwrappers import *
