@@ -124,7 +124,6 @@ def main(argv=None):
 
     # Uniquify
     uniqueast = UniquifyVisitor().preorder(declassifiedast)
-    # uniqueast = declassifiedast
     declassifiedast = None
     if(debug):
         # Print uniqueast
