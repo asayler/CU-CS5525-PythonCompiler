@@ -23,12 +23,7 @@ USAGE:
     compile.py <file path>
 """
 
-import sys, compiler
-
-
-
-# Data Types
-from x86ast import *
+import sys
 
 # Compiler Stages
 from declassify import *
