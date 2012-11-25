@@ -1,3 +1,8 @@
+
+# IMPORT
+
+from graphvis_dot import Graphvis_dot
+
 # UTILITY FUNCTIONS
 
 def fst(plist):
@@ -71,6 +76,13 @@ class Module(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.node, *args)
+    @staticmethod
+    def graph(self, n):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, "Module")
+        lines += self.dispatch(n.node, myid)
+        return lines
 
 class Program(PyNode):
     def __init__(self, nodes):
@@ -87,6 +99,14 @@ class Program(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.nodes, *args)
+    @staticmethod
+    def graph(self, n):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, "Program")
+        for n in n.nodes:
+            lines += self.dispatch(n, myid)
+        return lines
 
 class StmtList(PyNode):
     def __init__(self, nodes):
@@ -103,7 +123,16 @@ class StmtList(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.nodes, *args)
-
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, "StmtList")
+        lines += Graphvis_dot().linePair(p, myid)
+        for s in n.nodes:
+            lines += self.dispatch(s, myid)
+        return lines
+        
 # STATEMENTS
 
 class Discard(PyNode):
@@ -121,6 +150,14 @@ class Discard(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, "Discard")
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class If(PyNode):
     def __init__(self, tests, else_):
@@ -130,10 +167,13 @@ class If(PyNode):
         return 'If(%s,%s)' % (self.tests, self.else_)
     @staticmethod
     def copy(self, n, *args):
-        return If(map(lambda (x, y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.tests), self.dispatch(n.else_, *args))
+        return If(map(lambda (x, y): (self.dispatch(x, *args),
+                                      self.dispatch(y, *args)), n.tests),
+                  self.dispatch(n.else_, *args))
     @staticmethod
     def list(self, n, *args):
-        plist = map(lambda (x, y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.tests)
+        plist = map(lambda (x, y): (self.dispatch(x, *args),
+                                    self.dispatch(y, *args)), n.tests)
         else_ = self.dispatch(n.else_, *args)
         tests = []
         ss = []
@@ -143,7 +183,20 @@ class If(PyNode):
         return ss + [If(tests, else_)]
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.else_, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), n.tests), set([]))
+        return self.dispatch(n.else_, *args) | \
+            reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | \
+                                              self.dispatch(y, *args), n.tests), set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("If"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for (test, body) in n.tests:
+            lines += self.dispatch(test, myid)
+            lines += self.dispatch(body, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines
 
 class Class(PyNode):
     def __init__(self, name, bases, code):
@@ -152,7 +205,6 @@ class Class(PyNode):
         self.code = code
     def __repr__(self):
         return 'Class(%s,%s,%s)' % (self.name, self.bases, self.code)
-
     @staticmethod
     def copy(self, n, *args):
         return Class(n.name, map_dispatch(self, n.bases, *args), self.dispatch(n.code, *args))
@@ -164,6 +216,14 @@ class Class(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.bases, *args) | self.dispatch(n.code, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Class(%s:%s)" % (n.name, n.bases)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
+        return lines
 
 class Function(PyNode):
     def __init__(self, name, args, code):
@@ -172,7 +232,6 @@ class Function(PyNode):
         self.code = code
     def __repr__(self):
         return 'Function(%s,%s,%s)' % (self.name, self.args, self.code)
-
     @staticmethod
     def copy(self, n, *args):
         return Function(n.name, n.args, self.dispatch(n.code, *args))
@@ -182,13 +241,20 @@ class Function(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.code, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Function(%s(%s))" % (str(n.name), str(n.args))))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
+        return lines
 
 class Return(PyNode):
     def __init__(self, value):
         self.value = value
     def __repr__(self):
         return 'Return(%s)' % self.value
-
     @staticmethod
     def copy(self, n, *args):
         return Return(self.dispatch(n.value, *args))
@@ -199,7 +265,14 @@ class Return(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.value, *args)
-
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Return"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
 
 class WhileFlat(PyNode):
     def __init__(self, testss, test, body, else_):
@@ -229,6 +302,16 @@ class WhileFlat(PyNode):
         return self.dispatch(n.testss, *args) | \
             self.dispatch(n.test, *args) | self.dispatch(n.body, *args) | \
             (self.dispatch(n.else_, *args) if n.else_ else set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot(). uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("WhileFlat"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.testss, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
 
 class While(PyNode):
     def __init__(self, test, body, else_):
@@ -248,7 +331,18 @@ class While(PyNode):
         raise Exception('Default list visitor not applicable for While')
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.test, *args) | self.dispatch(n.body, *args) | (self.dispatch(n.else_, *args) if n.else_ else set([]))
+        return self.dispatch(n.test, *args) | \
+            self.dispatch(n.body, *args) | \
+            (self.dispatch(n.else_, *args) if n.else_ else set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("While"))
+        lines += Graphvis_dot().linePair(p,myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
 
 class VarAssign(PyNode):
     def __init__(self, target, value):
@@ -266,6 +360,14 @@ class VarAssign(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.value, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("VarAssign(%s)" % n.target))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
 
 class SubscriptAssign:
     '''Assignment statement for subscription'''
@@ -274,10 +376,14 @@ class SubscriptAssign:
         self.subs = subs
         self.value = value
     def __repr__(self):
-        return "SubscriptAssign(%s, %s, %s)" % (repr(self.target), repr(self.subs), repr(self.value))
+        return "SubscriptAssign(%s, %s, %s)" % (repr(self.target),
+                                                repr(self.subs),
+                                                repr(self.value))
     @staticmethod
     def copy(self, n, *args):
-        return SubscriptAssign(self.dispatch(n.target, *args), map_dispatch(self, n.subs, *args), self.dispatch(n.value, *args))
+        return SubscriptAssign(self.dispatch(n.target, *args),
+                               map_dispatch(self, n.subs, *args),
+                               self.dispatch(n.value, *args))
     @staticmethod
     def list(self, n, *args):
         target, ss1 = self.dispatch(n.target, *args)
@@ -286,7 +392,18 @@ class SubscriptAssign:
         return ss1 + ss2 + snd(plist) + [SubscriptAssign(target, fst(plist), value)]
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.target, *args) | self.dispatch(n.value, *args) | accumulate(self, n.subs, *args)
+        return self.dispatch(n.target, *args) | \
+            self.dispatch(n.value, *args) | \
+            accumulate(self, n.subs, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("SubscriptAssign(%s)" % str(n.subs)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.target, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
 
 class AttrAssign:
     '''Assignment statement for attributes'''
@@ -307,16 +424,23 @@ class AttrAssign:
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.target, *args) | self.dispatch(n.value, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("AttrAssign(%s)" % n.attr))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.target, myid)
+        lines += self.dispatch(n.value, myid)
+        return lines
 
 # EXPRESSIONS
-
 
 class Const(PyNode):
     def __init__(self, value):
         self.value = value
     def __repr__(self):
         return 'Const(%d)' % self.value
-
     @staticmethod
     def copy(self, n, *args):
         return Const(n.value)
@@ -326,13 +450,19 @@ class Const(PyNode):
     @staticmethod
     def find(self, n, *args):
         return set([])
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Const(%s)" % str(n.value)))
+        lines += Graphvis_dot().linePair(p, myid)
+        return lines
 
 class Name(PyNode):
     def __init__(self, name):
         self.name = name
     def __repr__(self):
         return 'Name(%s)' % self.name
-
     @staticmethod
     def copy(self, n, *args):
         return Name(n.name)
@@ -342,6 +472,13 @@ class Name(PyNode):
     @staticmethod
     def find(self, n, *args):
         return set([])
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Name(%s)" % str(n.name)))
+        lines += Graphvis_dot().linePair(p, myid)
+        return lines
 
 class GetAttr(PyNode):
     def __init__(self, expr, attr):
@@ -349,7 +486,6 @@ class GetAttr(PyNode):
         self.attr = attr
     def __repr__(self):
         return 'GetAttr(%s,%s)' % (self.expr, self.attr)
-
     @staticmethod
     def copy(self, n, *args):
         return GetAttr(self.dispatch(n.expr, *args), n.attr)
@@ -360,6 +496,14 @@ class GetAttr(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("GetAttr(%s)" % n.attr))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class Compare(PyNode):
     def __init__(self, expr, ops):
@@ -367,10 +511,10 @@ class Compare(PyNode):
         self.ops = ops
     def __repr__(self):
         return 'Compare(%s,%s)' % (self.expr, self.ops)
-    
     @staticmethod
     def copy(self, n, *args):
-        return Compare(self.dispatch(n.expr, *args), map(lambda (x,y): (x, self.dispatch(y, *args)), n.ops))
+        return Compare(self.dispatch(n.expr, *args),
+                       map(lambda (x,y): (x, self.dispatch(y, *args)), n.ops))
     @staticmethod
     def list(self, n, *args):
         expr, ss1 = self.dispatch(n.expr, *args)
@@ -383,7 +527,22 @@ class Compare(PyNode):
         return (Compare(expr, ops), ss1 + ss2)
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.expr, *args) | reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(y, *args), n.ops), set([]))
+        return self.dispatch(n.expr, *args) | \
+            reduce(lambda x,y: x | y,
+                   map(lambda (x,y): self.dispatch(y, *args), n.ops),
+                   set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        strops = []
+        for op in n.ops:
+            strops += [op[0]]
+            lines += self.dispatch(op[1], myid)
+        lines += Graphvis_dot().lineLabel(myid, ("Compare(%s)" % str(strops)))
+        return lines
 
 class Lambda(PyNode):
     def __init__(self, args, expr):
@@ -391,7 +550,6 @@ class Lambda(PyNode):
         self.expr = expr
     def __repr__(self):
         return 'Lambda(%s,%s)' % (self.args, self.expr)
-
     @staticmethod
     def copy(self, n, *args):
         return Lambda(n.args, self.dispatch(n.expr))
@@ -401,13 +559,20 @@ class Lambda(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Lambda(%s)" % str(n.args)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class List(PyNode):
     def __init__(self, nodes):
         self.nodes = nodes
     def __repr__(self):
         return 'List(%s)' % self.nodes
-
     @staticmethod
     def copy(self, n, *args):
         return List(map_dispatch(self, n.nodes, *args))
@@ -418,19 +583,31 @@ class List(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.nodes, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("List"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for node in n.nodes:
+            lines += self.dispatch(node, myid);
+        return lines
 
 class Dict(PyNode):
     def __init__(self, items):
         self.items = items
     def __repr__(self):
         return 'Dict(%s)' % self.items
-
     @staticmethod
     def copy(self, n, *args):
-        return Dict(map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.items))
+        return Dict(map(lambda (x,y): (self.dispatch(x, *args),
+                                       self.dispatch(y, *args)),
+                        n.items))
     @staticmethod
     def list(self, n, *args):
-        plist = map(lambda (x,y): (self.dispatch(x, *args), self.dispatch(y, *args)), n.items)
+        plist = map(lambda (x,y): (self.dispatch(x, *args),
+                                   self.dispatch(y, *args)),
+                    n.items)
         ss = []
         items = []
         for ((key, ks), (val, vs)) in plist:
@@ -439,7 +616,19 @@ class Dict(PyNode):
         return (Dict(items), ss)
     @staticmethod
     def find(self, n, *args):
-        return reduce(lambda x, y: x | y, map(lambda (x,y): self.dispatch(x, *args) | self.dispatch(y, *args), n.items), set([]))
+        return reduce(lambda x, y: x | y,
+                      map(lambda (x,y): self.dispatch(x, *args) | \
+                              self.dispatch(y, *args), n.items),
+                      set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Dict"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for item in n.items:
+            lines += self.dispatch(item[1], myid);
+        return lines
 
 class Subscript(PyNode):
     def __init__(self, expr, subs):
@@ -447,7 +636,6 @@ class Subscript(PyNode):
         self.subs = subs
     def __repr__(self):
         return 'Subscript(%s,%s)' % (self.expr, self.subs)
-    
     @staticmethod
     def copy(self, n, *args):
         return Subscript(self.dispatch(n.expr, *args), map_dispatch(self, n.subs, *args))
@@ -459,6 +647,15 @@ class Subscript(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.subs, *args) | self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Subscript"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.subs[0], myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class Add(PyNode):
     def __init__(self, (left, right)):
@@ -466,7 +663,6 @@ class Add(PyNode):
         self.right = right
     def __repr__(self):
         return 'Add((%s, %s))' % (self.left, self.right)
-    
     @staticmethod
     def copy(self, n, *args):
         return Add((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
@@ -478,13 +674,21 @@ class Add(PyNode):
     @staticmethod
     def find(self, n, *args):
         return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Add"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines
 
 class Or(PyNode):
     def __init__(self, nodes):
         self.nodes = nodes
     def __repr__(self):
         return 'Or(%s)' % self.nodes
-
     @staticmethod
     def copy(self, n, *args):
         return Or(map_dispatch(self, n.nodes, *args))
@@ -495,13 +699,21 @@ class Or(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.nodes, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Or"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for node in n.nodes:
+            lines += self.dispatch(node, myid)
+        return lines
 
 class And(PyNode):
     def __init__(self, nodes):
         self.nodes = nodes
     def __repr__(self):
         return 'And(%s)' % self.nodes
-
     @staticmethod
     def copy(self, n, *args):
         return And(map_dispatch(self, n.nodes, *args))
@@ -512,13 +724,21 @@ class And(PyNode):
     @staticmethod
     def find(self, n, *args):
         return accumulate(self, n.nodes, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("And"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for node in n.nodes:
+            lines += self.dispatch(node, myid)
+        return lines
 
 class Not(PyNode):
     def __init__(self, expr):
         self.expr = expr
     def __repr__(self):
         return 'Not(%s)' % self.expr
-
     @staticmethod
     def copy(self, n, *args):
         return Not(self.dispatch(n.expr, *args))
@@ -529,13 +749,20 @@ class Not(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Not"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class UnarySub(PyNode):
     def __init__(self, expr):
         self.expr = expr
     def __repr__(self):
         return 'UnarySub(%s)' % self.expr
-
     @staticmethod
     def copy(self, n, *args):
         return UnarySub(self.dispatch(n.expr, *args))
@@ -546,6 +773,14 @@ class UnarySub(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("UnarySub"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class IfExp(PyNode):
     def __init__(self, test, then, else_):
@@ -553,17 +788,30 @@ class IfExp(PyNode):
         self.then = then
         self.else_ = else_
     def __repr__(self):
-        return 'IfExp(%s,%s,%s)' % (self.test, self.then, self.else_)
-    
+        return 'IfExp(%s,%s,%s)' % (self.test, self.then, self.else_)    
     @staticmethod
     def copy(self, n, *args):
-        return IfExp(self.dispatch(n.test, *args), self.dispatch(n.then, *args), self.dispatch(n.else_, *args))
+        return IfExp(self.dispatch(n.test, *args),
+                     self.dispatch(n.then, *args),
+                     self.dispatch(n.else_, *args))
     @staticmethod
     def list(self, n, *args):
         raise Exception('Default list visitor not applicable for IfExp')
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.then, *args) | self.dispatch(n.test, *args) | self.dispatch(n.else_, *args)
+        return self.dispatch(n.then, *args) | \
+            self.dispatch(n.test, *args) | \
+            self.dispatch(n.else_, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IfExp"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.then, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines
 
 class IfExpFlat(PyNode):
     def __init__(self, test, then, else_):
@@ -572,17 +820,31 @@ class IfExpFlat(PyNode):
         self.else_ = else_
     def __repr__(self):
         return 'IfExpFlat(%s,%s,%s)' % (self.test, self.then, self.else_)
-    
     @staticmethod
     def copy(self, n, *args):
-        return IfExpFlat(self.dispatch(n.test, *args), self.dispatch(n.then, *args), self.dispatch(n.else_, *args))
+        return IfExpFlat(self.dispatch(n.test, *args),
+                         self.dispatch(n.then, *args),
+                         self.dispatch(n.else_, *args))
     @staticmethod
     def list(self, n, *args):
         test, ss = self.dispatch(n.test, *args)
-        return (IfExpFlat(test, self.dispatch(n.then, *args), self.dispatch(n.else_, *args)), ss)
+        return (IfExpFlat(test, self.dispatch(n.then, *args),
+                          self.dispatch(n.else_, *args)), ss)
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.then, *args) | self.dispatch(n.test, *args) | self.dispatch(n.else_, *args)
+        return self.dispatch(n.then, *args) | \
+            self.dispatch(n.test, *args) | \
+            self.dispatch(n.else_, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IfExp"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.then, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines
 
 class SLambda(PyNode):
     def __init__(self, params, code, label=None):
@@ -600,11 +862,18 @@ class SLambda(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.code, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("SLambda(%s, %s)" % (n.params, n.label)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.code, myid)
+        return lines
 
 class SLambdaLabel(PyNode):
     def __init__(self, name):
         self.name = name
-                
     def __repr__(self):
         return 'SLambdaLabel(%s)' % (self.name) 
     @staticmethod
@@ -616,6 +885,13 @@ class SLambdaLabel(PyNode):
     @staticmethod
     def find(self, n, *args):
         return set([])
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("SLambdaLabel(%s)" % n.name))
+        lines += Graphvis_dot().linePair(p, myid)
+        return lines
 
 class IndirectCallFunc(PyNode):
     def __init__(self, node, args):
@@ -636,6 +912,16 @@ class IndirectCallFunc(PyNode):
         return self.dispatch(n.node, *args) | reduce(lambda x,y: x | y, 
                                                      map_dispatch(self, n.args, *args), 
                                                      set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IndirectCallFunc"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.node, myid)
+        for arg in n.args:
+            lines += self.dispatch(arg, myid)
+        return lines
 
 class CallFunc(PyNode):
     def __init__(self, node, args):
@@ -656,6 +942,16 @@ class CallFunc(PyNode):
         return self.dispatch(n.node, *args) | reduce(lambda x,y: x | y, 
                                                      map_dispatch(self, n.args, *args), 
                                                      set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("CallFunc"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.node, myid)
+        for arg in n.args:
+            lines += self.dispatch(arg, myid)
+        return lines
 
 class InstrSeq(PyNode):
     def __init__(self, node, expr):
@@ -674,6 +970,15 @@ class InstrSeq(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args) | self.dispatch(n.node)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("InstrSeq"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.node, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class IsTag(PyNode):
     """Call code to determine if 'arg' is of type 'typ'"""
@@ -692,6 +997,14 @@ class IsTag(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.arg, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IsTag(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
+        return lines
 
 class InjectFrom(PyNode):
     """Convert result of 'arg' from 'typ' to pyobj"""
@@ -710,6 +1023,14 @@ class InjectFrom(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.arg, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("InjectFrom(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
+        return lines
 
 class ProjectTo(PyNode):
     """Convert result of 'arg' from pyobj to 'typ'"""
@@ -728,6 +1049,14 @@ class ProjectTo(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.arg, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("ProjectTo(%s)" % str(n.typ.typ)))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.arg, myid)
+        return lines
 
 class Let(PyNode):
     """Evaluate 'var' = 'rhs', than run body referencing 'var'"""
@@ -739,7 +1068,9 @@ class Let(PyNode):
         return "Let(%s, %s, %s)" % (repr(self.var), repr(self.rhs), repr(self.body))
     @staticmethod
     def copy(self, n, *args):
-        return Let(self.dispatch(n.var, *args), self.dispatch(n.rhs, *args), self.dispatch(n.body, *args))
+        return Let(self.dispatch(n.var, *args),
+                   self.dispatch(n.rhs, *args),
+                   self.dispatch(n.body, *args))
     @staticmethod
     def list(self, n, *args):
         var, ss1 = self.dispatch(n.var, *args)
@@ -748,7 +1079,19 @@ class Let(PyNode):
         return (Let(var, rhs, body), ss1 + ss2 + ss3)
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.var, *args) | self.dispatch(n.rhs, *args) | self.dispatch(n.body, *args)
+        return self.dispatch(n.var, *args) | \
+            self.dispatch(n.rhs, *args) | \
+            self.dispatch(n.body, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("Let"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.var, myid)
+        lines += self.dispatch(n.rhs, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
 
 class IntEqual(PyNode):
     def __init__(self, (left, right)):
@@ -767,6 +1110,15 @@ class IntEqual(PyNode):
     @staticmethod
     def find(self, n, *args):
         return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntEqual"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines 
 
 class IntNotEqual(PyNode):
     def __init__(self, (left, right)):
@@ -785,6 +1137,15 @@ class IntNotEqual(PyNode):
     @staticmethod
     def find(self, n, *args):
         return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntNotEqual"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines 
 
 class IntAdd(PyNode):
     def __init__(self, (left, right)):
@@ -803,6 +1164,15 @@ class IntAdd(PyNode):
     @staticmethod
     def find(self, n, *args):
         return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntAdd"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines
 
 class IntUnarySub(PyNode):
     def __init__(self, expr):
@@ -819,6 +1189,14 @@ class IntUnarySub(PyNode):
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.expr, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntUnarySub"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.expr, myid)
+        return lines
 
 class String(PyNode):
     def __init__(self, string):
@@ -834,3 +1212,10 @@ class String(PyNode):
     @staticmethod
     def find(self, n, *args):
         return set([])
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("'%s'" % n.string))
+        lines += Graphvis_dot().linePair(p, myid)
+        return lines

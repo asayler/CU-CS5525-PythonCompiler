@@ -100,5 +100,6 @@ clean:
 	$(RM) *.out
 	$(RM) *.dot
 	$(RM) *.svg
+	$(RM) *.jpg
 	$(RM) submit.zip
 	$(RM) -r $(SUBMISSIONDIR)
