@@ -24,6 +24,7 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{biblatex}
+%\usepackage{verbatim}
 \bibliography{refs}
 
 \hypersetup{
@@ -220,6 +221,15 @@ of the following extensions to the core LLVM implementation:
   LLVM code.
 \item Add support for the Python 3 p3-equivalent language subset.
 \end{packed_item}
+
+\section{Things of Note in LLVM Conversion}
+\begin{packed_enum}
+\item The LLVM intermediate language requires identifiers to be of the form\\
+\verb+[%@][a-zA-Z$._][a-zA-Z$._0-9]*}+, which means that we either need to
+change the way we uniquify variables (with a number as the first letter) or
+we need to convert it to an LLVM form in the LLVM pass.
+\end{packed_enum}
+
 
 \section{Design}
 
