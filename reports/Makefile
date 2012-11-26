@@ -37,6 +37,8 @@ all: proposal.pdf report.pdf clean
 clean:
 	$(RM) *.aux *.bbl *.blg *.dvi *.log *.out *.nav *.snm *.toc *.vrb *~
 	$(RM) $(INCLUDE_DIR)/*.pdf
+	$(RM) *-blx.bib
+	$(RM) *.xml
 
 cleanall: clean
 	$(RM) proposal.pdf report.pdf
@@ -58,13 +60,13 @@ report.pdf: report.aux report.bbl
 	@touch $^ $@
 
 proposal.bbl: proposal.aux refs.bib
-	$(BIBTEX) proposal.aux
+	$(BIBTEX) $<
 
 report.bbl: report.aux refs.bib
 	$(BIBTEX) report.aux
 
 proposal.aux: proposal.tex $(PROPOSAL_INCLUDES)
-	$(LATEX) $(LATEXFIRST) proposal.tex
+	$(LATEX) $(LATEXFIRST) $<
 
 report.aux: report.tex $(PAPER_INCLUDES)
 	$(LATEX) $(LATEXFIRST) report.tex
