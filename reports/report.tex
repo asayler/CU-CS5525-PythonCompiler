@@ -24,7 +24,7 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{biblatex}
-%\usepackage{verbatim}
+\usepackage{amssymb}
 \bibliography{refs}
 
 \hypersetup{
@@ -165,6 +165,38 @@ familiar with the LLVM Assembly Language and LLVM system architecture
 while gaining insight into the benefits of building an LLVM-targeted
 compiler. 
 
+\section{Background on LLVM}
+
+The Low Level Virtual Machine (LLVM) is an open source project that was initially intended to provide support for a Static Single Assignment (SSA) compiler that is capable of staticly or dynamicly compiling any programming language \cite{llvm.org}.
+
+\subsection{Static Single Assignment (SSA) Form}
+
+A program is in SSA form when its variables are assigned exactly once in the program \cite{gcc-gnu.org}. Most programs are not written in an SSA form, but can be converted to SSA form by giving a variable a new name every time it is assigned to, and replacing all uses of the variable in right-hand side expressions with the most recent version of the variable. In a linear code segment, this is a fairly straightforward transformation. When branching and polymorphism are added, however, it becomes a more complex issue, as seen below:
+\begin{verbatim}
+if input():
+  x = 3
+else:
+  x = 3.145
+print x
+\end{verbatim}
+This piece of code contains branching, so x is being assigned to multiple times. In addition, x could be an integer or a floating point number. To convert to SSA in this situation, compilers can add a \emph{phi} ($\phi$)node to select the proper version of x to use as the current version. See below:
+\begin{verbatim}
+if input():
+  x_0 = 3
+else:
+  x_1 = 3.145
+x_2 = PHI<x_1, x_2>
+print x_2
+\end{verbatim}
+The $\phi$ function (node) serves to pick the branch that was used at runtime, and return that version of x.
+
+Fortunately, LLVM provides a \emph{phi} node in its assembly language specification \cite{llvm.org}. It addresses the multiple assignment problems that result from control flow. The syntax is
+\begin{verbatim}
+<result> = phi <ty> [ <val0>, <label0>], ...
+\end{verbatim} 
+where the ty field is the incoming type of the data to be chosen from. This indicates that the PHI node can not handle explicit polymorphism. Fortunately, we have already packaged all of our data types into one unique type: a pyobj. All values passed to the block must be first class values, so a pointer to a pyobj will be the only option avaiable to handle polymorphism. The type field is followed by a list of pairs, one for each predecessor block of code in the current block, and the \emph{phi} function will use the value corresponding to the block actually executed.
+
+
 \section{Approach}
 
 Our primary goal is to add support for compilation to the
@@ -228,6 +260,8 @@ of the following extensions to the core LLVM implementation:
 \verb+[%@][a-zA-Z$._][a-zA-Z$._0-9]*}+, which means that we either need to
 change the way we uniquify variables (with a number as the first letter) or
 we need to convert it to an LLVM form in the LLVM pass.
+\item Happily, the LLVM Assembly Language has a phi instruction that is used to implement the $\phi$ node in an SSA graph. The syntax is
+\verb+<result> = phi <ty> [ <val0>, <label0>], ...+ where the ty field is the incoming type of the data to be chosen from, which in our compiler will be a pointer to a pyobj. The type is followed by a list of pairs, one for each predecessor block of code in the current block. All values passed to the block must be first class values, so we will always use pointers.
 \end{packed_enum}
 
 
