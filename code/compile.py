@@ -38,7 +38,6 @@ from x86regalloc import *
 from stringfind import *
 
 # Helper Tools
-from astTools import *
 from graph_visitor import *
 
 parser = 'CURRENT'
