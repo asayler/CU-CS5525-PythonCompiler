@@ -18,7 +18,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-from compiler.ast import *
+from pyast import *
 from set_visitor import SetVisitor
 
 def name(n):

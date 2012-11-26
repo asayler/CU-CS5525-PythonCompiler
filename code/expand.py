@@ -20,11 +20,9 @@ import sys
 
 # Data Types
 from pyast import *
-
 from copy_visitor import CopyVisitor
 
 # Helper Tools
-from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
@@ -113,10 +111,18 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), nextnode, Name(thistmp)))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             nextnode,
+                             Name(thistmp)))
         else:
             # Recurse
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), self.AndToIfExp(nodes[1:]), Name(thistmp)))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             self.AndToIfExp(nodes[1:]),
+                             Name(thistmp)))
 
     def visitAnd(self, n):
         return self.AndToIfExp(n.nodes)
@@ -132,10 +138,18 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), nextnode))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             Name(thistmp),
+                             nextnode))
         else:
             # Recurse
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), self.AndToIfExp(nodes[1:])))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             Name(thistmp),
+                             self.AndToIfExp(nodes[1:])))
 
     def visitOr(self, n):
         return self.OrToIfExp(n.nodes)

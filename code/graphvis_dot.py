@@ -18,8 +18,6 @@
 
 import sys, uuid
 
-nodecnt = 0
-
 class Graphvis_dot():
 
     digraphOpen = "digraph G {"

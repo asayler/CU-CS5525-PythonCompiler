@@ -25,6 +25,10 @@ USAGE:
 
 import sys
 
+# Data Types
+from pyast import *
+from x86ast import *
+
 # Compiler Stages
 from declassify import *
 from uniquify import *

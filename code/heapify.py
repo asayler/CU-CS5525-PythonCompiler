@@ -18,14 +18,10 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Types
-from vis import Visitor
-
 # Helper Tools
 from utilities import generate_name
 from copy_visitor import CopyVisitor
 from free_vars import *
-
 from functionwrappers import *
 
 # Data Types

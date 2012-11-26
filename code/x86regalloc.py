@@ -16,8 +16,6 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-import sys
-
 from x86ast import *
 
 from utilities import generate_name
@@ -394,13 +392,8 @@ def color(graph, colors, regOnlyVars):
     
     while(len(w) > 0):
         
-        # Find regOnlyKeys in Keys
-        #priorityKeys = []
-        #for key in w:
-        #    if(key in regOnlyVars):
-        #        priorityKeys += [key]
-        # Else use all keys
-#        if(len(priorityKeys) == 0):
+        # Find priority keys
+        # Currently does nothing
         priorityKeys = w
         
         # Find key with max saturation

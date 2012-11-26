@@ -1,3 +1,21 @@
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# graph_visitor.py
+# Functions to produce an GraphViz dot graph from AST
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
+
 from pyast import *
 from vis import *
 from graphvis_dot import Graphvis_dot

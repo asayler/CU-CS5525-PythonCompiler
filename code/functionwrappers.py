@@ -17,7 +17,6 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 from pyast import *
-from x86ast import *
 
 # Function Names
 
@@ -60,7 +59,6 @@ ISCLASS_n = Name('is_class')
 SETATTR_n = Name('set_attr')
 GETATTR_n = Name('get_attr')
 
-
 RESERVED_NAMES = [
     ISINT_n.name,
     ISBOOL_n.name,
@@ -97,9 +95,6 @@ RESERVED_NAMES = [
     'input',
     'input_int'
     ]
-
-
-# Function Wrappers
 
 # Class macros
 

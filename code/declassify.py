@@ -2,8 +2,8 @@
 # Fall 2012
 # Python Compiler
 #
-# explicate.py
-# Visitor Functions to Explicate AST
+# declassify.py
+# Visitor Functions to Declassify AST
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -22,7 +22,6 @@ from set_visitor import SetVisitor
 from copy_visitor import CopyVisitor
 
 # Helper Types
-from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
@@ -35,26 +34,27 @@ def specializeCallFunc(self, n):
         if args:
             temp = generate_name('arg')
             return Let(Name(temp), self.dispatch(args[0]), gen_arg(args[1:], 
-                                                                       vals + [Name(temp)]))
+                                                                   vals + [Name(temp)]))
         else:
             objtemp = generate_name('obj')
             initemp = generate_name('ini')
             discardtemp = generate_name('discard')
             return IfExp(CallISCLASS([Name(ftemp)]),
-                             Let(Name(objtemp), CallCREATEOBJECT([Name(ftemp)]),
-                                 IfExp(CallHASATTR([Name(ftemp), String('__init__')]),
-                                       Let(Name(discardtemp), CallFunc(CallGETFUNCTION([GetAttr(Name(ftemp), '__init__')]), 
-                                                                       [Name(objtemp)]+vals),
-                                           Name(objtemp)),
-                                       Name(objtemp))),
+                         Let(Name(objtemp), CallCREATEOBJECT([Name(ftemp)]),
+                             IfExp(CallHASATTR([Name(ftemp), String('__init__')]),
+                                   Let(Name(discardtemp),
+                                       CallFunc(CallGETFUNCTION([GetAttr(Name(ftemp), '__init__')]), 
+                                                [Name(objtemp)]+vals),
+                                       Name(objtemp)),
+                                   Name(objtemp))),
                          IfExp(CallISBOUNDMETHOD([Name(ftemp)]),
-                                   CallFunc(CallGETFUNCTION([Name(ftemp)]), 
-                                            [CallGETRECEIVER([Name(ftemp)])]+vals),
+                               CallFunc(CallGETFUNCTION([Name(ftemp)]), 
+                                        [CallGETRECEIVER([Name(ftemp)])]+vals),
                                IfExp(CallISUNBOUNDMETHOD([Name(ftemp)]),
                                      CallFunc(CallGETFUNCTION([Name(ftemp)]), vals),
                                      CallFunc(Name(ftemp), vals))))
     return Let(Name(ftemp), self.dispatch(n.node), gen_arg(n.args, []))
-    
+
 class ClassFindVisitor(CopyVisitor):
     def __init__(self):
         super(ClassFindVisitor,self).__init__()
@@ -83,7 +83,7 @@ class ClassFindVisitor(CopyVisitor):
         classtemp = generate_name(n.name + '_temp')
         bases = map(self.dispatch, n.bases)
         stmts = [VarAssign(classtemp, 
-                        CallCREATECLASS([List(bases)]))]
+                           CallCREATECLASS([List(bases)]))]
         stmts += DeclassifyVisitor(classtemp, self).preorder(n.code, scope).nodes
         stmts += [VarAssign(n.name, Name(classtemp))]
         return stmts
@@ -110,7 +110,7 @@ class DeclassifyVisitor(CopyVisitor):
     def visitVarAssign(self, n):
         return AttrAssign(Name(self.name), n.target, 
                           self.dispatch(n.value))
-        
+    
     def visitName(self, n):
         if n.name in self.assignees:
             if n.name in self.outside_scope:
@@ -154,7 +154,7 @@ class DeclassifyVisitor(CopyVisitor):
 class AssigneeVisitor(SetVisitor):
     def visitVarAssign(self, n):
         return set([n.target])
-        
+    
     def visitFunction(self, n):
         return set([n.name])
 

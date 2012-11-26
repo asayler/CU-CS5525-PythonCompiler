@@ -18,9 +18,6 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Types
-from vis import Visitor
-
 # Helper Tools
 from utilities import generate_name, make_assign
 from list_visitor import ListVisitor
@@ -29,14 +26,6 @@ from functionwrappers import *
 
 # Data Types
 from pyast import *
-
-# Flatten expressions to 3-address instructions (Remove Complex Operations)
-
-# Input: an AST for P_1
-# Output: an AST for P_1 (put without complex operations)
-
-# Notes: this introduces too many variables and moves, but that's OK.
-# Register allocation with move biasing will hopefully take care of it.
 
 class FlattenVisitor(ListVisitor):
     def __init__(self):
@@ -131,9 +120,8 @@ class FlattenVisitor(ListVisitor):
             else:
                 return (CallFunc(n.node, args), ss)
         else:
-            raise Exception('flatten: only calls to named functions allowed, tried to call %s:%s' % (n.node, n.node.__class__))
-
-
+            raise Exception('flatten: only calls to named functions allowed,' 
+                            'tried to call %s:%s' % (n.node, n.node.__class__))
 
     def visitIfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)
@@ -173,7 +161,7 @@ class FlattenVisitor(ListVisitor):
         # Add each dict memeber
         for item in n.items:
             valname = generate_name('item')
-            myss += self.dispatch(Discard(Let(Name(valname), item[1], CallSETSUB([expr, item[0], Name(valname)]))))   
+            myss += self.dispatch(Discard(Let(Name(valname),
+                                              item[1],
+                                              CallSETSUB([expr, item[0], Name(valname)]))))   
         return (expr, myss)
-
-    

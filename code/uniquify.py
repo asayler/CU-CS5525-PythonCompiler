@@ -19,7 +19,6 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 # System Types
-import sys
 import copy
 
 # Parent
@@ -31,8 +30,6 @@ from pyast import *
 # Helper Types
 from find_locals import FindLocalsVisitor
 from utilities import generate_name 
-
-# Code size can likely be HUGELY reduced
 
 class UniquifyVisitor(CopyVisitor):
 
@@ -75,8 +72,6 @@ class UniquifyVisitor(CopyVisitor):
         return Lambda([new_renaming[x] for x in n.args],
                       self.dispatch(n.expr, new_renaming))
 
-    # stuff added for hw6
-    
     def visitLet(self, n, renaming):
         new_renaming = copy.deepcopy(renaming)
         new_renaming[n.var] = generate_name(n.var.name)

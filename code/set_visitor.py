@@ -2,8 +2,8 @@
 # Fall 2012
 # Python Compiler
 #
-# instr_select.py
-# Visitor Funcations for x86 Instruction Selection
+# set_visitor.py
+# Set Visitor Prototype
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler

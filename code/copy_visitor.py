@@ -1,3 +1,21 @@
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# copy_visitor.py
+# Copy Visitor Prototype
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
+
 from pyast import *
 from vis import *
 

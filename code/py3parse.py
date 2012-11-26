@@ -1,3 +1,21 @@
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# py3parse.py
+# Prase Infrastructure using new Python AST built-in parser
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
+
 from ast import *
 from ast import parse as astparse
 import pyast

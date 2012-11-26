@@ -16,8 +16,6 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-import sys
-
 # Data Types
 from pyast import *
 from functionwrappers import RESERVED_NAMES

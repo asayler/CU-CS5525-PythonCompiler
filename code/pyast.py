@@ -1,3 +1,20 @@
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# pyast.py
+# Internal Python AST Nodes
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
 
 # IMPORT
 
