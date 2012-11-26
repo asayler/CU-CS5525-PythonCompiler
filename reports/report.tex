@@ -138,14 +138,15 @@ of non-x86 architectures and assembly languages common today (x64, ARM,
 etc). While we could remedy
 this deficiency by adding additional native code generation for non-x86
 architectures directly to our compiler, this approach would duplicate a
-wide range of existing effort, force us to work in assembly languages
-with which we are not experts, and would require continued maintenance to
+wide range of existing effort and would require continued maintenance to
 support new architectures and assembly languages as they arise.
 
 Instead, we aim to leverage the existing work done by the LLVM project
 \cite{llvm.org} to
 convert our HW6 compiler from an x86-targeted compiler to
-an LLVM-targeted compiler. We will maintain the current x86 targeting
+an LLVM-targeted compiler. This will not only be efficient from a mantainance
+standpoint, but it will also be a useful introduction to a commonly
+used intermediate language. We will maintain the current x86 targeting
 and add LLVM Assembly\cite{lattner-llvmlangref}
 as an additional targeting option. In
 this way, we will be able to compare our natively generated x86 code
