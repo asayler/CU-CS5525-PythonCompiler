@@ -24,6 +24,7 @@ USAGE:
 """
 
 import sys
+import argparse
 
 # Data Types
 from pyast import *
@@ -67,24 +68,46 @@ def write_to_file(assembly, outputFileName):
 def main(argv=None):
     """Main Compiler Entry Point Function"""
 
-    # Setup and Check Args
     if argv is None:
         argv = sys.argv
 
-    if len(argv) != 2:
-        sys.stderr.write(str(argv[0]) + " requires two arguments\n")
-        sys.stderr.write(__doc__ + "\n")
+    # Setup and Check Args
+    parser = argparse.ArgumentParser(description='Compile a Python file')
+    parser.add_argument('inputfilepath',
+                        help='Input File Path')
+    parser.add_argument('-o', dest='outputfilepath', default=None,
+                        help='Output File Path')
+    parser.add_argument('--dot', dest='dotfileflag', action='store_const', const=True,
+                        help='Generate Dot Files')
+    parser.add_argument('--dotdir', dest='dotfiledirectory', default=None,
+                        help='Dot File Output Directory')
+    parser.add_argument('-v', dest='verbosity', type=int, default=0,
+                        help='Compiler Verbosity')
+
+
+    args = parser.parse_args(argv[1:])
+
+    inputFilePath     = args.inputfilepath
+    inputFilePathList = inputFilePath.split('/')
+    inputFileName     = (inputFilePathList[-1:])[0]
+    inputFileNameList = inputFileName.split('.')
+    inputFileNameExt  = (inputFileNameList[-1:])[0]
+
+    if(inputFileNameExt != "py"):
+        sys.stderr.write(str(argv[0]) + ": input file must be of type *.py\n")
         return 1
 
-    inputFilePath = str(argv[1])
+    outputFilePath = args.outputfilepath
+    if(outputFilePath == None):
+        outputFilePath = inputFileName[:-3] + ".s"
+    outputFilePathList = outputFilePath.split('/')
+    outputFileName     = (outputFilePathList[-1:])[0]
+    outputFileNameList = outputFileName.split('.')
+    outputFileNameExt  = (outputFileNameList[-1:])[0]
 
-    if(inputFilePath[-3:] != ".py"):
-        sys.stderr.write(str(argv[0]) + " input file must be of type *.py\n")
+    if(outputFileNameExt != "s"):
+        sys.stderr.write(str(argv[0]) + ": output file must be of type *.s\n")
         return 1
-
-    outputFilePath = inputFilePath.split('/')
-    outputFileBase = (outputFilePath[-1:])[0]
-    outputFileName = outputFileBase[:-3] + ".s"
 
     if(debug):
         sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
