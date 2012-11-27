@@ -18,89 +18,41 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Types
-from vis import Visitor
-
 # Helper Tools
 from utilities import generate_name, make_assign
-from unitcopy import CopyVisitor
+from list_visitor import ListVisitor
 
 from functionwrappers import *
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 
-# Flatten expressions to 3-address instructions (Remove Complex Operations)
-
-# Input: an AST for P_1
-# Output: an AST for P_1 (put without complex operations)
-
-# Notes: this introduces too many variables and moves, but that's OK.
-# Register allocation with move biasing will hopefully take care of it.
-
-class FlattenVisitor(CopyVisitor):
+class FlattenVisitor(ListVisitor):
     def __init__(self):
         super(FlattenVisitor,self).__init__()
-        del CopyVisitor.visitPrintnl
-        del CopyVisitor.visitIsTag
-        del CopyVisitor.visitProjectTo
-        del CopyVisitor.visitInjectFrom
-        del CopyVisitor.visitAnd
-        del CopyVisitor.visitOr
-        del CopyVisitor.visitSubscript
-        del CopyVisitor.visitSubscriptAssign
-        CopyVisitor.visitWhileFlat = WhileFlat.visitWhilePostCC
 
     # For statements: takes a statement and returns a list of instructions
 
-    def visitStmt(self, n):
-        sss  = []
-        for s in n.nodes:
-            sss += [self.dispatch(s)]
-        return Stmt(reduce(lambda a,b: a + b, sss, []), n.lineno)
-
-    def visitIf(self, n):
-        tests = map(lambda (test, body): (self.dispatch(test, True), self.dispatch(body)), n.tests)
-        ss = sum(map(lambda ((_1, s), _2): s, tests), [])
-        tests = map(lambda ((test, _), body): (test, body), tests)
-        return ss + [If(tests, self.dispatch(n.else_))]
-
-    def visitAssign(self, n):
+    def visitVarAssign(self, n, *args):
         myss = []
-        (rhs, ss) = self.dispatch(n.expr, False)
+        (rhs, ss) = self.dispatch(n.value, False)
         myss += ss
-        myss += [Assign(n.nodes, rhs)]
+        myss += [VarAssign(n.target, rhs)]
         return myss
 
-    def visitWhile(self, n):
+    def visitWhile(self, n, *args):
         teste, testss = self.dispatch(n.test, True)
-        bodyss = self.dispatch(n.body)
-        return [WhileFlat(Stmt(testss), teste, Stmt(bodyss), n.else_)]
+        bodyss = self.dispatch(n.body, True)
+        elsess = self.dispatch(n.body, True) if n.else_ else None
+        return [WhileFlat(StmtList(testss), teste, bodyss, elsess)]
 
-    def visitDiscard(self, n):
+    def visitDiscard(self, n, *args):
         (e, ss) = self.dispatch(n.expr, True)
         return ss
-
-    def visitReturn(self, n):
-        (e, ss) = self.dispatch(n.value, True)
-        return ss + [Return(e)]
 
     # For expressions: takes an expression and a bool saying whether the
     # expression needs to be simple, and returns an expression
     # (a Name or Const if it needs to be simple) and a list of instructions.
-
-    def visitConst(self, n, needs_to_be_simple):
-        return (n, [])
-
-    def visitString(self, n, needs_to_be_simple):
-        return (n, [])
-
-    def visitName(self, n, needs_to_be_simple):
-        return (n, [])
-
-    def visitSLambdaLabel(self, n, needs_to_be_simple):
-        return (n, [])
 
     def visitLet(self, n, needs_to_be_simple):
         (rhs, ss1) = self.dispatch(n.rhs, True)
@@ -168,17 +120,16 @@ class FlattenVisitor(CopyVisitor):
             else:
                 return (CallFunc(n.node, args), ss)
         else:
-            raise Exception('flatten: only calls to named functions allowed, tried to call %s:%s' % (n.node, n.node.__class__))
-
-
+            raise Exception('flatten: only calls to named functions allowed,' 
+                            'tried to call %s:%s' % (n.node, n.node.__class__))
 
     def visitIfExp(self, n, needs_to_be_simple):
         (teste, testss) = self.dispatch(n.test, True)
         (thene, thenss) = self.dispatch(n.then, True)
         (elsee, elsess) = self.dispatch(n.else_, True)
-        simple = IfExp(teste,
-                       InstrSeq(thenss, thene),
-                       InstrSeq(elsess, elsee))
+        simple = IfExpFlat(teste,
+                       InstrSeq(StmtList(thenss), thene),
+                       InstrSeq(StmtList(elsess), elsee))
         if needs_to_be_simple:
             tmp = generate_name('ifexptmp')
             myexpr = (Name(tmp))
@@ -210,7 +161,7 @@ class FlattenVisitor(CopyVisitor):
         # Add each dict memeber
         for item in n.items:
             valname = generate_name('item')
-            myss += self.dispatch(Discard(Let(Name(valname), item[1], CallSETSUB([expr, item[0], Name(valname)]))))   
+            myss += self.dispatch(Discard(Let(Name(valname),
+                                              item[1],
+                                              CallSETSUB([expr, item[0], Name(valname)]))))   
         return (expr, myss)
-
-    

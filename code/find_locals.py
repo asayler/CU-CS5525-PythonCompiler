@@ -18,7 +18,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-from compiler.ast import *
+from pyast import *
 from set_visitor import SetVisitor
 
 def name(n):
@@ -34,5 +34,5 @@ class FindLocalsVisitor(SetVisitor):
     def visitFunction(self, n):
         return set([n.name])
 
-    def visitAssName(self, n):
-        return set([name(n)])
+    def visitVarAssign(self, n):
+        return set([n.target])

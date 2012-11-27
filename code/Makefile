@@ -19,8 +19,9 @@ CP = cp
 MV = mv
 CD = cd
 
-CFLAGS = -c -m32 -g
-LFLAGS = -m32 -g
+CFLAGS  = -c -m32 -g
+LFLAGS  = -m32 -g
+PCFLAGS = #-v 0 --dot
 
 SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
@@ -37,6 +38,8 @@ TESTTEST        = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.test, $(TESTCASESASSEM
 .PHONY: all clean Tests TestsRun
 
 all: Tests
+
+Assemb: $(TESTCASESASSEMB)
 
 Tests: $(TESTCASES)
 
@@ -57,7 +60,7 @@ $(BUILDDIR)%.out: $(BUILDDIR)%.s $(BUILDDIR)runtime.o $(BUILDDIR)hashtable.o $(B
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
 $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
-	$(PC) $<
+	$(PC) $(PCFLAGS) $<
 	$(MV) $(@F) $(BUILDDIR)
 
 $(BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
@@ -98,5 +101,6 @@ clean:
 	$(RM) *.out
 	$(RM) *.dot
 	$(RM) *.svg
+	$(RM) *.jpg
 	$(RM) submit.zip
 	$(RM) -r $(SUBMISSIONDIR)

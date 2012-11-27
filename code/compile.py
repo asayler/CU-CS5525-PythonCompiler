@@ -23,15 +23,14 @@ USAGE:
     compile.py <file path>
 """
 
-import sys, compiler
+import sys
+import argparse
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 from x86ast import *
 
 # Compiler Stages
-from assign_specialize import *
 from declassify import *
 from uniquify import *
 from explicate import *
@@ -41,18 +40,19 @@ from expand import *
 from flatten import *
 from instr_select import *
 from x86regalloc import *
+from stringfind import *
 
 # Helper Tools
-from astTools import *
-from graph_ast import *
-from graph_preprocessedast import *
-from graph_declassifiedast import *
-from graph_monoast import *
-from graph_closedast import *
-from graph_expandedast import *
-from graph_flatast import *
+from graph_visitor import *
 
-debug = False
+parser = 'CURRENT'
+
+if parser == 'DEPRECATED':
+    from depr_parse import *
+elif parser == 'CURRENT':
+    from py3parse import *
+else:
+    raise Exception('Invalid parser name')
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
@@ -66,103 +66,123 @@ def write_to_file(assembly, outputFileName):
 def main(argv=None):
     """Main Compiler Entry Point Function"""
 
-    # Setup and Check Args
     if argv is None:
         argv = sys.argv
 
-    if len(argv) != 2:
-        sys.stderr.write(str(argv[0]) + " requires two arguments\n")
-        sys.stderr.write(__doc__ + "\n")
+    # Setup and Check Args
+    parser = argparse.ArgumentParser(description='Compile a Python file')
+    parser.add_argument('inputfilepath',
+                        help='Input File Path')
+    parser.add_argument('-o', dest='outputfilepath', default=None,
+                        help='Output File Path')
+    parser.add_argument('--dot', dest='dotfileflag', action='store_const', const=True,
+                        help='Generate Dot Files')
+    parser.add_argument('--dotdir', dest='dotfiledirectory', default=None,
+                        help='Dot File Output Directory')
+    parser.add_argument('-v', dest='verbosity', type=int, default=0,
+                        help='Compiler Verbosity')
+    args = parser.parse_args(argv[1:])
+
+    inputFilePath     = args.inputfilepath
+    inputFilePathList = inputFilePath.split('/')
+    inputFileName     = (inputFilePathList[-1:])[0]
+    inputFileNameList = inputFileName.split('.')
+    inputFileNameExt  = (inputFileNameList[-1:])[0]
+    if(inputFileNameExt != "py"):
+        sys.stderr.write(str(argv[0]) + ": input file must be of type *.py\n")
         return 1
 
-    inputFilePath = str(argv[1])
-
-    if(inputFilePath[-3:] != ".py"):
-        sys.stderr.write(str(argv[0]) + " input file must be of type *.py\n")
+    outputFilePath     = args.outputfilepath
+    if(outputFilePath == None):
+        outputFilePath = inputFileName[:-3] + ".s"
+    outputFilePathList = outputFilePath.split('/')
+    outputFileName     = (outputFilePathList[-1:])[0]
+    outputFileNameList = outputFileName.split('.')
+    outputFileNameBase = '.'.join(outputFileNameList[:-1])
+    outputFileNameExt  = (outputFileNameList[-1:])[0]
+    if(outputFileNameExt != "s"):
+        sys.stderr.write(str(argv[0]) + ": output file must be of type *.s\n")
         return 1
 
-    outputFilePath = inputFilePath.split('/')
-    outputFileName = (outputFilePath[-1:])[0]
-    outputFileName = outputFileName[:-3] + ".s"
+    dotFileDir      = args.dotfiledirectory
+    if(dotFileDir == None):
+        dotFileDir  = '/'.join(outputFilePathList[:-1])
+    dotFileDirList  = dotFileDir.split('/')
+    dotFileNameBase = outputFileNameBase
+    dotFileNameExt  = ".dot"
+    dotFilePath     = dotFileDir + dotFileNameBase
+
+    dotFileFlag = args.dotfileflag
+    debug       = args.verbosity
 
     if(debug):
-        sys.stderr.write(str(argv[0]) + ": inputFilePath = " + inputFilePath + "\n")
-        sys.stderr.write(str(argv[0]) + ": outputFilePath = " + str(outputFileName) + "\n")
+        sys.stderr.write(str(argv[0]) + ": inputFilePath  = " + inputFilePath + "\n")
+        sys.stderr.write(str(argv[0]) + ": outputFilePath = " + outputFilePath + "\n")
     
     # Parse inputFile
-    parsedast = compiler.parseFile(inputFilePath)
+    parsedast = parse(inputFilePath)
     if(debug):
-        # Print parsedast
+        # Print ast
         sys.stderr.write("parsed ast = \n" + str(parsedast) + "\n")
-        # Graph parsedast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-parsed.dot"
-        Graph_ast().writeGraph(parsedast, debugFileName)
-
-    preprocessedast = AssignSpecializeVisitor().preorder(parsedast)
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-parsed" + dotFileNameExt
+        GraphVisitor().writeGraph(parsedast, dotFileName)
+    
+    # Declassify
+    declassifiedast = ClassFindVisitor().preorder(parsedast, set([]))
     parsedast = None
     if(debug):
-        # Print parsedast
-        sys.stderr.write("preprocessed ast = \n" + str(preprocessedast) + "\n")
-        # Graph parsedast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-preprocessed.dot"
-        Graph_preprocessedast().writeGraph(preprocessedast, debugFileName)    
-
-    declassifiedast = ClassFindVisitor().preorder(preprocessedast, set([]))
-    preprocessedast = None
-    if(debug):
-        # Print parsedast
+        # Print ast
         sys.stderr.write("declassified ast = \n" + str(declassifiedast) + "\n")
-        # Graph parsedast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-declassified.dot"
-        Graph_declassifiedast().writeGraph(declassifiedast, debugFileName)    
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-declassified" + dotFileNameExt
+        GraphVisitor().writeGraph(declassifiedast, dotFileName)
 
     # Uniquify
     uniqueast = UniquifyVisitor().preorder(declassifiedast)
-    # uniqueast = declassifiedast
     declassifiedast = None
     if(debug):
-        # Print uniqueast
+        # Print ast
         sys.stderr.write("unique ast = \n" + str(uniqueast) + "\n")
-        # Graph uniqueast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-uniquified.dot"
-        Graph_declassifiedast().writeGraph(uniqueast, debugFileName)
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-uniquified" + dotFileNameExt
+        GraphVisitor().writeGraph(uniqueast, dotFileName)
 
     # Explicate
     monoast = ExplicateVisitor().preorder(uniqueast)
     uniqueast = None
     if(debug):
-        # Print monoast
+        # Print ast
         sys.stderr.write("mono ast = \n" + str(monoast) + "\n")
-        # Graph monoast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-explicated.dot"
-        Graph_monoast().writeGraph(monoast, debugFileName)        
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-explicated" + dotFileNameExt
+        GraphVisitor().writeGraph(monoast, dotFileName)        
 
     # Heapify
     heapast = HeapifyVisitor().preorder(monoast)
     monoast = None
     if(debug):
-        # Print heapast
+        # Print ast
         sys.stderr.write("heapified ast = \n" + str(heapast) + "\n")
-        # Graph monoast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-heapified.dot"
-        Graph_monoast().writeGraph(heapast, debugFileName)
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-heapified" + dotFileNameExt
+        GraphVisitor().writeGraph(heapast, dotFileName)
 
     # Closure COnvert
     closedast = ClosureVisitor().preorder(heapast)
     heapast = None
     if(debug):
-        # Print heapast
+        # Print ast
         sys.stderr.write("closed ast = \n" + str(closedast) + "\n")
-        # Graph monoast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-closed.dot"
-        Graph_closedast().writeGraph(closedast, debugFileName)
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-closed" + dotFileNameExt
+        GraphVisitor().writeGraph(closedast, dotFileName)
    
     # Type Check
     # TODO
@@ -171,30 +191,29 @@ def main(argv=None):
     expandedast = ExpandVisitor().preorder(closedast)
     closedast = None
     if(debug):
-        # Print expandedast
+        # Print ast
         sys.stderr.write("expanded ast = \n" + str(expandedast) + "\n")
-        # Graph expandedast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-expanded.dot"
-        Graph_expandedast().writeGraph(expandedast, debugFileName)
-
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-expanded" + dotFileNameExt
+        GraphVisitor().writeGraph(expandedast, dotFileName)
     
     # Flatten Tree
-    flatast = FlattenVisitor().preorder(expandedast)
+    flatast = FlattenVisitor().preorder(expandedast, True)
     expandedast = None
     if(debug):
-        # Print flatast
+        # Print ast
         sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
-        # Graph flatast
-        debugFileName = (outputFilePath[-1:])[0]
-        debugFileName = debugFileName[:-3] + "-flat.dot"
-        Graph_flatast().writeGraph(flatast, debugFileName)
+    if(dotFileFlag):
+        # Graph ast
+        dotFileName = dotFilePath + "-flat" + dotFileNameExt
+        GraphVisitor().writeGraph(flatast, dotFileName)
 
     # Compile flat tree
     (strings, assembly) = InstrSelectVisitor().preorder(flatast)
     flatast = None
     if(debug):
-        sys.stderr.write("pre instr ast = \n" + str(assembly) + "\n")
+        sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
 
     # Reg Alloc
     assembly = setup_strings(strings) + funcRegAlloc(assembly)

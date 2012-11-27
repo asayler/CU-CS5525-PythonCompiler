@@ -19,23 +19,16 @@
 import sys
 
 # Data Types
-from compiler.ast import *
-from monoast import *
-
-from unitcopy import CopyVisitor
+from pyast import *
+from copy_visitor import CopyVisitor
 
 # Helper Tools
-from vis import Visitor
 from functionwrappers import *
 from utilities import generate_name
 
 class ExpandVisitor(CopyVisitor):
     def __init__(self):
         super(ExpandVisitor,self).__init__()
-        CopyVisitor.visitModule = visitModulePostCC
-        CopyVisitor.visitSLambdaLabel = SLambdaLabel.visitSLambdaLabel
-        CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
-
 
     def visitIsTag(self, n):
         if(n.typ == INT_t):
@@ -75,9 +68,8 @@ class ExpandVisitor(CopyVisitor):
         return Discard(Let(Name(name), 
                            self.dispatch(n.value),
                            CallSETSUB([self.dispatch(n.target),
-                                       self.dispatch(n.sub),
+                                       self.dispatch(n.subs[0]),
                                        Name(name)])))
-
 
     def visitAttrAssign(self, n):
         return Discard(CallSETATTR([self.dispatch(n.target),
@@ -88,8 +80,8 @@ class ExpandVisitor(CopyVisitor):
         return CallGETSUB([self.dispatch(n.expr),
                            self.dispatch(n.subs[0])])
 
-    def visitGetattr(self, n):
-        return CallGETATTR([self.dispatch(n.expr), String(n.attrname)])
+    def visitGetAttr(self, n):
+        return CallGETATTR([self.dispatch(n.expr), String(n.attr)])
 
     # Explicate If
     def visitIfExp(self, n):
@@ -119,10 +111,18 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), nextnode, Name(thistmp)))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             nextnode,
+                             Name(thistmp)))
         else:
             # Recurse
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), self.AndToIfExp(nodes[1:]), Name(thistmp)))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             self.AndToIfExp(nodes[1:]),
+                             Name(thistmp)))
 
     def visitAnd(self, n):
         return self.AndToIfExp(n.nodes)
@@ -138,10 +138,18 @@ class ExpandVisitor(CopyVisitor):
         if(len(nodes) == 2):
             # Exit Condition
             nextnode = self.dispatch(nodes[1])
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), nextnode))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             Name(thistmp),
+                             nextnode))
         else:
             # Recurse
-            return Let(Name(thistmp), thisnode, IfExp(CallISTRUE([Name(thistmp)]), Name(thistmp), self.AndToIfExp(nodes[1:])))
+            return Let(Name(thistmp),
+                       thisnode,
+                       IfExp(CallISTRUE([Name(thistmp)]),
+                             Name(thistmp),
+                             self.AndToIfExp(nodes[1:])))
 
     def visitOr(self, n):
         return self.OrToIfExp(n.nodes)

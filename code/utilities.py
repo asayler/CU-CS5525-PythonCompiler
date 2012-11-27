@@ -18,18 +18,44 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-from compiler.ast import *
+from pyast import *
+
+SEPERATOR    = '_'
+LABEL_PREFIX = 'l'
+RETURNL      = "return"
+ELSEL        = "else"
+ENDIFL       = "endelse"
+WHILESTARTL  = "whilestart"
+WHILEENDL    = "whileend"
 
 counter = 1
 
-def generate_name(x):
+def generte_cnt_str():
     global counter
-    name = str(counter) + '_' + x
-    counter = counter + 1
+    name = str(counter)
+    counter += 1
     return name
 
-def make_assign(lhs, rhs):
-    return Assign(nodes=[AssName(name=lhs, flags='OP_ASSIGN')], expr=rhs)
+def generate_name(x):
+    name = generte_cnt_str() + SEPERATOR + x
+    return name
 
 def generate_return_label(funcName):
-    return "l_%s_return" % funcName
+    return LABEL_PREFIX + SEPERATOR + str(funcName) + SEPERATOR + RETURNL
+
+def generate_while_labels():
+    cntStr = generte_cnt_str()
+    startLStr = LABEL_PREFIX + SEPERATOR + WHILESTARTL + SEPERATOR + cntStr
+    endLStr   = LABEL_PREFIX + SEPERATOR + WHILEENDL   + SEPERATOR + cntStr
+    return (startLStr, endLStr)
+
+def generate_if_labels(length):
+    cntStr = generte_cnt_str()
+    caseLStr = []
+    for i in xrange(0, length):
+        caseLStr += [LABEL_PREFIX + SEPERATOR + ELSEL + SEPERATOR + str(i) + SEPERATOR + cntStr]
+    endLStr  = LABEL_PREFIX + SEPERATOR + ENDIFL + SEPERATOR + cntStr
+    return (caseLStr, endLStr)
+
+def make_assign(lhs, rhs):
+    return VarAssign(lhs, rhs)

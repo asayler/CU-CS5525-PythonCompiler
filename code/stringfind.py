@@ -2,8 +2,8 @@
 # Fall 2012
 # Python Compiler
 #
-# explicate.py
-# Visitor Functions to Explicate AST
+# stringfind.py
+# Visitor Functions to Find all String nodes
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -16,18 +16,11 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-import sys
-
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 from set_visitor import *
 
-from unitcopy import CopyVisitor
-
 # Helper Types
-from vis import Visitor
-from functionwrappers import *
 from utilities import generate_name
 
 class StringFindVisitor(SetVisitor):

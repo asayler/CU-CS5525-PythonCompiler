@@ -18,19 +18,14 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Types
-from vis import Visitor
-
 # Helper Tools
 from utilities import generate_name
-from unitcopy import CopyVisitor
+from copy_visitor import CopyVisitor
 from free_vars import *
-
 from functionwrappers import *
 
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 
 ZERO = InjectFrom(INT_t, Const(0))
 
@@ -39,18 +34,6 @@ ZERO = InjectFrom(INT_t, Const(0))
 class HeapifyVisitor(CopyVisitor):
     def __init__(self):
         super(HeapifyVisitor,self).__init__()
-        del CopyVisitor.visitAdd
-        del CopyVisitor.visitUnarySub
-        del CopyVisitor.visitNot
-        del CopyVisitor.visitCompare
-        CopyVisitor.visitIsTag = IsTag.visitIsTag
-        CopyVisitor.visitProjectTo = ProjectTo.visitProjectTo
-        CopyVisitor.visitInjectFrom = InjectFrom.visitInjectFrom
-        CopyVisitor.visitIntAdd = IntAdd.visitIntAdd
-        CopyVisitor.visitIntEqual = IntEqual.visitIntEqual
-        CopyVisitor.visitIntNotEqual = IntNotEqual.visitIntNotEqual
-        CopyVisitor.visitIntUnarySub = IntUnarySub.visitIntUnarySub
-        CopyVisitor.visitIndirectCallFunc = IndirectCallFunc.visitIndirectCallFunc
         # Initialize helper visitors
         self.local_visitor = LocalVarsVisitor()
         self.free_visitor = FreeVarsVisitor()
@@ -69,10 +52,10 @@ class HeapifyVisitor(CopyVisitor):
         new_stmts = []
         for local in lvs:
             if local in self.needs_heapification:
-                new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
+                new_stmts.append(VarAssign(local, List([ZERO])))
         body = self.dispatch(n.node)
         body.nodes = new_stmts + body.nodes
-        return Module(n.doc, body, n.lineno)
+        return Module(body)
 
     def visitSLambda(self, n):
         lvs = n.local_vars
@@ -83,24 +66,24 @@ class HeapifyVisitor(CopyVisitor):
         for param in n.params:
             if param in self.needs_heapification:
                 new_param = generate_name('heaped@')+param
-                new_stmts.append(Assign([AssName(param, 'OP_ASSIGN')], List([ZERO])))
-                new_stmts.append(SubscriptAssign(Name(param), ZERO, Name(new_param)))
+                new_stmts.append(VarAssign(param, List([ZERO])))
+                new_stmts.append(SubscriptAssign(Name(param), [ZERO], Name(new_param)))
                 new_params.append(new_param)
             else:
                 new_params.append(param)
         for local in lvs:
             if local in self.needs_heapification:
-                new_stmts.append(Assign([AssName(local, 'OP_ASSIGN')], List([ZERO])))
-        ret = SLambda(new_params, Stmt(new_stmts + code.nodes))
+                new_stmts.append(VarAssign(local, List([ZERO])))
+        ret = SLambda(new_params, StmtList(new_stmts + code.nodes))
         ret.free_vars = n.free_vars
         return ret
 
-    def visitAssign(self, n):
-        if n.nodes[0].name in self.needs_heapification:
-            return SubscriptAssign(Name(n.nodes[0].name), ZERO, self.dispatch(n.expr))
-        else: return Assign(n.nodes, self.dispatch(n.expr)) 
+    def visitVarAssign(self, n):
+        if n.target in self.needs_heapification:
+            return SubscriptAssign(Name(n.target), [ZERO], self.dispatch(n.value))
+        else: return VarAssign(n.target, self.dispatch(n.value)) 
 
     def visitName(self, n):
         if n.name in self.needs_heapification:
-            return Subscript(Name(n.name), 'OP_APPLY', [ZERO])
+            return Subscript(Name(n.name), [ZERO])
         else: return n

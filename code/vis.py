@@ -29,9 +29,12 @@ class Visitor(object):
         raise Exception('no visit method for type %s in %s for %s' \
                         % (node.__class__, self.__class__, repr(node)))
 
+    def valid(self, node, stage):
+        return filter(lambda x: x == stage, node.valid_stages)
+
     def dispatch(self, node, *args):
         if debug:
-            print 'dispatching for ' + repr(node.__class__)
+            print repr(self.__class__) + 'dispatching for ' + repr(node.__class__)
             print '   ' + repr(node) + ' in ' \
                   + self.__class__.__name__
         self.node = node

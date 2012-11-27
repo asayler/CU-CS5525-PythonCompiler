@@ -16,11 +16,8 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-import sys
-
 # Data Types
-from compiler.ast import *
-from monoast import *
+from pyast import *
 from x86ast import *
 from stringfind import *
 
@@ -29,6 +26,8 @@ from vis import Visitor
 
 from utilities import generate_name
 from utilities import generate_return_label
+from utilities import generate_while_labels
+from utilities import generate_if_labels
 
 def arg_select(ast):
     if isinstance(ast, Name):
@@ -47,29 +46,20 @@ NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 
-IfThenLabelCnt = 1
-WhileLabelCnt = 1
-ELSELABEL  = "l_else"
-ENDIFLABEL = "l_endelse"
-CASELABEL = 'l_case'
-WHILESTARTLABEL = "l_whilestart"
-WHILEENDLABEL   = "l_whileend"
-
 class InstrSelectVisitor(Visitor):
-    # ToDo: Make inherit from CopyVisitor?
 
     def __init__(self):
         super(InstrSelectVisitor,self).__init__()
-        #del CopyVisitor.visitWhile
-    # Modules
 
     def preorder(self, tree, *args):
         strings = StringFindVisitor().preorder(tree)
         return (strings, super(InstrSelectVisitor, self).preorder(tree))
 
-    def visitModule(self, n):
+    # Modules
+
+    def visitProgram(self, n):
         slambdas = []
-        for node in n.node:
+        for node in n.nodes:
             slambdas += [self.dispatch(node)]
         return slambdas
 
@@ -87,14 +77,14 @@ class InstrSelectVisitor(Visitor):
 
     # Statements    
 
-    def visitStmt(self, n, funcName):
+    def visitStmtList(self, n, funcName):
         instrs = []
         for s in n.nodes:
             instrs += self.dispatch(s, funcName)
         return instrs
 
-    def visitAssign(self, n, funcName):
-        return self.dispatch(n.expr, Var86(n.nodes[0].name))
+    def visitVarAssign(self, n, funcName):
+        return self.dispatch(n.value, Var86(n.target))
 
     def visitDiscard(self, n, funcName):
         tmp = Var86(generate_name(DISCARDTEMP))
@@ -110,23 +100,20 @@ class InstrSelectVisitor(Visitor):
 
     def visitWhileFlat(self, n, funcName):
         #Setup Label
-        global WhileLabelCnt
-        WhileStartLStr  = WHILESTARTLABEL + str(WhileLabelCnt)
-        WhileEndLStr    = WHILEENDLABEL   + str(WhileLabelCnt)
-        WhileLabelCnt += 1
+        whileStartL, whileEndL = generate_while_labels()
         # Test Instructions
         testtmp = Var86(generate_name(WHILETESTTMP))
         test  = []
-        test += [Label86(WhileStartLStr)]
+        test += [Label86(whileStartL)]
         test += self.dispatch(n.testss, funcName)
         test += self.dispatch(n.test, testtmp)
         test += [Comp86(x86FALSE, testtmp)]
-        test += [JumpEqual86(WhileEndLStr)]
+        test += [JumpEqual86(whileEndL)]
         # Body Instructions
         body  = []
         body += self.dispatch(n.body, funcName)
-        body += [Jump86(WhileStartLStr)]
-        body += [Label86(WhileEndLStr)]
+        body += [Jump86(whileStartL)]
+        body += [Label86(whileEndL)]
         return [Loop86(test, body)]
     
     # Terminal Expressions
@@ -171,49 +158,44 @@ class InstrSelectVisitor(Visitor):
 
     def visitIf(self, n, func_name):
         #Setup Label
-        global IfThenLabelCnt
-        caselabels = [('%s%d_%d' % (ELSELABEL, i, IfThenLabelCnt)) for i in xrange(0, len(n.tests))]
-        EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
-        IfThenLabelCnt += 1
-        def make_branches(testlist, caselabels, else_):
+        caseLs, endIfL = generate_if_labels(len(n.tests))
+        def make_branches(testlist, caseLs, else_):
             if testlist:
                 test, body = testlist[0]
                 tmp = Var86(generate_name(IFTEMP))
                 tinstrs = self.dispatch(test, tmp)
                 tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caselabels[0])]
+                tinstrs += [JumpEqual86(caseLs[0])]
                 
                 ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(EndIfLStr)]
+                ninstrs += [Jump86(endIfL)]
                 
-                einstrs = [Label86(caselabels[0])] + make_branches(testlist[1:], caselabels[1:], else_)
+                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
                 return tinstrs + [If86(ninstrs, einstrs)]
             else:
                 instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(EndIfLStr)]
+                instrs += [Label86(endIfL)]
                 return instrs
-        return make_branches(n.tests, caselabels, n.else_)
+        return make_branches(n.tests, caseLs, n.else_)
 
-    def visitIfExp(self, n, target):
+    def visitIfExpFlat(self, n, target):
         #Setup Label
-        global IfThenLabelCnt
-        ElseLStr  = ELSELABEL + str(IfThenLabelCnt)
-        EndIfLStr = ENDIFLABEL + str(IfThenLabelCnt)
-        IfThenLabelCnt += 1
+        caseLs, endIfL = generate_if_labels(1)
+        elseL = caseLs[0]
         # Test Instructions
         test  = []
         test += self.dispatch(n.test, target)
         test += [Comp86(x86FALSE, target)]
-        test += [JumpEqual86(ElseLStr)]
+        test += [JumpEqual86(elseL)]
         # Then Instructions
         then  = []
         then += self.dispatch(n.then, target)
-        then += [Jump86(EndIfLStr)]
+        then += [Jump86(endIfL)]
         # Else Instructions
         else_ = []
-        else_ += [Label86(ElseLStr)]
+        else_ += [Label86(elseL)]
         else_ += self.dispatch(n.else_, target)
-        else_ += [Label86(EndIfLStr)]
+        else_ += [Label86(endIfL)]
         return (test + [If86(then, else_)])
 
     def visitCallFunc(self, n, target):
@@ -257,8 +239,6 @@ class InstrSelectVisitor(Visitor):
         return instrs
 
     def visitInstrSeq(self, n, target):
-        instrs = []
-        for node in n.nodes:
-            instrs += self.dispatch(node, None)
+        instrs = self.dispatch(n.node, None)
         instrs += [Move86(Var86(n.expr.name), target)]
         return instrs
