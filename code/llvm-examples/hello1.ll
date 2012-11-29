@@ -1,7 +1,7 @@
 ; Declare the string constant as a global constant.
 @str = internal constant [14 x i8] c"Hello, world!\00"
 
-; External declaration of the puts function
+; External declaration of linked functions
 declare i32 @puts(i8*)
 declare i32 @addition(i32 %x, i32 %y)
 
