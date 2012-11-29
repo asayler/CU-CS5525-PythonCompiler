@@ -26,6 +26,15 @@ EXECS = $(ASSEMBLY:.s=) functioncall1
 
 all: $(EXECS)
 
+test0: test0.s
+	$(LLCC) $(LLCCFLAGS) -o $@ $^
+
+test0.s: test0.bc
+	$(LLC) $(LLCFLAGS) -o $@ $<
+
+test0.bc: test0.ll
+	$(LLA) $(LLAFLAGS) -o $@ $<
+
 hello0: hello0.s
 	$(LLCC) $(LLCCFLAGS) -o $@ $^
 

@@ -1,5 +1,7 @@
 *.bc
 *.s
 *.out
+functioncall1
 hello0
 hello1
+test0
