@@ -28,7 +28,7 @@ hashtable_iterator(struct hashtable *h);
 /* hashtable_iterator_key
  * - return the value of the (key,value) pair at the current position */
 
-extern inline void *
+inline void *
 hashtable_iterator_key(struct hashtable_itr *i)
 {
     return i->e->k;
@@ -37,7 +37,7 @@ hashtable_iterator_key(struct hashtable_itr *i)
 /*****************************************************************************/
 /* value - return the value of the (key,value) pair at the current position */
 
-extern inline void *
+inline void *
 hashtable_iterator_value(struct hashtable_itr *i)
 {
     return i->e->v;
@@ -47,7 +47,7 @@ hashtable_iterator_value(struct hashtable_itr *i)
 /* advance - advance the iterator to the next element
  *           returns zero if advanced to end of table */
 
-int
+extern int
 hashtable_iterator_advance(struct hashtable_itr *itr);
 
 /*****************************************************************************/
@@ -56,7 +56,7 @@ hashtable_iterator_advance(struct hashtable_itr *itr);
  *          removing. ie: beware memory leaks!
  *          returns zero if advanced to end of table */
 
-int
+extern int
 hashtable_iterator_remove(struct hashtable_itr *itr);
 
 /*****************************************************************************/
@@ -64,7 +64,7 @@ hashtable_iterator_remove(struct hashtable_itr *itr);
  *          matching the supplied key.
             h points to the hashtable to be searched.
  *          returns zero if not found. */
-int
+extern int
 hashtable_iterator_search(struct hashtable_itr *itr,
                           struct hashtable *h, void *k);
 
