@@ -2,16 +2,19 @@ LLVMCONFIG := llvm-config
 LLVMLIBS := $(shell $(LLVMCONFIG) --libs)
 LLVMLDFLAGS := $(shell $(LLVMCONFIG) --ldflags --libs)
 
-CC    = gcc
-LLC   = llc
-LLA   = llvm-as
-LLL   = llvm-link
-LLCC  = clang
+CC     = gcc
+CFLAGS = -c -g
+LFLAGS = -g
+
+LLC    = llc
+LLA    = llvm-as
+LLL    = llvm-link
+LLCC   = clang
 
 LLSOURCE = $(wildcard *.ll)
 BITCODE_FILES = $(LLSOURCE:.ll=.bc)
 ASSEMBLY = $(BITCODE_FILES:.bc=.s)
-EXECS = $(ASSEMBLY:.s=)
+EXECS = $(ASSEMBLY:.s=) functioncall1
 
 # all: $(EXES)
 
@@ -24,7 +27,7 @@ EXECS = $(ASSEMBLY:.s=)
 # ${BITCODE_FILES}: $(LLSOURCE)
 # 	llvm-as $<
 
-all: hello0 hello1
+all: $(EXECS)
 
 hello0: hello0.s
 	$(CC) -o $@ $^ $(LLVMLIBS) $(LLVMLDFLAGS)
@@ -49,6 +52,15 @@ ref1.bc: ref1.c
 
 hello1.bc: hello1.ll
 	$(LLA) hello1.ll
+
+functioncall1: functioncall1.o ref1.o
+	$(CC) $(LFLAGS) -o $@ $^
+
+ref1.o: ref1.c ref1.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+functioncall1.o: functioncall1.c ref1.h
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
 	$(RM) *.bc *.s $(EXECS)
