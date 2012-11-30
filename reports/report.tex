@@ -255,6 +255,9 @@ Our primary goal is to add support for compilation to the LLVM
 assembly language to our existing p3 compiler. To achieve this goal,
 we will advance through the following development steps:
 
+
+% Note: this section should be pruned to only reflect completed tasks
+% and switched to the past tense.
 \begin{packed_enum}
 \item Fix bugs in existing p3 compiler until we pass all valid student
   and instructor provided p3 test cases. This step has been completed.
@@ -311,6 +314,7 @@ of the following extensions to the core LLVM implementation:
 
 \section{Design}
 
+% This section needs re-factored to the past tense.
 We have been working on re-factoring our HW6, p3 compiler, and we plan
 on keeping the re-factored design through the end of the flatten
 pass. The major changes will happen after flatten in the instruction
@@ -357,24 +361,11 @@ typing approach, and in doing so, take advantage of some of the LLVM
 type-based optimizations. This may also necessitate rewriting the
 run-time C library to better meld with LLVM's capabilities.
 
-\section{Deliverables}
+\section{Results}
 
-The basic deliverable that we intend to produce for this project is a
-version of our p3 Python compiler that compiles to LLVM Assembly in
-addition to native x86 Assembly. This compiler will be capable of
-passing all valid p3 instructor and student test cases when emitting
-either LLVM or x86 code.
+\section{Discussion}
 
-If we have additional time, we will expand our basic LLVM compiler to
-include additional optimizations and/or features. These may include
-type specialization or even explicit static types, and support for
-LLVM's powerful interpreter and JIT.  We are interested in the
-practical results of these optimizations and tests, and will compare
-the run-time performance of our ``advanced'' LLVM compiler to that of
-our original x86 compiler. Other modifications we are interested in
-include testing our LLVM compiler on x64 and ARM architectures,
-supporting Python3, and possibly replacing the run-time helper
-functions with more LLVM-compatible equivalents.
+\section{Conclusion}
 
 \nocite{*}
 \printbibliography
