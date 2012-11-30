@@ -16,9 +16,10 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-PAPER_INCLUDES :=
+PROPOSAL_INCLUDES := 
+REPORT_INCLUDES   := CompilerFlow.pdf
 
-INCLUDE_DIR    := include
+INCLUDE_DIR := include
 
 BIBTEX     ?= bibtex -terse
 LATEX      ?= pdflatex -file-line-error
@@ -68,8 +69,8 @@ report.bbl: report.aux refs.bib
 proposal.aux: proposal.tex $(PROPOSAL_INCLUDES)
 	$(LATEX) $(LATEXFIRST) $<
 
-report.aux: report.tex $(PAPER_INCLUDES)
-	$(LATEX) $(LATEXFIRST) report.tex
+report.aux: report.tex $(REPORT_INCLUDES)
+	$(LATEX) $(LATEXFIRST) $<
 
 %.pdf:%-src.svg
 	$(INKSCAPE) $< -D --export-pdf=$(INCLUDE_DIR)/$@
