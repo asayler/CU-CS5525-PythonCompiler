@@ -1,10 +1,11 @@
-@X = constant i32 3
+
+;int input();
+declare i32 @input()
 
 ; Definition of main function
 define i32 @main() {
        
-       %x = load i32* @X
-       %result = mul i32 %x, 8
-       ret i32 %result
+       %v0 = call i32 @input()
+       ret i32 0
 
 }
