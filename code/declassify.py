@@ -18,8 +18,8 @@
 
 # Data Types
 from pyast import *
-from set_visitor import SetVisitor
 from copy_visitor import CopyVisitor
+from assignee_visitor import AssigneeVisitor
 
 # Helper Types
 from functionwrappers import *
@@ -151,12 +151,3 @@ class DeclassifyVisitor(CopyVisitor):
     def visitCallFunc(self, n):
         return specializeCallFunc(self, n) 
 
-class AssigneeVisitor(SetVisitor):
-    def visitVarAssign(self, n):
-        return set([n.target])
-    
-    def visitFunction(self, n):
-        return set([n.name])
-
-    def visitClass(self, n):
-        return set([n.name])
