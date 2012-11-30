@@ -165,9 +165,22 @@ familiar with the LLVM Assembly Language and LLVM system architecture
 while gaining insight into the benefits of building an LLVM-targeted
 compiler. 
 
-\section{Background on LLVM}
+\section{Background}
 
 The Low Level Virtual Machine (LLVM) is an open source project that was initially intended to provide support for a Static Single Assignment (SSA) compiler that is capable of staticly or dynamicly compiling any programming language \cite{llvm.org}.
+
+\subsection{LLVM}
+
+Listing \ref{lst:llvm-example_hell0.ll} shows
+a simple LLVM hello world program as an example of
+what LLVM Assembly language looks like.
+
+\lstinputlisting[
+  language=llvm,
+  label=lst:llvm-example_hell0.ll,
+  caption={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
+]{../code/llvm-examples/hello0.ll}
+
 
 \subsection{Static Single Assignment (SSA) Form}
 
@@ -309,17 +322,6 @@ time, the LLVM typing system might allow us to take a more nuanced
 typing approach, and in doing so, take advantage of some of the LLVM
 type-based optimizations. This may also necessitate rewriting the run-time
 C library to better meld with LLVM's capabilities.
-
-Our initial task is simply to gain more familiarity with the LLVM language
-format. Listing \ref{lst:llvm-example_hell0.ll} shows
-a simple LLVM hello world program as an example of
-what LLVM Assembly language looks like.
-
-\lstinputlisting[
-  language=llvm,
-  label=lst:llvm-example_hell0.ll,
-  caption={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
-]{../code/llvm-examples/hello0.ll}
 
 \section{Deliverables}
 
