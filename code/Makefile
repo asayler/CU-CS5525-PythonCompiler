@@ -23,10 +23,27 @@ CFLAGS  = -c -m32 -g
 LFLAGS  = -m32 -g
 PCFLAGS = #-v 0 --dot
 
+LLI       = lli
+LLIFLAGS  =
+LLC       = llc
+LLCFLAGS  =
+LLA       = llvm-as
+LLAFLAGS  =
+LLL       = llvm-link
+LLLFLAGS  = 
+LLCC      = clang
+LLCCFLAGS = 
+LLCA      = clang
+LLCAFLAGS = -emit-llvm
+
 SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
 BUILDDIR = ./build/
 TESTDIR = ./test/
+
+HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
+HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
+HELPERLLVMBC = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.bc, $(HELPERSOURCE))
 
 TESTCASESSOURCE = $(wildcard $(TESTDIR)*.py)
 TESTCASESINPUT  = $(patsubst %.py,           %.in,           $(TESTCASESSOURCE))
@@ -56,23 +73,14 @@ $(TESTDIFFS): $(BUILDDIR)%.diff: $(BUILDDIR)%.out $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.output $(BUILDDIR)$*.correct > $@
 
-$(BUILDDIR)%.out: $(BUILDDIR)%.s $(BUILDDIR)runtime.o $(BUILDDIR)hashtable.o $(BUILDDIR)hashtable_utility.o $(BUILDDIR)hashtable_itr.o
+$(TESTCASES): $(BUILDDIR)%.out: $(BUILDDIR)%.s $(HELPEROBJECT)
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
 $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(PC) $(PCFLAGS) $<
 	$(MV) $(@F) $(BUILDDIR)
 
-$(BUILDDIR)runtime.o: $(HELPERDIR)runtime.c $(HELPERDIR)runtime.h
-	$(CC) $(CFLAGS) $< -o $@
-
-$(BUILDDIR)hashtable.o: $(HELPERDIR)hashtable.c $(HELPERDIR)hashtable.h
-	$(CC) $(CFLAGS) $< -o $@
-
-$(BUILDDIR)hashtable_itr.o: $(HELPERDIR)hashtable_itr.c $(HELPERDIR)hashtable_itr.h 
-	$(CC) $(CFLAGS) $< -o $@
-
-$(BUILDDIR)hashtable_utility.o: $(HELPERDIR)hashtable_utility.c $(HELPERDIR)hashtable_utility.h
+$(HELPEROBJECT): $(BUILDDIR)%.o: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(CC) $(CFLAGS) $< -o $@
 
 submission:
