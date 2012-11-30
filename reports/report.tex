@@ -133,43 +133,46 @@
 
 \section{Problem Statement}
 
-While the existing HW6, p3-compliant compiler supports 32-bit,
-x86 code generation, it does not support generating code for the variety
-of non-x86 architectures and assembly languages common today (x64, ARM,
-etc). While we could remedy
-this deficiency by adding additional native code generation for non-x86
-architectures directly to our compiler, this approach would duplicate a
-wide range of existing effort and would require continued maintenance to
-support new architectures and assembly languages as they arise.
+While the existing HW6, p3-compliant compiler supports 32-bit, x86
+code generation, it does not support generating code for the variety
+of non-x86 architectures and assembly languages common today (x64,
+ARM, etc). While we could remedy this deficiency by adding additional
+native code generation for non-x86 architectures directly to our
+compiler, this approach would duplicate a wide range of existing
+effort and would require continued maintenance to support new
+architectures and assembly languages as they arise.
 
 Instead, we aim to leverage the existing work done by the LLVM project
-\cite{llvm.org} to
-convert our HW6 compiler from an x86-targeted compiler to
-an LLVM-targeted compiler. This will not only be efficient from a mantainance
-standpoint, but it will also be a useful introduction to a commonly
-used intermediate language. We will maintain the current x86 targeting
-and add LLVM Assembly\cite{lattner-llvmlangref}
-as an additional targeting option. In
-this way, we will be able to compare our natively generated x86 code
-with the LLVM-assembler generated x86 code. We will also be able to
-experiment with compiling our LLVM byte-code files to assembly
+\cite{llvm.org} to convert our HW6 compiler from an x86-targeted
+compiler to an LLVM-targeted compiler. This will not only be efficient
+from a mantainance standpoint, but it will also be a useful
+introduction to a commonly used intermediate language. We will
+maintain the current x86 targeting and add LLVM
+Assembly\cite{lattner-llvmlangref} as an additional targeting
+option. In this way, we will be able to compare our natively generated
+x86 code with the LLVM-assembler generated x86 code. We will also be
+able to experiment with compiling our LLVM byte-code files to assembly
 languages other than x86 such as x64 and ARM.
 
 LLVM is quickly becoming the de facto standard target for most modern
-compilers for high level languages.
-It provides multi-platform support, multi-runtype support
-(compiled, interpreted, JIT compiled, etc), and access to a
-range of existing optimization tools and techniques. Through this
-project, we hope to become
-familiar with the LLVM Assembly Language and LLVM system architecture
-while gaining insight into the benefits of building an LLVM-targeted
-compiler. 
+compilers for high level languages.  It provides multi-platform
+support, multi-runtype support (compiled, interpreted, JIT compiled,
+etc), and access to a range of existing optimization tools and
+techniques. Through this project, we hope to become familiar with the
+LLVM Assembly Language and LLVM system architecture while gaining
+insight into the benefits of building an LLVM-targeted compiler.
 
 \section{Background}
 
-The Low Level Virtual Machine (LLVM) is an open source project that was initially intended to provide support for a Static Single Assignment (SSA) compiler that is capable of staticly or dynamicly compiling any programming language \cite{llvm.org}.
+The primary change to our existing compiler code base is the addition
+of an LLVM output target option.
 
 \subsection{LLVM}
+
+The Low Level Virtual Machine (LLVM) is an open source project that
+was initially intended to provide support for a Static Single
+Assignment (SSA) compiler that is capable of staticly or dynamicly
+compiling any programming language \cite{llvm.org}.
 
 Listing \ref{lst:llvm-example_hell0.ll} shows
 a simple LLVM hello world program as an example of
@@ -181,10 +184,17 @@ what LLVM Assembly language looks like.
   caption={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
 ]{../code/llvm-examples/hello0.ll}
 
-
 \subsection{Static Single Assignment (SSA) Form}
 
-A program is in SSA form when its variables are assigned exactly once in the program \cite{gcc-gnu.org}. Most programs are not written in an SSA form, but can be converted to SSA form by giving a variable a new name every time it is assigned to, and replacing all uses of the variable in right-hand side expressions with the most recent version of the variable. In a linear code segment, this is a fairly straightforward transformation. When branching and polymorphism are added, however, it becomes a more complex issue, as seen below:
+A program is in SSA form when its variables are assigned exactly once
+in the program \cite{gcc-gnu.org}. Most programs are not written in an
+SSA form, but can be converted to SSA form by giving a variable a new
+name every time it is assigned to, and replacing all uses of the
+variable in right-hand side expressions with the most recent version
+of the variable. In a linear code segment, this is a fairly
+straightforward transformation. When branching and polymorphism are
+added, however, it becomes a more complex issue, as seen below:
+
 \begin{verbatim}
 if input():
   x = 3
@@ -192,7 +202,13 @@ else:
   x = 3.145
 print x
 \end{verbatim}
-This piece of code contains branching, so x is being assigned to multiple times. In addition, x could be an integer or a floating point number. To convert to SSA in this situation, compilers can add a \emph{phi} ($\phi$)node to select the proper version of x to use as the current version. See below:
+
+This piece of code contains branching, so x is being assigned to
+multiple times. In addition, x could be an integer or a floating point
+number. To convert to SSA in this situation, compilers can add a
+\emph{phi} ($\phi$)node to select the proper version of x to use as
+the current version. See below:
+
 \begin{verbatim}
 if input():
   x_0 = 3
@@ -201,20 +217,33 @@ else:
 x_2 = PHI<x_1, x_2>
 print x_2
 \end{verbatim}
-The $\phi$ function (node) serves to pick the branch that was used at runtime, and return that version of x.
 
-Fortunately, LLVM provides a \emph{phi} node in its assembly language specification \cite{llvm.org}. It addresses the multiple assignment problems that result from control flow. The syntax is
+The $\phi$ function (node) serves to pick the branch that was used at
+runtime, and return that version of x.
+
+Fortunately, LLVM provides a \emph{phi} node in its assembly language
+specification \cite{llvm.org}. It addresses the multiple assignment
+problems that result from control flow. The syntax is
+
 \begin{verbatim}
 <result> = phi <ty> [ <val0>, <label0>], ...
 \end{verbatim} 
-where the ty field is the incoming type of the data to be chosen from. This indicates that the PHI node can not handle explicit polymorphism. Fortunately, we have already packaged all of our data types into one unique type: a pyobj. All values passed to the block must be first class values, so a pointer to a pyobj will be the only option avaiable to handle polymorphism. The type field is followed by a list of pairs, one for each predecessor block of code in the current block, and the \emph{phi} function will use the value corresponding to the block actually executed.
 
+where the ty field is the incoming type of the data to be chosen
+from. This indicates that the PHI node can not handle explicit
+polymorphism. Fortunately, we have already packaged all of our data
+types into one unique type: a pyobj. All values passed to the block
+must be first class values, so a pointer to a pyobj will be the only
+option avaiable to handle polymorphism. The type field is followed by
+a list of pairs, one for each predecessor block of code in the current
+block, and the \emph{phi} function will use the value corresponding to
+the block actually executed.
 
 \section{Approach}
 
-Our primary goal is to add support for compilation to the
-LLVM assembly language to our existing p3 compiler. To achieve this
-goal, we will advance through the following development steps:
+Our primary goal is to add support for compilation to the LLVM
+assembly language to our existing p3 compiler. To achieve this goal,
+we will advance through the following development steps:
 
 \begin{packed_enum}
 \item Fix bugs in existing p3 compiler until we pass all valid student
@@ -222,24 +251,27 @@ goal, we will advance through the following development steps:
 \item Re-factor existing p3 compiler to better handle common visitor
   functions, support a modular parser-interface, and reduce code
   complexity. This step is \emph{in progress and near complete}.
-\item Become familiar with LLVM Assembly language by manually translating
-  a few basic Python programs to LLVM and ensuring that when run, the compiled
-  and linked output matches the behavior of the Python interpreter. This
-  step is \emph{in progress}.
+\item Become familiar with LLVM Assembly language by manually
+  translating a few basic Python programs to LLVM and ensuring that
+  when run, the compiled and linked output matches the behavior of the
+  Python interpreter. This step is \emph{in progress}.
 \item Add an additional compilation pass that translates the flattened
   AST into SSA form. This step has \emph{not been started}.
 \item Add an alternate instruction selection pass that generates LLVM
-  assembly instead of x86 assembly. This step has \emph{not been started}.
+  assembly instead of x86 assembly. This step has \emph{not been
+    started}.
 \item Add the necessary top-level compiler control handling to switch
   between LLVM and x86 generation based on an input parameter. This
   step has \emph{not been started}.
-\item Modify the existing Makefile, build, and test systems to handle both x86
-  and LLVM code generation. Convert test infrastructure to performing
-  3-way compares between native Python execution, x86 execution, and
-  LLVM execution. This step has \emph{not been started}.
+\item Modify the existing Makefile, build, and test systems to handle
+  both x86 and LLVM code generation. Convert test infrastructure to
+  performing 3-way compares between native Python execution, x86
+  execution, and LLVM execution. This step has \emph{not been
+    started}.
 \item Confirm behavior of LLVM generated code matches that of the
   native Python interpreter, as well as that of the x86 generated
-  code. Identify and fix bugs as necessary. This step has \emph{not been started}.
+  code. Identify and fix bugs as necessary. This step has \emph{not
+    been started}.
 \end{packed_enum}
 
 Should we have additional time, we also intend to pursue one or more
@@ -268,80 +300,82 @@ of the following extensions to the core LLVM implementation:
 \end{packed_item}
 
 \section{Things of Note in LLVM Conversion}
-\begin{packed_enum}
-\item The LLVM intermediate language requires identifiers to be of the form\\
-\verb+[%@][a-zA-Z$._][a-zA-Z$._0-9]*}+, which means that we either need to
-change the way we uniquify variables (with a number as the first letter) or
-we need to convert it to an LLVM form in the LLVM pass.
-\item Happily, the LLVM Assembly Language has a phi instruction that is used to implement the $\phi$ node in an SSA graph. The syntax is
-\verb+<result> = phi <ty> [ <val0>, <label0>], ...+ where the ty field is the incoming type of the data to be chosen from, which in our compiler will be a pointer to a pyobj. The type is followed by a list of pairs, one for each predecessor block of code in the current block. All values passed to the block must be first class values, so we will always use pointers.
-\end{packed_enum}
 
+\begin{packed_enum}
+\item The LLVM intermediate language requires identifiers to be of the
+  form\\ \verb+[%@][a-zA-Z$._][a-zA-Z$._0-9]*}+, which means that we
+  either need to change the way we uniquify variables (with a number
+  as the first letter) or we need to convert it to an LLVM form in the
+  LLVM pass.
+\item Happily, the LLVM Assembly Language has a phi instruction that
+  is used to implement the $\phi$ node in an SSA graph. The syntax is
+  \verb+<result> = phi <ty> [ <val0>, <label0>], ...+ where the ty
+  field is the incoming type of the data to be chosen from, which in
+  our compiler will be a pointer to a pyobj. The type is followed by a
+  list of pairs, one for each predecessor block of code in the current
+  block. All values passed to the block must be first class values, so
+  we will always use pointers.
+\end{packed_enum}
 
 \section{Design}
 
-We have been working on re-factoring our HW6, p3 compiler,
-and we plan on keeping
-the re-factored design through the end of the flatten pass. The major
-changes will happen after flatten in the instruction selection and related passes
-A significant difference between our current x86
-compiler and our planned LLVM compiler is that the LLVM compiler
-uses variable names, not pre-defined registers, in its instructions;
-much like our current p3
-compiler does at the state prior to register allocation. Instruction
-selection and the intermediate nodes will need to be altered to lend
-themselves to the LLVM Assembly format.
+We have been working on re-factoring our HW6, p3 compiler, and we plan
+on keeping the re-factored design through the end of the flatten
+pass. The major changes will happen after flatten in the instruction
+selection and related passes A significant difference between our
+current x86 compiler and our planned LLVM compiler is that the LLVM
+compiler uses variable names, not pre-defined registers, in its
+instructions; much like our current p3 compiler does at the state
+prior to register allocation. Instruction selection and the
+intermediate nodes will need to be altered to lend themselves to the
+LLVM Assembly format.
 
-LLVM also requires Static Single Assignment form,
-meaning that each variable is assigned to exactly once.
-We will need to add a pass in our compiler that will convert to the
-SSA format. We
-intend to add this pass after flatten but before instruction
-selection.
+LLVM also requires Static Single Assignment form, meaning that each
+variable is assigned to exactly once.  We will need to add a pass in
+our compiler that will convert to the SSA format. We intend to add
+this pass after flatten but before instruction selection.
 
-Our compiler will employ a modular design to maximize code resuse between
-various target languages. 
-We intend for our compiler passes up through flatten to be
-target-agnostic. It is only the post-flatten passes that will differ
-based on the compilation target (x86 or LLVM). We have also created a
-new initial compiler pass that converts the AST nodes from whatever
-format a given parser uses to a uniform set of internal AST nodes used throughout
-the rest of the compiler. This allows us to switch parsing
-infrastructures without needing to change the core compiler code. We are
-in the process of moving away from the deprecated Python compiler package used
-for the course assignments thus far in
-favor of the built-in AST and parsing infrastructure inherent in Python
-2.7+. We are also considering updating our compiler to support the
-Python3 p3 equivalent.
+Our compiler will employ a modular design to maximize code reuse
+between various target languages.  We intend for our compiler passes
+up through flatten to be target-agnostic. It is only the post-flatten
+passes that will differ based on the compilation target (x86 or
+LLVM). We have also created a new initial compiler pass that converts
+the AST nodes from whatever format a given parser uses to a uniform
+set of internal AST nodes used throughout the rest of the
+compiler. This allows us to switch parsing infrastructures without
+needing to change the core compiler code. We are in the process of
+moving away from the deprecated Python compiler package used for the
+course assignments thus far in favor of the built-in AST and parsing
+infrastructure inherent in Python 2.7+. We are also considering
+updating our compiler to support the Python3 p3 equivalent.
 
-Since LLVM is a typed representation, we will need to incorporate
-type information into our representation. Initially, we intend to keep
-the use of explicit LLVM types to a minimum to simplify implementation
-and best mimic the behavior of the native x86 compiler. Should we have
+Since LLVM is a typed representation, we will need to incorporate type
+information into our representation. Initially, we intend to keep the
+use of explicit LLVM types to a minimum to simplify implementation and
+best mimic the behavior of the native x86 compiler. Should we have
 time, the LLVM typing system might allow us to take a more nuanced
 typing approach, and in doing so, take advantage of some of the LLVM
-type-based optimizations. This may also necessitate rewriting the run-time
-C library to better meld with LLVM's capabilities.
+type-based optimizations. This may also necessitate rewriting the
+run-time C library to better meld with LLVM's capabilities.
 
 \section{Deliverables}
 
 The basic deliverable that we intend to produce for this project is a
-version of our p3 Python compiler that compiles to LLVM Assembly
-in addition to native x86 Assembly. This compiler will be capable of
-passing all valid p3 instructor and student test cases when emitting either
-LLVM or x86 code.
+version of our p3 Python compiler that compiles to LLVM Assembly in
+addition to native x86 Assembly. This compiler will be capable of
+passing all valid p3 instructor and student test cases when emitting
+either LLVM or x86 code.
 
-If we have additional time, we will expand our basic LLVM compiler
-to include additional optimizations and/or features. These
-may include type specialization or even explicit static types, and
-support for LLVM's powerful interpreter and JIT.
-We are interested in the practical results of these
-optimizations and tests, and will compare the run-time performance of
-our ``advanced'' LLVM
-compiler to that of our original x86 compiler. Other modifications we are interested
-in include testing our LLVM compiler on x64 and ARM
-architectures, supporting Python3, and possibly replacing the run-time
-helper functions with more LLVM-compatible equivalents.
+If we have additional time, we will expand our basic LLVM compiler to
+include additional optimizations and/or features. These may include
+type specialization or even explicit static types, and support for
+LLVM's powerful interpreter and JIT.  We are interested in the
+practical results of these optimizations and tests, and will compare
+the run-time performance of our ``advanced'' LLVM compiler to that of
+our original x86 compiler. Other modifications we are interested in
+include testing our LLVM compiler on x64 and ARM architectures,
+supporting Python3, and possibly replacing the run-time helper
+functions with more LLVM-compatible equivalents.
 
 \nocite{*}
 \printbibliography
