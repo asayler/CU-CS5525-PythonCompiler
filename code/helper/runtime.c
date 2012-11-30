@@ -334,13 +334,13 @@ static unsigned int hash_any(void* o)
     }
     default:
       printf("unrecognized tag in hash_any\n");
-      *(int*)0 = 42;
+      assert(0);
     }
     break;
   }
   default:
     printf("unrecognized tag in hash_any\n");
-    *(int*)0 = 42;
+    assert(0);
   }
 }
 
@@ -515,10 +515,11 @@ static pyobj* list_subscript(list ls, pyobj n)
   switch (tag(n)) {
   case INT_TAG: {
     int i = project_int(n);
-    if (0 <= i && i < ls.len)
+    int len = ls.len;
+    if (0 <= i && i < len)
       return &(ls.data[i]);
-    else if (0 <= ls.len + i && ls.len + i < ls.len)
-      return &(ls.data[ls.len + i]);
+    else if ((0 <= (len + i)) && ((len + i) < len))
+      return &(ls.data[len + i]);
     else {
       printf("ERROR: list_nth index larger than list");
       exit(1);
@@ -798,7 +799,7 @@ static unsigned int attrname_hash(void *ptr)
   unsigned char *str = (unsigned char *)ptr;
   unsigned long hash = 5381;
   int c;
-  while(c=*str++)
+  while((c=(*(str++))))
     hash = ((hash << 5) + hash) ^ c;
   return hash;
 }
