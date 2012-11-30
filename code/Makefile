@@ -51,9 +51,11 @@ TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py, $(BUILDDIR)%.s, $(TESTCASESSOURCE))
 TESTCASES       = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
 TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
 
-.PHONY: all clean Tests TestsRun
+.PHONY: all clean Tests TestsRun llvmbc
 
 all: Tests
+
+llvmbc: $(HELPERLLVMBC)
 
 Assemb: $(TESTCASESASSEMB)
 
@@ -76,6 +78,9 @@ $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 
 $(HELPEROBJECT): $(BUILDDIR)%.o: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(CC) $(CFLAGS) $< -o $@
+
+$(HELPERLLVMBC): $(BUILDDIR)%.bc: $(HELPERDIR)%.c $(HELPERDIR)*.h
+	$(LLCA) $(LLCAFLAGS) -S $< -o $@
 
 submission:
 	$(RM) -r $(SUBMISSIONDIR)
