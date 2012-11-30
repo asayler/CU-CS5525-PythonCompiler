@@ -131,6 +131,16 @@
 
 \maketitle
 
+\begin{abstract}
+
+We discuss the expansion of our P3 compiler to target LLVM intermediate
+language assembly code. This involves the converting our intermediate
+AST to SSA form as well as replacing the instruction selection
+components of the existing compiler. We compare the performance and
+flexibility of directly targeted x86 code vs LLVM targeted code.
+
+\end{abstract}
+
 \section{Problem Statement}
 
 While the existing HW6, p3-compliant compiler supports 32-bit, x86
