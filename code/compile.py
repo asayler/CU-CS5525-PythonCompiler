@@ -212,10 +212,10 @@ def main(argv=None):
 
     # SSA conversion
     ssast = SSAVisitor().preorder(flatast)
-    flatast = None
-    print ssast
-    print "\nThe above is a dump of the flat, SSA-converted program.\nHalting here due to unimplemented SSA compiler"
-    return 0
+    #flatast = None
+    #print ssast
+    #print "\nThe above is a dump of the flat, SSA-converted program.\nHalting here due to unimplemented SSA compiler"
+    #return 0
 
     # Compile flat tree
     (strings, assembly) = InstrSelectVisitor().preorder(flatast)
