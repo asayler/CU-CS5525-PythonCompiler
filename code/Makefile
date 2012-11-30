@@ -25,6 +25,8 @@ ASFLAGS = -g -x assembler
 LFLAGS  = -m32 -g
 PCFLAGS = #-v 0 --dot
 
+LLAS      = clang
+LLASFLAGS = -g -x assembler
 LLI       = lli
 LLIFLAGS  =
 LLC       = llc
@@ -85,7 +87,7 @@ $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(MV) $(@F) $(BUILDDIR)
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
-	$(AS) $(ASFLAGS) $< -o $@
+	$(LLAS) $(LLASFLAGS) $< -o $@
 
 $(MTESTCASESASS): $(BUILDDIR)%.ms: $(BUILDDIR)%.mlbc
 	$(LLC) $(LLCFLAGS) $< -o $@
