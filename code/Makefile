@@ -50,7 +50,6 @@ TESTCASESINPUT  = $(patsubst %.py,           %.in,           $(TESTCASESSOURCE))
 TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py, $(BUILDDIR)%.s, $(TESTCASESSOURCE))
 TESTCASES       = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
 TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
-TESTTEST        = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.test, $(TESTCASESASSEMB))
 
 .PHONY: all clean Tests TestsRun
 
@@ -62,11 +61,6 @@ Tests: $(TESTCASES)
 
 TestsRun: $(TESTDIFFS)
 	cat $^
-
-$(TESTTEST): %.test: %.s
-	echo $*
-	echo $(*F)
-	echo $(*)
 
 $(TESTDIFFS): $(BUILDDIR)%.diff: $(BUILDDIR)%.out $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.out > $(BUILDDIR)$*.output
