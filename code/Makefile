@@ -14,12 +14,14 @@
 #     This is the Makefile for the compiler test files
 
 CC = gcc
+AS = gcc
 PC = ./compile.py
 CP = cp
 MV = mv
 CD = cd
 
 CFLAGS  = -c -m32 -g
+ASFLAGS = -g -x assembler
 LFLAGS  = -m32 -g
 PCFLAGS = #-v 0 --dot
 
@@ -32,9 +34,7 @@ LLAFLAGS  =
 LLL       = llvm-link
 LLLFLAGS  = 
 LLCC      = clang
-LLCCFLAGS = 
-LLCA      = clang
-LLCAFLAGS = -emit-llvm
+LLCCFLAGS = -emit-llvm
 
 SUBMISSIONDIR = ./submission/
 HELPERDIR = ./helper/
@@ -45,17 +45,25 @@ HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
 HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
 HELPERLLVMBC = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.bc, $(HELPERSOURCE))
 
+MTESTCASESLL  = $(wildcard $(TESTDIR)*.ll)
+MTESTCASESBC  = $(patsubst $(TESTDIR)%.ll,    $(BUILDDIR)%.mbc,   $(MTESTCASESLL))
+MTESTCASESLBC = $(patsubst $(BUILDDIR)%.mbc,  $(BUILDDIR)%.mlbc,  $(MTESTCASESBC))
+MTESTCASESASS = $(patsubst $(BUILDDIR)%.mlbc, $(BUILDDIR)%.ms,    $(MTESTCASESLBC))
+MTESTCASES    = $(patsubst $(BUILDDIR)%.ms,   $(BUILDDIR)%.mout,  $(MTESTCASESASS))
+
 TESTCASESSOURCE = $(wildcard $(TESTDIR)*.py)
-TESTCASESINPUT  = $(patsubst %.py,           %.in,           $(TESTCASESSOURCE))
-TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py, $(BUILDDIR)%.s, $(TESTCASESSOURCE))
-TESTCASES       = $(patsubst $(BUILDDIR)%.s, $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
+TESTCASESINPUT  = $(patsubst %.py,             %.in,              $(TESTCASESSOURCE))
+TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py,   $(BUILDDIR)%.s,    $(TESTCASESSOURCE))
+TESTCASES       = $(patsubst $(BUILDDIR)%.s,   $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
 TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
 
-.PHONY: all clean Tests TestsRun llvmbc
+.PHONY: all clean Tests TestsRun MTests llvmbc
 
 all: Tests
 
 llvmbc: $(HELPERLLVMBC)
+
+MTests: $(MTESTCASES)
 
 Assemb: $(TESTCASESASSEMB)
 
@@ -76,11 +84,23 @@ $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(PC) $(PCFLAGS) $<
 	$(MV) $(@F) $(BUILDDIR)
 
+$(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
+	$(AS) $(ASFLAGS) $< -o $@
+
+$(MTESTCASESASS): $(BUILDDIR)%.ms: $(BUILDDIR)%.mlbc
+	$(LLC) $(LLCFLAGS) $< -o $@
+
+$(MTESTCASESLBC): $(BUILDDIR)%.mlbc: $(BUILDDIR)%.mbc $(HELPERLLVMBC)
+	$(LLL) $(LLLFLAGS) $^ -o $@
+
+$(MTESTCASESBC): $(BUILDDIR)%.mbc: $(TESTDIR)%.ll
+	$(LLA) $(LLAFLAGS) $< -o $@
+
 $(HELPEROBJECT): $(BUILDDIR)%.o: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(CC) $(CFLAGS) $< -o $@
 
 $(HELPERLLVMBC): $(BUILDDIR)%.bc: $(HELPERDIR)%.c $(HELPERDIR)*.h
-	$(LLCA) $(LLCAFLAGS) -S $< -o $@
+	$(LLCC) $(LLCCFLAGS) -S $< -o $@
 
 submission:
 	$(RM) -r $(SUBMISSIONDIR)
@@ -92,9 +112,15 @@ submission:
 
 clean:
 	$(RM) $(TESTCASES)
+	$(RM) $(BUILDDIR)*.bc
+	$(RM) $(BUILDDIR)*.mbc
+	$(RM) $(BUILDDIR)*.lbc
+	$(RM) $(BUILDDIR)*.mlbc
 	$(RM) $(BUILDDIR)*.o
 	$(RM) $(BUILDDIR)*.out
+	$(RM) $(BUILDDIR)*.mout
 	$(RM) $(BUILDDIR)*.s
+	$(RM) $(BUILDDIR)*.ms
 	$(RM) $(BUILDDIR)*.output
 	$(RM) $(BUILDDIR)*.correct
 	$(RM) $(BUILDDIR)*.diff
