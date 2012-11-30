@@ -211,10 +211,10 @@ def main(argv=None):
         GraphVisitor().writeGraph(flatast, dotFileName)
 
     # SSA conversion
-    print flatast
     ssast = SSAVisitor().preorder(flatast)
     flatast = None
     print ssast
+    print "\nThe above is a dump of the flat, SSA-converted program.\nHalting here due to unimplemented SSA compiler"
     return 0
 
     # Compile flat tree
