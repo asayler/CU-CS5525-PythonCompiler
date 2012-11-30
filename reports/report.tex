@@ -335,6 +335,13 @@ variable is assigned to exactly once.  We will need to add a pass in
 our compiler that will convert to the SSA format. We intend to add
 this pass after flatten but before instruction selection.
 
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=.80\textwidth]{include/CompilerFlow.pdf}
+  \caption{Compiler Data Flow}
+  \label{fig:CompilerFlow}
+\end{figure}
+
 Our compiler will employ a modular design to maximize code reuse
 between various target languages.  We intend for our compiler passes
 up through flatten to be target-agnostic. It is only the post-flatten
