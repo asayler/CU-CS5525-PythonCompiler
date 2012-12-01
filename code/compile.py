@@ -38,7 +38,6 @@ from heapify import *
 from closureconvert import *
 from expand import *
 from flatten import *
-from instr_select import *
 from x86regalloc import *
 from stringfind import *
 from ssa import SSAVisitor
@@ -50,8 +49,10 @@ parser = 'CURRENT'
 
 if parser == 'DEPRECATED':
     from depr_parse import *
+    from x86instr_select import *
 elif parser == 'CURRENT':
     from py3parse import *
+    from llvminstr_select import *
 else:
     raise Exception('Invalid parser name')
 
