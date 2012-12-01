@@ -293,11 +293,6 @@ of the following extensions to the core LLVM implementation:
 \item Compare both the compile-time and the run-time performance of
   targeting LLVM vs targeting native x86. Compare run-time performance
   of both against that of the native Python interpreter.
-\item Experiment with compiling the C run-time helper function to LLVM
-  via clang\cite{clang.llvm.org}
-  and linking the resulting LLVM byte-code and the output
-  from our compiler natively. This would allow us to run the compiler
-  in the LLVM interpreter and take advantage of the LLVM JIT features.
 \item Compare the run-time performance of compiled LLVM code vs
   interpreted LLVM code. This would require completing the previous
   extension as well. Compare run-time performance
@@ -433,8 +428,19 @@ In our implementation, we intend to use the later approach, as we are not focusi
 ...To be continued...
 
 \subsection{LLVM Compilation and Linking Process}
-
-An additional 
+We have also implemented a method for compiling the C run-time helper functions to LLVM bitcode using an LLVM front end C compiler, clang \cite{clang.llvm.org}. We then link the bitcode to the bitcode generated from the .ll output from our compiler. This gives us a bitcode file that we are capable of running in the LLVM interpreter or being fully compiled to an executable.
+The process for compiling is as follows:
+\begin{verbatim}
+$ clang -emit-llvm -o runtime.bc -S runtime.c #for all C helper files, 
+# emits .bc bitcode files
+$ llvm-as test.ll #a test file emitted from our compiler, emits test.bc
+$ llvm-link test.bc $(ALL_RUNTIME_BC_FILES) -o test-linked.bc #link all bitcode files
+#at this juncture, one can either run:
+$ lli test-linked.bc #to run in the interpreter
+#or
+$ llc test-linked.bc #to output .s code, followed by
+$ clang test-linked.s -o test #to output the executable
+\end{verbatim}
 
 \section{Results}
 
