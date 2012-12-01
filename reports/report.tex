@@ -317,7 +317,7 @@ of the following extensions to the core LLVM implementation:
 We have been working on re-factoring our HW6, p3 compiler, and we plan
 on keeping the re-factored design through the end of the flatten
 pass. The major changes will happen after flatten in the instruction
-selection and related passes A significant difference between our
+selection and related passes. A significant difference between our
 current x86 compiler and our planned LLVM compiler is that the LLVM
 compiler uses variable names, not pre-defined registers, in its
 instructions; much like our current p3 compiler does at the state
@@ -406,6 +406,35 @@ time, the LLVM typing system might allow us to take a more nuanced
 typing approach, and in doing so, take advantage of some of the LLVM
 type-based optimizations. This may also necessitate rewriting the
 run-time C library to better meld with LLVM's capabilities.
+
+\subsection{LLVM Instructions}
+
+The LLVM instruciton selection requires several more features to be supported than were supported in the x86 pass. While LLVM is more flexible in terms of compilation on multiple operating systems, its intermediate representation is more stringent than x86. In order to learn the nuances of the LLVM Intermediate Representation that we will have to address in our compiler, we began converting out test programs to LLVM IR by hand and compiling them. There are several new issues that we must address in our LLVM instruciton selection.
+
+For example, each instruction must keep track of the types of all registers involved. Fortunately, our pyobj pointer system will make keeping track of type much more straightforward, as the type checking and bit shifting are accomplished by the C helper files.
+
+Another issue is that all called functions that are defined in external files must be declared at the beginning of any .ll (LLVM Intermediate Representation) file that our compiler generates. This necessitates our writing a preamble to place at the beginning of every .ll file that we output which contains the declarations for out runtime helper functions.
+
+One nuance is that expressions such as
+\begin{verbatim}
+%x = 5 ;assigning a constant to a register x
+\end{verbatim} 
+are not allowed. Presumably, this is because LLVM is an SSA representation, and one is essentially wasting an entire register on a constant \cite{llvm-discussions}. The options avaiable are to perform constant propogation, or to declare each constant as an internal constant, like so:
+\begin{verbatim}
+@V1 = constant i32 5
+\end{verbatim}
+Then, when the constant needs to be loaded from memory. This is because @V1 is a pointer to the constant, not the constant itself \cite{Regni}:
+\begin{verbatim}
+%x = load i32* @V1
+\end{verbatim}
+
+In our implementation, we intend to use the later approach, as we are not focusing on constant propagation in this project. Although, the fact that this is an SSA implementation would mean that all instances of \%x could be replaced with the constant 5 using a simple find-replace. We will consider this option as an optimization.
+
+...To be continued...
+
+\subsection{LLVM Compilation and Linking Process}
+
+An additional 
 
 \section{Results}
 

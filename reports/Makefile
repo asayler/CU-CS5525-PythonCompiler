@@ -17,7 +17,7 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 PROPOSAL_INCLUDES := 
-REPORT_INCLUDES   := CompilerFlow.pdf
+REPORT_INCLUDES   := #CompilerFlow.pdf
 
 INCLUDE_DIR := include
 
