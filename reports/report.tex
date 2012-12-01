@@ -319,6 +319,38 @@ prior to register allocation. Instruction selection and the
 intermediate nodes will need to be altered to lend themselves to the
 LLVM Assembly format.
 
+\subsection{Module Flow}
+
+\begin{figure}[htb]
+   \centering
+   \includegraphics[width=.90\textwidth]{./include/CompilerFlow.pdf}
+   \caption{Compiler Data Flow}
+   \label{fig:CompilerFlow}
+\end{figure}
+
+Our compiler will employ a modular design to maximize code reuse
+between various target languages.  We intend for our compiler passes
+up through flatten to be target-agnostic. It is only the post-flatten
+passes that will differ based on the compilation target (x86 or
+LLVM). We have also created a new initial compiler pass that converts
+the AST nodes from whatever format a given parser uses to a uniform
+set of internal AST nodes used throughout the rest of the
+compiler. This allows us to switch parsing infrastructures without
+needing to change the core compiler code. We are in the process of
+moving away from the deprecated Python compiler package used for the
+course assignments thus far in favor of the built-in AST and parsing
+infrastructure inherent in Python 2.7+. We are also considering
+updating our compiler to support the Python3 p3 equivalent.
+
+Since LLVM is a typed representation, we will need to incorporate type
+information into our representation. Initially, we intend to keep the
+use of explicit LLVM types to a minimum to simplify implementation and
+best mimic the behavior of the native x86 compiler. Should we have
+time, the LLVM typing system might allow us to take a more nuanced
+typing approach, and in doing so, take advantage of some of the LLVM
+type-based optimizations. This may also necessitate rewriting the
+run-time C library to better meld with LLVM's capabilities.
+
 \subsection{SSA conversion}
 
 LLVM also requires Static Single Assignment form, meaning that each
@@ -368,38 +400,6 @@ dominator tree of the program as described by Brandis and
 M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
 optimizations in the future, especially if the conversion pass is
 moved to an earlier point in the compilation.
-
-%%% END OF SSA SECTION %%%
-
-% \begin{figure}[htb]
-%   \centering
-%   \includegraphics[width=.90\textwidth]{include/CompilerFlow.pdf}
-%   \caption{Compiler Data Flow}
-%   \label{fig:CompilerFlow}
-% \end{figure}
-
-Our compiler will employ a modular design to maximize code reuse
-between various target languages.  We intend for our compiler passes
-up through flatten to be target-agnostic. It is only the post-flatten
-passes that will differ based on the compilation target (x86 or
-LLVM). We have also created a new initial compiler pass that converts
-the AST nodes from whatever format a given parser uses to a uniform
-set of internal AST nodes used throughout the rest of the
-compiler. This allows us to switch parsing infrastructures without
-needing to change the core compiler code. We are in the process of
-moving away from the deprecated Python compiler package used for the
-course assignments thus far in favor of the built-in AST and parsing
-infrastructure inherent in Python 2.7+. We are also considering
-updating our compiler to support the Python3 p3 equivalent.
-
-Since LLVM is a typed representation, we will need to incorporate type
-information into our representation. Initially, we intend to keep the
-use of explicit LLVM types to a minimum to simplify implementation and
-best mimic the behavior of the native x86 compiler. Should we have
-time, the LLVM typing system might allow us to take a more nuanced
-typing approach, and in doing so, take advantage of some of the LLVM
-type-based optimizations. This may also necessitate rewriting the
-run-time C library to better meld with LLVM's capabilities.
 
 \subsection{LLVM Instructions}
 
@@ -452,24 +452,20 @@ find-replace. We will consider this option as an optimization.
 ...To be continued...
 
 \subsection{LLVM Compilation and Linking Process}
+
 We have also implemented a method for compiling the C run-time helper
 functions to LLVM bitcode using an LLVM front end C compiler, clang
 \cite{clang.llvm.org}. We then link the bitcode to the bitcode
 generated from the .ll output from our compiler. This gives us a
 bitcode file that we are capable of running in the LLVM interpreter or
 being fully compiled to an executable.  The process for compiling is
-as follows:
-\begin{verbatim}
-$ clang -emit-llvm -o runtime.bc -S runtime.c #for all C helper files, 
-# emits .bc bitcode files
-$ llvm-as test.ll #a test file emitted from our compiler, emits test.bc
-$ llvm-link test.bc $(ALL_RUNTIME_BC_FILES) -o test-linked.bc #link all bitcode files
-#at this juncture, one can either run:
-$ lli test-linked.bc #to run in the interpreter
-#or
-$ llc test-linked.bc #to output .s code, followed by
-$ clang test-linked.s -o test #to output the executable
-\end{verbatim}
+show in Listing \ref{lst:compiling.sh}.
+
+\lstinputlisting[
+  language=sh,
+  label=lst:compiling.sh,
+  caption={Pseudo-script describing the LLVM build process}
+]{./include/txt/compiling.sh}
 
 \section{Results}
 
