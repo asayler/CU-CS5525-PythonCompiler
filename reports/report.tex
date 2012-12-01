@@ -241,7 +241,7 @@ problems that result from control flow. The syntax is
 \end{verbatim} 
 
 where the ty field is the incoming type of the data to be chosen
-from. This indicates that the PHI node can not handle explicit
+from. However, this indicates that the PHI node can not handle explicit
 polymorphism. Fortunately, we have already packaged all of our data
 types into one unique type: a pyobj. All values passed to the block
 must be first class values, so a pointer to a pyobj will be the only
