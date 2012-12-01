@@ -327,9 +327,25 @@ intermediate nodes will need to be altered to lend themselves to the
 LLVM Assembly format.
 
 LLVM also requires Static Single Assignment form, meaning that each
-variable is assigned to exactly once.  We will need to add a pass in
-our compiler that will convert to the SSA format. We intend to add
-this pass after flatten but before instruction selection.
+variable is assigned to exactly once.  We convert programs into SSA
+form during compilation (only when compiled to SSA --- our x86
+compiler does not utilize SSA at the moment), a process which occurs
+after flattening and immediately before LLVM instruction selection.
+This conversion process takes a single pass over the program, and
+converts it as follows:
+
+\begin{itemize}
+\item When an assignment statement (to a variable) is encountered, the
+  converter increments the ``version number'' of the variable (or
+  initializes it to $0$ if the variable has not been previously
+  assigned to). The variable is then renamed to record this version
+  number, and the current version number of the variable is recorded
+  in a dictionary.
+\item When a variable name is encountered, it is replaced by the most
+  recent version of the variable.
+\item When an If statement is encountered, 
+
+\end{itemize}
 
 \begin{figure}[htb]
   \centering
