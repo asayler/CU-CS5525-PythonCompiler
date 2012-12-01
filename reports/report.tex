@@ -211,7 +211,7 @@ paper.
 LLVM requires SSA form. Prior to converting to LLVM IR, we must first
 convert to SSA. SSA form is discussed in the next section.
 
-\subsection{Static Single Assignment (SSA) Form}
+\subsection{Static Single Assignment Form}
 
 A program is in SSA form when its variables are assigned exactly once
 in the program \cite{gcc-gnu.org}. Most programs are not written in an
@@ -347,7 +347,7 @@ from the deprecated Python compiler package used for the course
 assignments thus far in favor of the built-in AST and parsing
 infrastructure inherent in Python 2.7+.
 
-\subsection{SSA conversion}
+\subsection{SSA Conversion}
 
 LLVM also requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
@@ -451,7 +451,7 @@ find-replace. We consider this option as a future optimization.
 
 ...To be continued...
 
-\subsection{LLVM Compilation and Linking Process}
+\subsection{LLVM Build Process}
 
 We have also implemented a method for compiling the C run-time helper
 functions to LLVM bitcode using an LLVM front end C compiler, clang
