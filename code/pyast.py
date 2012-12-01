@@ -215,6 +215,47 @@ class If(PyNode):
         lines += self.dispatch(n.else_, myid)
         return lines
 
+class IfPhi(PyNode):
+    def __init__(self, tests, else_, phi):
+        self.tests = tests
+        self.else_ = else_
+        self.phi = phi
+    def __repr__(self):
+        return 'IfPhi(%s,%s,%s)' % (self.tests, self.else_, self.phi)
+    @staticmethod
+    def copy(self, n, *args):
+        return IfPhi(map(lambda (x, y): (self.dispatch(x, *args),
+                                         self.dispatch(y, *args)), n.tests),
+                     self.dispatch(n.else_, *args),
+                     n.phi)
+    @staticmethod
+    def list(self, n, *args):
+        plist = map(lambda (x, y): (self.dispatch(x, *args),
+                                    self.dispatch(y, *args)), n.tests)
+        else_ = self.dispatch(n.else_, *args)
+        tests = []
+        ss = []
+        for ((test, ssn), body) in plist:
+            ss += ssn
+            tests += [(test, body)]
+        return ss + [If(tests, else_, n.phi)]
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.else_, *args) | \
+            reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | \
+                                              self.dispatch(y, *args), n.tests), set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IfPhi"))
+        lines += Graphvis_dot().linePair(p, myid)
+        for (test, body) in n.tests:
+            lines += self.dispatch(test, myid)
+            lines += self.dispatch(body, myid)
+        lines += self.dispatch(n.else_, myid)
+        return lines
+
 class Class(PyNode):
     def __init__(self, name, bases, code):
         self.name = name 
@@ -324,6 +365,48 @@ class WhileFlat(PyNode):
         lines = []
         myid = Graphvis_dot(). uniqueid(n)
         lines += Graphvis_dot().lineLabel(myid, ("WhileFlat"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.testss, myid)
+        lines += self.dispatch(n.test, myid)
+        lines += self.dispatch(n.body, myid)
+        return lines
+
+class WhileFlatPhi(PyNode):
+    def __init__(self, phi, testss, test, body, else_):
+        self.phi = phi
+        self.testss = testss
+        self.test = test
+        self.body = body
+        self.else_ = else_
+    def __repr__(self):
+        return "WhileFlatPhi(%s, %s ,%s, %s, %s)" % (self.phi, repr(self.testss), repr(self.test),
+                                              repr(self.body), repr(self.else_))
+    @staticmethod
+    def copy(self, n, *args):
+        return WhileFlatPhi(n.phi,
+                            self.dispatch(n.testss, *args),
+                            self.dispatch(n.test, *args),
+                            self.dispatch(n.body, *args),
+                            self.dispatch(n.else_, *args) if n.else_ else n.else_)
+    @staticmethod
+    def list(self, n, *args):
+        testss = self.dispatch(n.testss, *args)
+        test, ss = self.dispatch(n.test, *args),
+        return [WhileFlatPhi(n.phi,
+                             StmtList(testss.nodes + ss),
+                             test,
+                             self.dispatch(n.body, *args),
+                             self.dispatch(n.else_, *args) if n.else_ else n.else_)]
+    @staticmethod
+    def find(self, n, *args):
+        return self.dispatch(n.testss, *args) | \
+            self.dispatch(n.test, *args) | self.dispatch(n.body, *args) | \
+            (self.dispatch(n.else_, *args) if n.else_ else set([]))
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot(). uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("WhileFlatPhi"))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.testss, myid)
         lines += self.dispatch(n.test, myid)

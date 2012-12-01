@@ -43,7 +43,7 @@ class FlattenVisitor(ListVisitor):
     def visitWhile(self, n, *args):
         teste, testss = self.dispatch(n.test, True)
         bodyss = self.dispatch(n.body, True)
-        elsess = self.dispatch(n.body, True) if n.else_ else None
+        elsess = self.dispatch(n.else_, True) if n.else_ else None
         return [WhileFlat(StmtList(testss), teste, bodyss, elsess)]
 
     def visitDiscard(self, n, *args):

@@ -93,7 +93,9 @@ RESERVED_NAMES = [
     SETATTR_n.name,
     GETATTR_n.name,
     'input',
-    'input_int'
+    'input_int',
+    'True',
+    'False'
     ]
 
 # Class macros
