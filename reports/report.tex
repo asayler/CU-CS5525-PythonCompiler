@@ -261,7 +261,7 @@ we will advance through the following development steps:
 % and switched to the past tense.
 \begin{packed_enum}
 \item Fix bugs in existing p3 compiler until we pass all valid student
-  and instructor provided p3 test cases. This step has been completed.
+  and instructor provided p3 test cases. This step has \emph{been completed.}
 \item Re-factor existing p3 compiler to better handle common visitor
   functions, support a modular parser-interface, and reduce code
   complexity. This step is \emph{in progress and near complete}.
@@ -270,18 +270,16 @@ we will advance through the following development steps:
   when run, the compiled and linked output matches the behavior of the
   Python interpreter. This step is \emph{in progress}.
 \item Add an additional compilation pass that translates the flattened
-  AST into SSA form. This step has \emph{not been started}.
+  AST into SSA form. This step is \emph{in progress and near complete}.
 \item Add an alternate instruction selection pass that generates LLVM
-  assembly instead of x86 assembly. This step has \emph{not been
-    started}.
+  assembly instead of x86 assembly. This step is \emph{in progress}.
 \item Add the necessary top-level compiler control handling to switch
   between LLVM and x86 generation based on an input parameter. This
-  step has \emph{not been started}.
+  step is \emph{in progress}.
 \item Modify the existing Makefile, build, and test systems to handle
   both x86 and LLVM code generation. Convert test infrastructure to
   performing 3-way compares between native Python execution, x86
-  execution, and LLVM execution. This step has \emph{not been
-    started}.
+  execution, and LLVM execution. This step is \emph{in progress and near complete}.
 \item Confirm behavior of LLVM generated code matches that of the
   native Python interpreter, as well as that of the x86 generated
   code. Identify and fix bugs as necessary. This step has \emph{not
@@ -379,12 +377,12 @@ moved to an earlier point in the compilation.
 
 %%% END OF SSA SECTION %%%
 
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=.90\textwidth]{include/CompilerFlow.pdf}
-  \caption{Compiler Data Flow}
-  \label{fig:CompilerFlow}
-\end{figure}
+% \begin{figure}[htb]
+%   \centering
+%   \includegraphics[width=.90\textwidth]{include/CompilerFlow.pdf}
+%   \caption{Compiler Data Flow}
+%   \label{fig:CompilerFlow}
+% \end{figure}
 
 Our compiler will employ a modular design to maximize code reuse
 between various target languages.  We intend for our compiler passes

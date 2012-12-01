@@ -73,7 +73,7 @@ report.aux: report.tex $(REPORT_INCLUDES)
 	$(LATEX) $(LATEXFIRST) $<
 
 %.pdf:%-src.svg
-	$(INKSCAPE) $< -D --export-pdf=$(INCLUDE_DIR)/$@
+	#$(INKSCAPE) $< -D --export-pdf=$(INCLUDE_DIR)/$@
 
 %.pdf:%-src.pdf
 	$(CP) $< $(INCLUDE_DIR)/$@
