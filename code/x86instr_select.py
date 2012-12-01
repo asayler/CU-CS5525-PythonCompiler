@@ -20,9 +20,11 @@
 from pyast import *
 from x86ast import *
 
-# Helper Tools
+# Parents
 from vis import Visitor
-from stringfind import *
+
+# Helper Tools
+from stringfind import StringFindVisitor
 
 from utilities import generate_name
 from utilities import generate_return_label
@@ -46,14 +48,14 @@ NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 
-class InstrSelectVisitor(Visitor):
+class x86InstrSelectVisitor(Visitor):
 
     def __init__(self):
-        super(InstrSelectVisitor, self).__init__()
+        super(x86InstrSelectVisitor, self).__init__()
 
     def preorder(self, tree, *args):
         strings = StringFindVisitor().preorder(tree)
-        return (strings, super(InstrSelectVisitor, self).preorder(tree))
+        return (strings, super(x86InstrSelectVisitor, self).preorder(tree))
 
     # Modules
 

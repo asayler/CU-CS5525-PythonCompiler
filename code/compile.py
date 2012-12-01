@@ -28,6 +28,7 @@ import sys
 import argparse
 
 # Compiler Stage Imports
+
 from declassify import ClassFindVisitor
 from uniquify import UniquifyVisitor
 from explicate import ExplicateVisitor
@@ -35,9 +36,13 @@ from heapify import HeapifyVisitor
 from closureconvert import ClosureVisitor
 from expand import ExpandVisitor
 from flatten import FlattenVisitor
-from x86regalloc import funcRegAlloc
-from x86regalloc import setup_strings
 from ssa import SSAVisitor
+
+from x86regalloc import x86funcRegAlloc
+from x86regalloc import x86setup_strings
+from x86instr_select import x86InstrSelectVisitor
+
+#from llvminstr_select import LLVMInstrSelectVisitor
 
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
@@ -46,10 +51,8 @@ parser = 'CURRENT'
 
 if parser == 'DEPRECATED':
     from depr_parse import *
-    from x86instr_select import *
 elif parser == 'CURRENT':
     from py3parse import *
-    from llvminstr_select import *
 else:
     raise Exception('Invalid parser name')
 
@@ -216,14 +219,13 @@ def main(argv=None):
     #return 0
 
     # Compile flat tree
-    print(InstrSelectVisitor)
-    (strings, assembly) = InstrSelectVisitor().preorder(flatast)
+    (strings, assembly) = x86InstrSelectVisitor().preorder(flatast)
     flatast = None
     if(debug):
         sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
 
     # Reg Alloc
-    assembly = setup_strings(strings) + funcRegAlloc(assembly)
+    assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
     if(debug):
         sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
     
