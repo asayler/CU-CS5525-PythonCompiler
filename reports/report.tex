@@ -201,9 +201,10 @@ in the program \cite{gcc-gnu.org}. Most programs are not written in an
 SSA form, but can be converted to SSA form by giving a variable a new
 name every time it is assigned to, and replacing all uses of the
 variable in right-hand side expressions with the most recent version
-of the variable. In a linear code segment, this is a fairly
-straightforward transformation. When branching and polymorphism are
-added, however, it becomes a more complex issue, as seen below:
+of the variable \cite{brandis-mossenbock}. In a linear code segment,
+this is a fairly straightforward transformation. When branching and
+polymorphism are added, however, it becomes a more complex issue, as
+seen below:
 
 \begin{verbatim}
 if input():
@@ -326,13 +327,15 @@ prior to register allocation. Instruction selection and the
 intermediate nodes will need to be altered to lend themselves to the
 LLVM Assembly format.
 
+\subsection{SSA conversion}
+
 LLVM also requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
 form during compilation (only when compiled to SSA --- our x86
 compiler does not utilize SSA at the moment), a process which occurs
-after flattening and immediately before LLVM instruction selection.
-This conversion process takes a single pass over the program, and
-converts it as follows:
+after flattening and immediately before LLVM instruction selection, as
+shown in Figure \ref{fig:CompilerFlow}.  This conversion process takes
+a single pass over the program, and converts it as follows:
 
 \begin{itemize}
 \item When an assignment statement (to a variable) is encountered, the
@@ -343,9 +346,38 @@ converts it as follows:
   in a dictionary.
 \item When a variable name is encountered, it is replaced by the most
   recent version of the variable.
-\item When an If statement is encountered, 
-
+\item When an If statement is encountered, the true and false branches
+  are scanned for their assigned variables, and a new attribute is
+  added to the end of the statement, containing Phi nodes for the
+  variables assigned within the If as follows:
+  \begin{itemize}
+  \item If a variable is assigned to in both branches, the Phi node
+    contains the version from each branch.
+  \item If a variable is assigned to in one branch but not the other,
+    \textit{and} the variable was also assigned to before the If
+    statement was entered, then the Phi node contains the new version
+    in the branch it appeared in, and the old version in the other
+    branch.
+  \item If a variable is assigned to in one branch but not the other,
+    \textit{and} the variable did not exist before the If
+    statement was entered, no Phi node is created for it.
+  \end{itemize}
+\item When a While loop is encountered, its body is scanned for
+  assigned variables. A new attribute is then added to the beginning
+  of the statement, containing Phi nodes for each variable that is
+  assigned to in the body and that also existed before the loop was
+  entered.
 \end{itemize}
+
+This process ensures that each variable is assigned to only once while
+maintaining the semantics of the program. At the moment, we do not use
+any of the optimizations, such as those based on computing the
+dominator tree of the program as described by Brandis and
+M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
+optimizations in the future, especially if the conversion pass is
+moved to an earlier point in the compilation.
+
+%%% END OF SSA SECTION %%%
 
 \begin{figure}[htb]
   \centering
