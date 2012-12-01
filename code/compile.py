@@ -42,7 +42,8 @@ from x86regalloc import x86funcRegAlloc
 from x86regalloc import x86setup_strings
 from x86instr_select import x86InstrSelectVisitor
 
-#from llvminstr_select import LLVMInstrSelectVisitor
+from llvminstr_select import LLVMInstrSelectVisitor
+
 
 # Helper Tool Imports
 from graph_visitor import GraphVisitor

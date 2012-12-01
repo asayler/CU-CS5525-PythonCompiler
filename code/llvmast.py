@@ -33,13 +33,13 @@ class LLVMVoid(LLVMType):
         return ('void')    
 
 class LLVMInt(LLVMType):
-def __init__(self, length):
+    def __init__(self, length):
         self.length = length
     def __repr__(self):
         return ('i%d' % (self.length))    
 
 class LLVMPointer(LLVMType):
-def __init__(self, _type):
+    def __init__(self, _type):
         self.type = _type
     def __repr__(self):
         return ('%s*' % (str(self.value)))    
@@ -73,8 +73,8 @@ class VarLLVM(LLVMArg):
     def __repr__(self):
         return str(self.name)
 
-LLVMZERO  = Const86(0, I32)
-LLVMONE   = Const86(1, I32)
+LLVMZERO  = ConstLLVM(0, I32)
+LLVMONE   = ConstLLVM(1, I32)
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
