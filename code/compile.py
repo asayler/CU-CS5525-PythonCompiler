@@ -23,27 +23,24 @@ USAGE:
     compile.py <file path>
 """
 
+# External Imports
 import sys
 import argparse
 
-# Data Types
-from pyast import *
-from x86ast import *
-
-# Compiler Stages
-from declassify import *
-from uniquify import *
-from explicate import *
-from heapify import *
-from closureconvert import *
-from expand import *
-from flatten import *
-from x86regalloc import *
-from stringfind import *
+# Compiler Stage Imports
+from declassify import ClassFindVisitor
+from uniquify import UniquifyVisitor
+from explicate import ExplicateVisitor
+from heapify import HeapifyVisitor
+from closureconvert import ClosureVisitor
+from expand import ExpandVisitor
+from flatten import FlattenVisitor
+from x86regalloc import funcRegAlloc
+from x86regalloc import setup_strings
 from ssa import SSAVisitor
 
-# Helper Tools
-from graph_visitor import *
+# Helper Tool Imports
+from graph_visitor import GraphVisitor
 
 parser = 'CURRENT'
 
@@ -58,7 +55,7 @@ else:
 
 def write_to_file(assembly, outputFileName):
     """Function to write assembly to file"""
-    assembly = '\n'.join(map(lambda x: x.mnemonic(), assembly))
+    assembly = '\n'.join(map(lambda x: str(x), assembly))
     outputfile = open(outputFileName, 'w+')
     outputfile.write(assembly + '\n')
     outputfile.close()
@@ -219,6 +216,7 @@ def main(argv=None):
     #return 0
 
     # Compile flat tree
+    print(InstrSelectVisitor)
     (strings, assembly) = InstrSelectVisitor().preorder(flatast)
     flatast = None
     if(debug):

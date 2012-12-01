@@ -16,18 +16,16 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Types
-from vis import Visitor
+# Data Types
+from pyast import *
+
+# Parents
+from list_visitor import ListVisitor
 
 # Helper Tools
 from utilities import generate_name
 from utilities import make_assign
-from list_visitor import ListVisitor
-
 from functionwrappers import *
-
-# Data Types
-from pyast import *
 
 MAINNAME = 'main'
 

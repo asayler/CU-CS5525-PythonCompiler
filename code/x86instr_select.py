@@ -19,10 +19,10 @@
 # Data Types
 from pyast import *
 from x86ast import *
-from stringfind import *
 
 # Helper Tools
 from vis import Visitor
+from stringfind import *
 
 from utilities import generate_name
 from utilities import generate_return_label
@@ -49,7 +49,7 @@ WHILETESTTMP = "whiletesttmp"
 class InstrSelectVisitor(Visitor):
 
     def __init__(self):
-        super(InstrSelectVisitor,self).__init__()
+        super(InstrSelectVisitor, self).__init__()
 
     def preorder(self, tree, *args):
         strings = StringFindVisitor().preorder(tree)

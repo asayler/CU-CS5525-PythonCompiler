@@ -16,8 +16,10 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
+# Data Types
 from x86ast import *
 
+# Helper Tools
 from utilities import generate_name
 from utilities import generate_return_label
 

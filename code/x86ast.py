@@ -16,9 +16,11 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-"""x86 AST tree nodes"""
+# Import
 
 import sys
+
+"""x86 AST tree nodes"""
 
 class X86Arg:
     def __str__(self):
