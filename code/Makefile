@@ -87,7 +87,7 @@ $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(MV) $(@F) $(BUILDDIR)
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
-	$(LLAS) $(LLASFLAGS) $< -o $@
+	$(LLAS) $(LLASFLAGS) $< -lm -o $@
 
 $(MTESTCASESASS): $(BUILDDIR)%.ms: $(BUILDDIR)%.mlbc
 	$(LLC) $(LLCFLAGS) $< -o $@
