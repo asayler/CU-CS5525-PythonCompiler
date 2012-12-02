@@ -112,21 +112,9 @@ submission:
 
 clean:
 	$(RM) $(TESTCASES)
-	$(RM) $(BUILDDIR)*.bc
-	$(RM) $(BUILDDIR)*.mbc
-	$(RM) $(BUILDDIR)*.lbc
-	$(RM) $(BUILDDIR)*.mlbc
-	$(RM) $(BUILDDIR)*.o
-	$(RM) $(BUILDDIR)*.out
-	$(RM) $(BUILDDIR)*.mout
-	$(RM) $(BUILDDIR)*.s
-	$(RM) $(BUILDDIR)*.ms
-	$(RM) $(BUILDDIR)*.output
-	$(RM) $(BUILDDIR)*.correct
-	$(RM) $(BUILDDIR)*.diff
 	$(RM) *~
+	$(RM) $(BUILDDIR)*
 	$(RM) $(TESTDIR)*~
-	$(RM) $(BUILDDIR)*~
 	$(RM) $(HELPERDIR)*~
 	$(RM) \#*\#
 	$(RM) *.s
