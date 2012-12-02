@@ -115,47 +115,31 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitConst(self, n):
         return ConstLLVM(n.value, DEFAULTTYPE)
-        #return [Move86(Const86(n.value), target)]
 
     def visitName(self, n):
         return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
-        #return [Move86(Var86(n.name), target)]
 
     # Non-Terminal Expressions
 
     def visitIntAdd(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += [Move86(arg_select(n.left), target)]
-        instrs += [Add86(arg_select(n.right), target)]
-        return instrs
-
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        return [addLLVM(target, left, right)]
+        
     def visitIntEqual(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += [Move86(arg_select(n.left), target)]
-        instrs += [Comp86(arg_select(n.right), target)]
-        # prezero register (avoids call to movebzl)
-        instrs += [Move86(x86ZERO, target)]
-        instrs += [SetEq86(target)]
-        return instrs
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        return [icmpLLVM(target, ICMP_EQ, left, right)]
 
     def visitIntNotEqual(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += [Move86(arg_select(n.left), target)]
-        instrs += [Comp86(arg_select(n.right), target)]
-        # prezero register (avoids call to movebzl)
-        instrs += [Move86(x86ZERO, target)]
-        instrs += [SetNEq86(target)]
-        return instrs
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        return [icmpLLVM(target, ICMP_NE, left, right)]
 
     def visitIntUnarySub(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += [Move86(arg_select(n.expr), target)]
-        instrs += [Neg86(target)]
-        return instrs
+        left = LLVMZERO
+        right = self.dispatch(n.expr)
+        return [subLLVM(target, left, right)]
 
     def visitIf(self, n, func_name):
         raise Exception("Not Yet Implemented")

@@ -18,6 +18,18 @@
 
 """LLVM AST tree nodes"""
 
+# LLVM Constants and Aliases
+ICMP_EQ  = "eq"
+ICMP_NE  = "ne"
+ICMP_UGT = "ugt"
+ICMP_UGE = "uge"
+ICMP_ULT = "ult"
+ICMP_ULE = "ule"
+ICMP_SGT = "sgt"
+ICMP_SGE = "sge"
+ICMP_SLT = "slt"
+ICMP_SLE = "sle"
+
 # LLVM Types
 
 class LLVMType(object):
@@ -158,19 +170,19 @@ class retLLVM(TermLLVMInst):
 
 class BinaryLLVMInst(LLVMInst):
     def __init__(self, target, left, right):
-        if(target.type == left.type == right.type):
-            self.type = target.type
+        if(getType(target) == getType(left) == getType(right)):
+            self.type = getType(target)
         else:
             raise Exception("Binary instruction requires uniform type")
         self.target = target
         self.left = left
         self.right = right
-    def emit(name):
-        return ("%s = %s %s %s, %s" % (str(getArg(target)),
+    def emit(self, name):
+        return ("%s = %s %s %s, %s" % (str(getArg(self.target)),
                                        str(name),
-                                       str(_type),
-                                       str(getArg(left)),
-                                       str(getArg(right)))) 
+                                       str(self._type),
+                                       str(getArg(self.left)),
+                                       str(getArg(self.right)))) 
 
 class addLLVM(BinaryLLVMInst):
     def __init__(self, *args, **kwargs):
@@ -189,6 +201,23 @@ class subLLVM(BinaryLLVMInst):
 class OtherLLVMInst(LLVMInst):
     def __init__():
         pass
+
+class icmpLLVM(OtherLLVMInst):
+    def __init__(self, target, op, left, right):
+        if(getType(left) == getType(right)):
+            self.argType = getType(left)
+        else:
+            raise Exception("icmp instruction requires uniform arg types")
+        self.target = target
+        self.op = op
+        self.left = left
+        self.right = right
+    def __repr__(self):
+        return ("%s = icmp %s %s %s, %s)" % (str(getArg(self.target)),
+                                             str(self.op),
+                                             str(self.argType),
+                                             set(getArg(self.left)),
+                                             set(getArg(self.right))))
 
 class callLLVM(OtherLLVMInst):
     def __init__(self, _type, name, args, target=None):
