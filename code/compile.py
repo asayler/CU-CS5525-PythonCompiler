@@ -233,12 +233,14 @@ def main(argv=None):
     elif(compileType == "LLVM"):
 
         # SSA conversion
-        ssast = SSAVisitor().preorder(flatast)
-        flatast = None
-        print ssast
-        print "The above is a dump of the flat, SSA-converted program."
-        print "Unimplemented: Exiting Early"
-        return 0
+        #ssast = SSAVisitor().preorder(flatast)
+        #flatast = None
+        #print ssast
+        #print "The above is a dump of the flat, SSA-converted program."
+        #print "Unimplemented: Exiting Early"
+        
+        assembly = LLVMInstrSelectVisitor().preorder(flatast)
+        #return 0
 
     else:
 

@@ -48,6 +48,8 @@ NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 
+DEFAULTTYPE = I64
+
 class LLVMInstrSelectVisitor(Visitor):
 
     def __init__(self):
@@ -64,16 +66,12 @@ class LLVMInstrSelectVisitor(Visitor):
         return slambdas
 
     def visitSLambda(self, n):
-        instrs = []
-        # Handle Arguments
-        for param in n.params:
-            instrs += [Move86(Mem86(offset, EBP), Var86(param))]
-            offset += 4
-        instrs += self.dispatch(n.code, n.label)
-        ret = Func86(n.label, instrs)
-        ret.params = n.params
-        return ret
-
+        _type = DEFAULTTYPE
+        name  = n.label
+        args  = n.params
+        instrs = []#self.dispatch(n.code, n.label)
+        return DefineLLVM(_type, name, args, instrs)
+        
     # Statements    
 
     def visitStmtList(self, n, funcName):

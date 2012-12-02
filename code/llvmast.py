@@ -100,21 +100,18 @@ class LLVMInst(object):
 
 # Control Objects
 class DefineLLVM(LLVMInst):
-    def __init__(self, target, left, right):
-        if(target.type == left.type == right.type):
-            self.type = target.type
-        else:
-            raise Exception("Binary instruction requires uniform type")
-        self.target = target
-        self.left = left
-        self.right = right
-    def emit(name):
-        return ("%s = %s %s %s, %s" % (str(getArg(target)),
-                                       str(name),
-                                       str(_type),
-                                       str(getArg(left)),
-                                       str(getArg(right)))) 
-
+    def __init__(self, _type, name, args, instrs):
+        self.type = _type
+        self.name = name
+        self.args = args
+        self.instrs = instrs
+    def __repr__(self):
+        return ("define %s @%s(%s) {\n\t%s\n}" % (str(self.type),
+                                                  str(self.name),
+                                                  ", ".join(map(lambda x: str(x),
+                                                                self.args)),
+                                                  '\n\t'.join(map(lambda x: str(x),
+                                                                  self.instrs))))
 
 # Binary Instructions
 
