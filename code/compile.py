@@ -246,14 +246,14 @@ def main(argv=None):
     elif(compileType == "LLVM"):
 
         # SSA conversion
-        #ssast = SSAVisitor().preorder(flatast)
-        #flatast = None
-        #print ssast
-        #print "The above is a dump of the flat, SSA-converted program."
-        #print "Unimplemented: Exiting Early"
+        ssast = SSAVisitor().preorder(flatast)
+        flatast = None
         
-        llvm = LLVMInstrSelectVisitor().preorder(flatast)
+        # Compile to LLVM
+        llvm = LLVMInstrSelectVisitor().preorder(ssast)
+        ssast = None
 
+        # Add external declare statments
         declares = read_declares_file(DECLARESFILE)
         assembly = declares + llvm
 
