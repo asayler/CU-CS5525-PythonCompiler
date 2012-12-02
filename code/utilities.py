@@ -21,6 +21,7 @@
 from pyast import *
 
 SEPERATOR    = '_'
+NAME_PREFIX  = 'n'
 LABEL_PREFIX = 'l'
 RETURNL      = "return"
 ELSEL        = "else"
@@ -37,7 +38,7 @@ def generte_cnt_str():
     return name
 
 def generate_name(x):
-    name = generte_cnt_str() + SEPERATOR + x
+    name = NAME_PREFIX + SEPERATOR + generte_cnt_str() + SEPERATOR + x
     return name
 
 def generate_return_label(funcName):

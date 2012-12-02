@@ -21,11 +21,11 @@
 # System Types
 import copy
 
-# Parent
-from copy_visitor import CopyVisitor
-
 # Data Types
 from pyast import *
+
+# Parents
+from copy_visitor import CopyVisitor
 
 # Helper Types
 from find_locals import FindLocalsVisitor
