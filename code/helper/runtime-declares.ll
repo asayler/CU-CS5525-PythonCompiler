@@ -1,14 +1,14 @@
 ; PRINT FUNCTIONS
 ; void print_int_nl(int x);
-declare void @print_int_nl(i64)
+declare i64 @print_int_nl(i64)
 ; void print_any(pyobj p);
-declare void @print_any(i64)
+declare i64 @print_any(i64)
 
 ; INPUT FUNCTIONS
 ; int input();
-declare i64 @input(...)
+declare i64 @input()
 ; pyobj input_int();
-declare i64 @input_int(...)
+declare i64 @input_int()
 
 ; PROJECT
 ; pyobj inject_int(int i);
