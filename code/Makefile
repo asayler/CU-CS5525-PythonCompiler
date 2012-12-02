@@ -45,7 +45,7 @@ TESTDIR = ./test/
 
 HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
 HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
-HELPERLLVMBC = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.bc, $(HELPERSOURCE))
+HELPERLLVMLL = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.ll, $(HELPERSOURCE))
 
 MTESTCASESLL  = $(wildcard $(TESTDIR)*.ll)
 MTESTCASESBC  = $(patsubst $(TESTDIR)%.ll,    $(BUILDDIR)%.mbc,   $(MTESTCASESLL))
@@ -62,8 +62,6 @@ TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
 .PHONY: all clean Tests TestsRun MTests llvmbc
 
 all: Tests
-
-llvmbc: $(HELPERLLVMBC)
 
 MTests: $(MTESTCASES)
 
@@ -91,7 +89,7 @@ $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
 $(MTESTCASESASS): $(BUILDDIR)%.ms: $(BUILDDIR)%.mlbc
 	$(LLC) $(LLCFLAGS) $< -o $@
 
-$(MTESTCASESLBC): $(BUILDDIR)%.mlbc: $(BUILDDIR)%.mbc $(HELPERLLVMBC)
+$(MTESTCASESLBC): $(BUILDDIR)%.mlbc: $(BUILDDIR)%.mbc $(HELPERLLVMLL)
 	$(LLL) $(LLLFLAGS) $^ -o $@
 
 $(MTESTCASESBC): $(BUILDDIR)%.mbc: $(TESTDIR)%.ll
@@ -100,7 +98,7 @@ $(MTESTCASESBC): $(BUILDDIR)%.mbc: $(TESTDIR)%.ll
 $(HELPEROBJECT): $(BUILDDIR)%.o: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(HELPERLLVMBC): $(BUILDDIR)%.bc: $(HELPERDIR)%.c $(HELPERDIR)*.h
+$(HELPERLLVMLL): $(BUILDDIR)%.ll: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(LLCC) $(LLCCFLAGS) -S $< -o $@
 
 submission:
