@@ -2,10 +2,8 @@
 # Fall 2012
 # Python Compiler
 #
-# flatten.py
-# Visitor Funstions to Flatten AST
-#
-# Adopted from code by Jeremy Siek, Fall 2012
+# ssa.py
+# Visitor Functions to convert AST to SSA
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler

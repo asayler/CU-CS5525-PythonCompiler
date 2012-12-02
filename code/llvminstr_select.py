@@ -93,7 +93,7 @@ class LLVMInstrSelectVisitor(Visitor):
             raise Exception("Return type must match function type")
         return [retLLVM(val)]
 
-    def visitWhileFlat(self, n, func):
+    def visitWhileFlatPhi(self, n, func):
         raise Exception("Not Yet Implemented")
         #Setup Label
         whileStartL, whileEndL = generate_while_labels()
@@ -142,7 +142,7 @@ class LLVMInstrSelectVisitor(Visitor):
         right = self.dispatch(n.expr)
         return [subLLVM(target, left, right)]
 
-    def visitIf(self, n, func_name):
+    def visitIfPhi(self, n, func_name):
         raise Exception("Not Yet Implemented")
         #Setup Label
         caseLs, endIfL = generate_if_labels(len(n.tests))
