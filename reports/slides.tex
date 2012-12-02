@@ -1,0 +1,208 @@
+% CU CS5525
+% Fall 2012
+% Python Compiler
+%
+% slides.tex
+% Semester Project Slides
+%
+% Repository:
+%    https://github.com/asayler/CU-CS5525-PythonCompiler
+%
+% By :
+%    Anne Gatchell
+%       http://annegatchell.com/
+%    Andy Sayler
+%       http://www.andysayler.com
+%    Michael (Mike) Vitousek
+%       http://csel.cs.colorado.edu/~mivi2269/
+
+\documentclass{beamer}
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+\setbeamercovered{transparent=25}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{navigation symbols}{}
+\setcounter{tocdepth}{1}
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{biblatex}
+\usepackage{amssymb}
+\bibliography{refs}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\lstset{
+  language={},
+  basicstyle=\footnotesize,
+  numbers=none,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  frameround=tttt
+}
+
+\lstdefinelanguage{llvm}{
+  morecomment = [l]{;},
+  morestring=[b]'', 
+  sensitive = true,
+  classoffset=0,
+  morekeywords={
+    define, declare, global, constant,
+    internal, external, private,
+    linkonce, linkonce_odr, weak, weak_odr, appending,
+    common, extern_weak,
+    thread_local, dllimport, dllexport,
+    hidden, protected, default,
+    except, deplibs,
+    volatile, fastcc, coldcc, cc, ccc,
+    x86_stdcallcc, x86_fastcallcc,
+    ptx_kernel, ptx_device,
+    signext, zeroext, inreg, sret, nounwind, noreturn,
+    nocapture, byval, nest, readnone, readonly, noalias, uwtable,
+    inlinehint, noinline, alwaysinline, optsize, ssp, sspreq,
+    noredzone, noimplicitfloat, naked, alignstack,
+    module, asm, align, tail, to,
+    addrspace, section, alias, sideeffect, c, gc,
+    target, datalayout, triple,
+    blockaddress
+  },
+  classoffset=1,
+  morekeywords={
+    fadd, sub, fsub, mul, fmul,
+    sdiv, udiv, fdiv, srem, urem, frem,
+    and, or, xor,
+    icmp, fcmp,
+    eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
+    oeq, ogt, oge, olt, ole, one, ord, ueq, ugt, uge,
+    ult, ule, une, uno,
+    nuw, nsw, exact, inbounds,
+    phi, call, select, shl, lshr, ashr, va_arg,
+    trunc, zext, sext,
+    fptrunc, fpext, fptoui, fptosi, uitofp, sitofp,
+    ptrtoint, inttoptr, bitcast,
+    ret, br, indirectbr, switch, invoke, unwind, unreachable,
+    malloc, alloca, free, load, store, getelementptr,
+    extractelement, insertelement, shufflevector,
+    extractvalue, insertvalue,
+  },
+  alsoletter={\%},
+  keywordsprefix={\%},
+}
+
+\newenvironment{packed_enum}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\newenvironment{packed_item}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\title[LLVM Compiler]{
+  Building a LLVM Python Compiler
+}
+
+\author[Gatchell, Sayler, Vitousek]{
+  Anne Gatchell    \and
+  Andy Sayler      \and
+  Michael Vitousek
+}
+
+\institute[CU Boulder]{
+  University of Colorado at Boulder   \\
+  \texttt{anne.gatchell@colorado.edu} \\
+  \texttt{andrew.sayler@colorado.edu} \\
+  \texttt{michael.vitousek@colorado.edu}
+}
+
+\date{\today}
+
+\begin{document}
+
+%---Title Slide---%
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+%---TOC Slide---%
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+%---Goals Slide---%
+\begin{frame}{\bf Goals}
+  \begin{itemize}
+  \item<1-> Add some goals here
+  \item<2-> Some more here...
+  \end{itemize}
+\end{frame}
+
+\section{Background}
+
+\subsection{LLVM}
+
+%---LLVM Hello World Slide---%
+\begin{frame}{\bf LLVM ``Hello World''}
+  \lstinputlisting[
+    language=llvm,
+    title={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
+  ]{../code/llvm-examples/hello0.ll}
+\end{frame}
+
+\subsection{Static Single Assignment Form}
+
+\section{Approach}
+
+\section{Design}
+
+\subsection{Module Flow}
+
+%---Module Flow Slide---%
+\begin{frame}{\bf Module Flow}
+  \begin{center}
+    \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
+  \end{center}
+\end{frame}
+
+\subsection{SSA Conversion}
+
+\subsection{LLVM Instructions}
+
+\subsection{LLVM Build Process}
+
+\section{Results}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+%---Bibliography Slide---%
+\begin{frame}[t,allowframebreaks]{\bf Bibliography}
+  \nocite{*}
+  \printbibliography
+\end{frame}
+
+\end{document}
