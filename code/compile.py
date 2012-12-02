@@ -48,21 +48,34 @@ from llvminstr_select import LLVMInstrSelectVisitor
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
 
-parser = 'CURRENT'
+DECLARESFILE = './helper/runtime-declares.ll'
+PARSER = 'CURRENT'
 
-if parser == 'DEPRECATED':
+if PARSER == 'DEPRECATED':
     from depr_parse import *
-elif parser == 'CURRENT':
+elif PARSER == 'CURRENT':
     from py3parse import *
 else:
     raise Exception('Invalid parser name')
 
-def write_to_file(assembly, outputFileName):
+def write_to_file(assembly, outputFilePath):
     """Function to write assembly to file"""
     assembly = '\n'.join(map(lambda x: str(x), assembly))
-    outputfile = open(outputFileName, 'w+')
+    outputfile = open(outputFilePath, 'w')
     outputfile.write(assembly + '\n')
     outputfile.close()
+
+def read_declares_file(declaresFilePath):
+    """Function to read LLVM 'declare' statments from a file"""
+    declares = []
+    inputFile = open(declaresFilePath, 'r')
+    for line in inputFile:
+        cline = line.replace('\n', '')
+        words = cline.split()
+        if(len(words) > 0):
+            if(words[0] == 'declare'):
+                declares += [cline]
+    return declares
 
 ### Main Function ###
 
@@ -239,13 +252,16 @@ def main(argv=None):
         #print "The above is a dump of the flat, SSA-converted program."
         #print "Unimplemented: Exiting Early"
         
-        assembly = LLVMInstrSelectVisitor().preorder(flatast)
-        #return 0
+        llvm = LLVMInstrSelectVisitor().preorder(flatast)
+
+        declares = read_declares_file(DECLARESFILE)
+        assembly = declares + llvm
 
     else:
 
         sys.stderr.write(str(argv[0]) + ": unrecognized compileType\n")
         return 1
+
 
     # Write output
     write_to_file(assembly, outputFilePath)
