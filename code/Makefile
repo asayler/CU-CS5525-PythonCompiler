@@ -107,7 +107,8 @@ submission:
 	$(RM) -r $(SUBMISSIONDIR)
 	mkdir $(SUBMISSIONDIR)
 	$(CP) *.py $(SUBMISSIONDIR)
-	$(CP) $(HELPERDIR)* $(SUBMISSIONDIR)
+	$(CP) $(HELPERDIR)*.c $(SUBMISSIONDIR)
+	$(CP) $(HELPERDIR)*.h $(SUBMISSIONDIR)
 	$(CD) $(SUBMISSIONDIR); zip -r ../submit.zip *
 	$(RM) -r $(SUBMISSIONDIR)
 
