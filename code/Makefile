@@ -39,9 +39,9 @@ LLCC      = clang
 LLCCFLAGS = -emit-llvm
 
 SUBMISSIONDIR = ./submission/
-HELPERDIR = ./helper/
-BUILDDIR = ./build/
-TESTDIR = ./test/
+HELPERDIR     = ./helper/
+BUILDDIR      = ./build/
+TESTDIR       = ./test/
 
 HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
 HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
@@ -54,11 +54,11 @@ MTESTCASESLBC = $(patsubst $(BUILDDIR)%.mbc,  $(BUILDDIR)%.mlbc,  $(MTESTCASESBC
 MTESTCASESASS = $(patsubst $(BUILDDIR)%.mlbc, $(BUILDDIR)%.ms,    $(MTESTCASESLBC))
 MTESTCASES    = $(patsubst $(BUILDDIR)%.ms,   $(BUILDDIR)%.mout,  $(MTESTCASESASS))
 
-TESTCASESSOURCE = $(wildcard $(TESTDIR)*.py)
-TESTCASESINPUT  = $(patsubst %.py,             %.in,              $(TESTCASESSOURCE))
-TESTCASESASSEMB = $(patsubst $(TESTDIR)%.py,   $(BUILDDIR)%.s,    $(TESTCASESSOURCE))
-TESTCASES       = $(patsubst $(BUILDDIR)%.s,   $(BUILDDIR)%.out,  $(TESTCASESASSEMB))
-TESTDIFFS       = $(patsubst $(BUILDDIR)%.out, $(BUILDDIR)%.diff, $(TESTCASES))
+TESTCASESSOURCE   = $(wildcard $(TESTDIR)*.py)
+TESTCASESINPUT    = $(patsubst %.py,               %.in,                $(TESTCASESSOURCE))
+TESTCASESASS86    = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.s,      $(TESTCASESSOURCE))
+TESTCASES86       = $(patsubst $(BUILDDIR)%.s,     $(BUILDDIR)%.86out,  $(TESTCASESASS86))
+TESTDIFFS86       = $(patsubst $(BUILDDIR)%.86out, $(BUILDDIR)%.86diff, $(TESTCASES86))
 
 .PHONY: all clean Tests TestsRun MTests llvmbc
 
@@ -66,22 +66,22 @@ all: Tests
 
 MTests: $(MTESTCASES)
 
-Assemb: $(TESTCASESASSEMB)
+Assemb: $(TESTCASESASS86)
 
-Tests: $(TESTCASES)
+Tests: $(TESTCASES86)
 
-TestsRun: $(TESTDIFFS)
+TestsRun: $(TESTDIFFS86)
 	cat $^
 
-$(TESTDIFFS): $(BUILDDIR)%.diff: $(BUILDDIR)%.out $(TESTDIR)%.in
-	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.out > $(BUILDDIR)$*.output
+$(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.86out > $(BUILDDIR)$*.86output
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
-	diff -B -s -q $(BUILDDIR)$*.output $(BUILDDIR)$*.correct > $@
+	diff -B -s -q $(BUILDDIR)$*.86output $(BUILDDIR)$*.correct > $@
 
-$(TESTCASES): $(BUILDDIR)%.out: $(BUILDDIR)%.s $(HELPEROBJECT)
+$(TESTCASES86): $(BUILDDIR)%.86out: $(BUILDDIR)%.s $(HELPEROBJECT)
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
-$(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
+$(TESTCASESASS86): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
 	$(PC) $(PCFLAGS) $< -o $@
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
