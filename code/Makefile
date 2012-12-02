@@ -46,6 +46,7 @@ TESTDIR = ./test/
 HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
 HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
 HELPERLLVMLL = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.ll, $(HELPERSOURCE))
+HELPERLLVMBC = $(patsubst $(BUILDDIR)%.ll, $(BUILDDIR)%.bc, $(HELPERLLVMLL))
 
 MTESTCASESLL  = $(wildcard $(TESTDIR)*.ll)
 MTESTCASESBC  = $(patsubst $(TESTDIR)%.ll,    $(BUILDDIR)%.mbc,   $(MTESTCASESLL))
@@ -89,7 +90,7 @@ $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
 $(MTESTCASESASS): $(BUILDDIR)%.ms: $(BUILDDIR)%.mlbc
 	$(LLC) $(LLCFLAGS) $< -o $@
 
-$(MTESTCASESLBC): $(BUILDDIR)%.mlbc: $(BUILDDIR)%.mbc $(HELPERLLVMLL)
+$(MTESTCASESLBC): $(BUILDDIR)%.mlbc: $(BUILDDIR)%.mbc $(HELPERLLVMBC)
 	$(LLL) $(LLLFLAGS) $^ -o $@
 
 $(MTESTCASESBC): $(BUILDDIR)%.mbc: $(TESTDIR)%.ll
@@ -97,6 +98,9 @@ $(MTESTCASESBC): $(BUILDDIR)%.mbc: $(TESTDIR)%.ll
 
 $(HELPEROBJECT): $(BUILDDIR)%.o: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(CC) $(CFLAGS) $< -o $@
+
+$(HELPERLLVMBC): $(BUILDDIR)%.bc: $(BUILDDIR)%.ll
+	$(LLA) $(LLAFLAGS) $< -o $@
 
 $(HELPERLLVMLL): $(BUILDDIR)%.ll: $(HELPERDIR)%.c $(HELPERDIR)*.h
 	$(LLCC) $(LLCCFLAGS) -S $< -o $@
