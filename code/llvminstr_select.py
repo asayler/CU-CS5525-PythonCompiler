@@ -57,8 +57,6 @@ class LLVMInstrSelectVisitor(Visitor):
 
     # Modules
 
-    # All of these still need updateed, currently just x86 copies
-
     def visitProgram(self, n):
         slambdas = []
         for node in n.nodes:
@@ -69,67 +67,71 @@ class LLVMInstrSelectVisitor(Visitor):
         _type = DEFAULTTYPE
         name  = n.label
         args  = n.params
-        instrs = []#self.dispatch(n.code, n.label)
-        return DefineLLVM(_type, name, args, instrs)
+        instrs = self.dispatch(n.code, (name, _type))
+        return DefineLLVM(_type, GlobalLLVM(name), args, instrs)
         
     # Statements    
 
-    def visitStmtList(self, n, funcName):
+    def visitStmtList(self, n, func):
         instrs = []
-        for s in n.nodes:
-            instrs += self.dispatch(s, funcName)
+        for node in n.nodes:
+            instrs += self.dispatch(node, func)
         return instrs
 
-    def visitVarAssign(self, n, funcName):
-        return self.dispatch(n.value, Var86(n.target))
+    def visitVarAssign(self, n, func):
+        return self.dispatch(n.value, VarLLVM(LocalLLVM(n.target), DEFAULTTYPE))
 
-    def visitDiscard(self, n, funcName):
-        tmp = Var86(generate_name(DISCARDTEMP))
+    def visitDiscard(self, n, func):
+        tmp = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
         return self.dispatch(n.expr, tmp)
 
-    def visitReturn(self, n, funcName):
-        if(funcName == None):
-            raise Exception("Return must have a valid function name")
-        instrs = []
-        instrs += [Move86(arg_select(n.value), EAX)]
-        instrs += [Jump86(generate_return_label(funcName))]
-        return instrs
+    def visitReturn(self, n, func):
+        (name, _type) = func
+        val = self.dispatch(n.value)
+        if(_type != val.type):
+            raise Exception("Return type must match function type")
+        return [retLLVM(val)]
 
-    def visitWhileFlat(self, n, funcName):
+    def visitWhileFlat(self, n, func):
+        raise Exception("Not Yet Implemented")
         #Setup Label
         whileStartL, whileEndL = generate_while_labels()
         # Test Instructions
         testtmp = Var86(generate_name(WHILETESTTMP))
         test  = []
         test += [Label86(whileStartL)]
-        test += self.dispatch(n.testss, funcName)
+        test += self.dispatch(n.testss, func)
         test += self.dispatch(n.test, testtmp)
         test += [Comp86(x86FALSE, testtmp)]
         test += [JumpEqual86(whileEndL)]
         # Body Instructions
         body  = []
-        body += self.dispatch(n.body, funcName)
+        body += self.dispatch(n.body, func)
         body += [Jump86(whileStartL)]
         body += [Label86(whileEndL)]
         return [Loop86(test, body)]
     
     # Terminal Expressions
 
-    def visitConst(self, n, target):
-        return [Move86(Const86(n.value), target)]
+    def visitConst(self, n):
+        return ConstLLVM(n.value, DEFAULTTYPE)
+        #return [Move86(Const86(n.value), target)]
 
-    def visitName(self, n, target):
-        return [Move86(Var86(n.name), target)]
+    def visitName(self, n):
+        return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
+        #return [Move86(Var86(n.name), target)]
 
     # Non-Terminal Expressions
 
     def visitIntAdd(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Add86(arg_select(n.right), target)]
         return instrs
 
     def visitIntEqual(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
@@ -139,6 +141,7 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrs
 
     def visitIntNotEqual(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
@@ -148,12 +151,14 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrs
 
     def visitIntUnarySub(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = []
         instrs += [Move86(arg_select(n.expr), target)]
         instrs += [Neg86(target)]
         return instrs
 
     def visitIf(self, n, func_name):
+        raise Exception("Not Yet Implemented")
         #Setup Label
         caseLs, endIfL = generate_if_labels(len(n.tests))
         def make_branches(testlist, caseLs, else_):
@@ -176,6 +181,7 @@ class LLVMInstrSelectVisitor(Visitor):
         return make_branches(n.tests, caseLs, n.else_)
 
     def visitIfExpFlat(self, n, target):
+        raise Exception("Not Yet Implemented")
         #Setup Label
         caseLs, endIfL = generate_if_labels(1)
         elseL = caseLs[0]
@@ -196,26 +202,13 @@ class LLVMInstrSelectVisitor(Visitor):
         return (test + [If86(then, else_)])
 
     def visitCallFunc(self, n, target):
-        instrs = []
-        cntargs = 0
-        align = (STACKALIGN - (len(n.args) % STACKALIGN))
-        align %= STACKALIGN
-        offset = 0
-        if align != 0:
-            offset += WORDLEN * align
-            instrs += [Sub86(Const86(offset), ESP)]
-        n.args.reverse()
+        args = []
         for arg in n.args:
-            cntargs += 1
-            instrs += [Push86(arg_select(arg))]
-            offset += WORDLEN
-        instrs += [Call86(n.node.name)]
-        instrs += [Move86(EAX, target)]
-        if(offset > 0):
-            instrs += [Add86(Const86(offset), ESP)]
-        return instrs
-
+            args += [self.dispatch(arg)]
+        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        
     def visitIndirectCallFunc(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = []
         instrs += self.dispatch(n.node, target)
         cntargs = 0
@@ -236,6 +229,7 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrs
 
     def visitInstrSeq(self, n, target):
+        raise Exception("Not Yet Implemented")
         instrs = self.dispatch(n.node, None)
         instrs += [Move86(Var86(n.expr.name), target)]
         return instrs
