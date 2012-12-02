@@ -79,11 +79,12 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrs
 
     def visitVarAssign(self, n, func):
-        return self.dispatch(n.value, VarLLVM(LocalLLVM(n.target), DEFAULTTYPE))
+        target = VarLLVM(LocalLLVM(n.target), DEFAULTTYPE)
+        return self.dispatch(n.value, target)
 
     def visitDiscard(self, n, func):
-        tmp = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
-        return self.dispatch(n.expr, tmp)
+        target = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
+        return self.dispatch(n.expr, target)
 
     def visitReturn(self, n, func):
         (name, _type) = func
