@@ -236,22 +236,34 @@ def main(argv=None):
         (strings, assembly) = x86InstrSelectVisitor().preorder(flatast)
         flatast = None
         if(debug):
+            # Print ast
             sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
 
         # Reg Alloc
         assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
         if(debug):
+            # Print ast
             sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
 
     elif(compileType == "LLVM"):
 
         # SSA conversion
-        ssast = SSAVisitor().preorder(flatast)
+        ssaast = SSAVisitor().preorder(flatast)
         flatast = None
-        
+        if(debug):
+            # Print ast
+            sys.stderr.write("ssa ast = \n" + str(ssaast) + "\n")
+        if(dotFileFlag):
+            # Graph ast
+            dotFileName = dotFilePath + "-ssa" + dotFileNameExt
+            GraphVisitor().writeGraph(ssaast, dotFileName)
+
         # Compile to LLVM
-        llvm = LLVMInstrSelectVisitor().preorder(ssast)
-        ssast = None
+        llvm = LLVMInstrSelectVisitor().preorder(ssaast)
+        ssaast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("LLVM ast = \n" + str(llvm) + "\n")
 
         # Add external declare statments
         declares = read_declares_file(DECLARESFILE)
