@@ -83,8 +83,7 @@ $(TESTCASES): $(BUILDDIR)%.out: $(BUILDDIR)%.s $(HELPEROBJECT)
 	$(CC) $(LFLAGS) $^ -lm -o $@
 
 $(TESTCASESASSEMB): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
-	$(PC) $(PCFLAGS) $<
-	$(MV) $(@F) $(BUILDDIR)
+	$(PC) $(PCFLAGS) $< -o $@
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
 	$(LLAS) $(LLASFLAGS) $< -lm -o $@

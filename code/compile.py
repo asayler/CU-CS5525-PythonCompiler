@@ -73,6 +73,7 @@ def main(argv=None):
         argv = sys.argv
 
     # Setup and Check Args
+
     parser = argparse.ArgumentParser(description='Compile a Python file')
     parser.add_argument('inputfilepath',
                         help='Input File Path')
@@ -103,8 +104,12 @@ def main(argv=None):
     outputFileNameList = outputFileName.split('.')
     outputFileNameBase = '.'.join(outputFileNameList[:-1])
     outputFileNameExt  = (outputFileNameList[-1:])[0]
-    if(outputFileNameExt != "s"):
-        sys.stderr.write(str(argv[0]) + ": output file must be of type *.s\n")
+    if(outputFileNameExt == "s"):
+        compileType = "x86"
+    elif(outputFileNameExt == "ll"):
+        compileType = "LLVM"
+    else:
+        sys.stderr.write(str(argv[0]) + ": unrecognized output file type\n")
         return 1
 
     dotFileDir      = args.dotfiledirectory
@@ -212,26 +217,36 @@ def main(argv=None):
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
 
-    # SSA conversion
-    ssast = SSAVisitor().preorder(flatast)
-    #flatast = None
-    #print ssast
-    #print "\nThe above is a dump of the flat, SSA-converted program.\nHalting here due to unimplemented SSA compiler"
-    #return 0
+    if(compileType == "x86"):
 
-    # Compile flat tree
-    (strings, assembly) = x86InstrSelectVisitor().preorder(flatast)
-    flatast = None
-    if(debug):
-        sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
+        # Compile flat tree
+        (strings, assembly) = x86InstrSelectVisitor().preorder(flatast)
+        flatast = None
+        if(debug):
+            sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
 
-    # Reg Alloc
-    assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
-    if(debug):
-        sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
-    
+        # Reg Alloc
+        assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
+        if(debug):
+            sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
+
+    elif(compileType == "LLVM"):
+
+        # SSA conversion
+        ssast = SSAVisitor().preorder(flatast)
+        flatast = None
+        print ssast
+        print "The above is a dump of the flat, SSA-converted program."
+        print "Unimplemented: Exiting Early"
+        return 0
+
+    else:
+
+        sys.stderr.write(str(argv[0]) + ": unrecognized compileType\n")
+        return 1
+
     # Write output
-    write_to_file(assembly, outputFileName)
+    write_to_file(assembly, outputFilePath)
 
     return 0
 
