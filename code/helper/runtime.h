@@ -1,8 +1,6 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include <stdint.h>
-
 #include "hashtable.h"
 #include "hashtable_itr.h"
 #include "hashtable_utility.h"
