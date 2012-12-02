@@ -55,6 +55,8 @@ class LLVMInstrSelectVisitor(Visitor):
 
     # Modules
 
+    # All of these still need updateed, currently just x86 copies
+
     def visitProgram(self, n):
         slambdas = []
         for node in n.nodes:
