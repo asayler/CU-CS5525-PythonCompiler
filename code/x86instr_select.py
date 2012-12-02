@@ -74,7 +74,6 @@ class x86InstrSelectVisitor(Visitor):
             offset += 4
         instrs += self.dispatch(n.code, n.label)
         ret = Func86(n.label, instrs)
-        ret.params = n.params
         return ret
 
     # Statements    
