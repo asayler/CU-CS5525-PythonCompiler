@@ -1,13 +1,30 @@
 ; PRINT FUNCTIONS
 ; void print_int_nl(int x);
-declare void @print_int_nl(i32 %x)
+declare void @print_int_nl(i64)
 ; void print_any(pyobj p);
+declare void @print_any(i64)
 
 ; INPUT FUNCTIONS
 ; int input();
-declare i32 @input()
+declare i64 @input(...)
 ; pyobj input_int();
-declare i32 @input_int()
+declare i64 @input_int(...)
+
+; PROJECT
+; pyobj inject_int(int i);
+declare i64 @inject_int(i64)
+; pyobj inject_bool(int b);
+declare i64 @inject_bool(i64)
+; pyobj inject_big(big_pyobj* p);
+declare i64 @inject_big(i8*)
+
+; INJECT
+;int project_int(pyobj val);
+declare i64 @project_int(i64)
+;int project_bool(pyobj val);
+declare i64 @project_bool(i64)
+;big_pyobj* project_big(pyobj val);
+declare i8* @project_big(i64)
 
 ;int is_true(pyobj v);
 ;int tag(pyobj val);
@@ -20,14 +37,6 @@ declare i32 @input_int()
 ;int is_class(pyobj val);
 ;int is_unbound_method(pyobj val);
 ;int is_bound_method(pyobj val);
-
-;pyobj inject_int(int i);
-;pyobj inject_bool(int b);
-;pyobj inject_big(big_pyobj* p);
-
-;int project_int(pyobj val);
-;int project_bool(pyobj val);
-;big_pyobj* project_big(pyobj val);
 
 ;big_pyobj* create_list(pyobj length);
 ;big_pyobj* create_dict();
