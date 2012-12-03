@@ -189,6 +189,42 @@
 
 \subsection{SSA Conversion}
 
+\begin{frame}{\bf Simple conversion}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step1,
+]{include/py/ssa-step1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step2,
+]{include/py/ssa-step2.py}
+\end{frame}
+
+\begin{frame}[shrink]{\bf Conversions of If statements}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-if1,
+]{include/py/ssa-if1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-if2,
+]{include/py/ssa-if2.py}
+\end{frame}
+
+\begin{frame}[shrink]{\bf Conversions of While statements}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-while1,
+]{include/py/ssa-while1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-while2,
+]{include/py/ssa-while2.py}
+\end{frame}
+
 \subsection{LLVM Instructions}
 
 \subsection{LLVM Build Process}
