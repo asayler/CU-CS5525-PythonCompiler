@@ -3,7 +3,7 @@
 # Python Compiler
 #
 # propagate.py
-# Visitor Functions to Remove Direct Assignments fro AST
+# Visitor Functions to Remove Direct Assignments from AST
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -28,8 +28,34 @@ from pyast import *
 class PropagateVisitor(CopyVisitor):
     
     def __init__(self):
+        self.names = {}
         super(PropagateVisitor,self).__init__()
 
-    def preorder(self, tree):
-        self.names = {}
-        return super(PropagateVisitor, self).preorder(tree)
+    def visitStmtList(self, n):
+        stmts = []
+        for node in n.nodes:
+            stmt = self.dispatch(node)
+            if(stmt != None):
+                stmts += [stmt]
+        return StmtList(stmts)
+
+    def visitVarAssign(self, n):
+        if(isinstance(n.value, Name)):
+            print "Direct Assignment: " + str(n)
+            if(n.value.name in self.names):
+                n.value.name = self.names[n.value.name]
+            if(n.target in self.names):
+                raise Exception("SSA Violation")
+            self.names[n.target] = n.value.name
+            return None
+        else:
+            return VarAssign(n.target, self.dispatch(n.value))
+
+    def visitName(self, n):
+        if(n.name in self.names):
+            name = self.names[n.name]
+        else:
+            name = n.name
+        return Name(name)
+
+    # ToDO - Handle Branching

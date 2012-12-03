@@ -263,7 +263,7 @@ def main(argv=None):
         ssaast = None
         if(debug):
             # Print ast
-            sys.stderr.write("propagated ast = \n" + str(propagate) + "\n")
+            sys.stderr.write("propagated ast = \n" + str(propagatedast) + "\n")
         if(dotFileFlag):
             # Graph ast
             dotFileName = dotFilePath + "-propagate" + dotFileNameExt
