@@ -176,26 +176,41 @@ class LLVMInstrSelectVisitor(Visitor):
         return [subLLVM(target, left, right)]
 
     def visitIfExpFlat(self, n, target):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(1)
-        endIfL = LLVMLabel(endIfL)
-        elseL  = LLVMLabel(caseLs[0])
-        # Test Instructions
-        test  = []
-        test += self.dispatch(n.test, target)
-        test += [Comp86(x86FALSE, target)]
-        test += [JumpEqual86(elseL)]
-        # Then Instructions
-        then  = []
-        then += self.dispatch(n.then, target)
-        then += [Jump86(endIfL)]
-        # Else Instructions
-        else_ = []
-        else_ += [labelLLVM(elseL)]
-        else_ += self.dispatch(n.else_, target)
-        else_ += [Label86(endIfL)]
-        return (test + [If86(then, else_)])
+        raise Exception("IfExpFlat Not Yet Working")
+        # Setup Values
+        testVal =  self.dispatch(n.test)
+        thenVal =  self.dispatch(n.then.expr)
+        elseVal =  self.dispatch(n.else_.expr)
+        # Setup Labels
+        testL = LabelArgLLVM(LocalLLVM(generate_label("test")))
+        thenL = LabelArgLLVM(LocalLLVM(generate_label("then")))
+        thenP = PhiPairLLVM(thenVal, thenL)
+        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
+        elseL = LabelArgLLVM(LocalLLVM(generate_label("else")))
+        elseP = PhiPairLLVM(elseVal, elseL)
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
+        # Test Block
+        testI   = []
+        testI  += [switchLLVM(testVal, elseL, [thenS])]
+        testB   = blockLLVM(testL, testI)
+        # Then Block
+        thenI   = []
+        for node in n.then.node.nodes:
+            thenI += self.dispatch(node, None)
+        thenI  += [switchLLVM(LLVMZERO, endL, [])]
+        thenB   = blockLLVM(thenL, thenI)
+        # Else Block
+        elseI   = []
+        for node in n.else_.node.nodes:
+            elseI += self.dispatch(node, None)
+        elseI  += [switchLLVM(LLVMZERO, endL, [])]
+        elseB   = blockLLVM(elseL, elseI)
+        # End Block
+        endI    = []
+        endI   += [phiLLVM(target, [thenP, elseP])]
+        endI   += [] #TODO Need to Switch/Break to next label...
+        endB    = blockLLVM(endL, endI)
+        return [testB, thenB, elseB, endB]
 
     def visitCallFunc(self, n, target):
         args = []

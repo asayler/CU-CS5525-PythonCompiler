@@ -62,6 +62,7 @@ class LLVMLabel(LLVMType):
     def __repr__(self):
         return ('label')
 
+I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
 I64  = LLVMInt(64)
@@ -120,6 +121,8 @@ class LabelArgLLVM(LLVMArg):
 
 LLVMZERO  = ConstLLVM(0, I32)
 LLVMONE   = ConstLLVM(1, I32)
+LLVMFALSE = ConstLLVM(0, I1)
+LLVMTRUE  = ConstLLVM(1, I1)
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
