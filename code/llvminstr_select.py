@@ -50,6 +50,7 @@ IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 
 DEFAULTTYPE = I64
+DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
 
@@ -76,48 +77,50 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitStmtList(self, n, func):
         blocks = []
         instrs = []
-        thislabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
-        nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+        thisL = LabelArgLLVM(LocalLLVM(generate_label("block")))
+        nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         for node in n.nodes:
-            (ret, blocked) = self.dispatch(node, func, (thislabel, nextlabel))
+            (ret, blocked) = self.dispatch(node, func)
             if(blocked):
                 # If list of blocks returned
                 # Add jump to start of first returned block
                 instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
                 # Add new block
-                blocks += [blockLLVM(thislabel, instrs)]
+                blocks += [blockLLVM(thisL, instrs)]
+                # Patch in proper label for jump in last block
+                ret[-1].instrs[-1].defaultDest = nextL
                 # Add returned blocks
                 blocks += ret
                 # Reset instructiosn and update labels
                 instrs = []
-                thislabel = nextlabel
-                nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+                thisL = nextL
+                nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
             else:
                 # If list of instructions returned
                 instrs += ret
                 # If last instruction returned is terminal, end block
                 if(isinstance(instrs[-1], TermLLVMInst)):
-                    blocks += [blockLLVM(thislabel, instrs)]
+                    blocks += [blockLLVM(thisL, instrs)]
                     instrs = []
-                    thislabel = nextlabel
-                    nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+                    thisL = nextL
+                    nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         return blocks
 
-    def visitVarAssign(self, n, func, labels):
+    def visitVarAssign(self, n, func):
         target = VarLLVM(LocalLLVM(n.target), DEFAULTTYPE)
         if(isinstance(n.value, IfExpFlat)):
-            return (self.dispatch(n.value, target, labels), True)
+            return (self.dispatch(n.value, target), True)
         else:
             return (self.dispatch(n.value, target), False)
 
-    def visitDiscard(self, n, func, labels):
+    def visitDiscard(self, n, func):
         target = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
         if(isinstance(n.expr, IfExpFlat)):
-            return (self.dispatch(n.expr, target, labels), True)
+            return (self.dispatch(n.expr, target), True)
         else:
             return (self.dispatch(n.expr, target), False)
 
-    def visitReturn(self, n, func, labels):
+    def visitReturn(self, n, func):
         (name, _type) = func
         val = self.dispatch(n.value)
         if(_type != getType(val)):
@@ -229,7 +232,7 @@ class LLVMInstrSelectVisitor(Visitor):
         # End Block
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
-        endI   += [] #TODO Need to Switch/Break to next label...
+        endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]
         endB    = blockLLVM(endL, endI)
         return [testB, thenB, elseB, endB]
 
