@@ -68,40 +68,61 @@ class LLVMInstrSelectVisitor(Visitor):
         _type = DEFAULTTYPE
         name  = n.label
         args  = n.params
-        instrs = self.dispatch(n.code, (name, _type))
-        return defineLLVM(_type, GlobalLLVM(name), args, instrs)
+        blocks = self.dispatch(n.code, (name, _type))
+        return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
     # Statements    
 
     def visitStmtList(self, n, func):
         blocks = []
         instrs = []
-        newlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+        thislabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+        nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
         for node in n.nodes:
-            (instr, term) = self.dispatch(node, func)
-            instrs += instr
-            if(term):
-                oldlabel = newlabel
-                newlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
-                blocks += [blockLLVM(oldlabel, instrs)]
-                #TODO: Add br to newlable if not last block
+            (ret, blocked) = self.dispatch(node, func, (thislabel, nextlabel))
+            if(blocked):
+                # If list of blocks returned
+                # Add jump to start of first returned block
+                instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
+                # Add new block
+                blocks += [blockLLVM(thislabel, instrs)]
+                # Add returned blocks
+                blocks += ret
+                # Reset instructiosn and update labels
                 instrs = []
+                thislabel = nextlabel
+                nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+            else:
+                # If list of instructions returned
+                instrs += ret
+                # If last instruction returned is terminal, end block
+                if(isinstance(instrs[-1], TermLLVMInst)):
+                    blocks += [blockLLVM(thislabel, instrs)]
+                    instrs = []
+                    thislabel = nextlabel
+                    nextlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
         return blocks
 
-    def visitVarAssign(self, n, func):
+    def visitVarAssign(self, n, func, labels):
         target = VarLLVM(LocalLLVM(n.target), DEFAULTTYPE)
-        return (self.dispatch(n.value, target), False)
+        if(isinstance(n.value, IfExpFlat)):
+            return (self.dispatch(n.value, target, labels), True)
+        else:
+            return (self.dispatch(n.value, target), False)
 
-    def visitDiscard(self, n, func):
+    def visitDiscard(self, n, func, labels):
         target = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
-        return (self.dispatch(n.expr, target), False)
+        if(isinstance(n.expr, IfExpFlat)):
+            return (self.dispatch(n.expr, target, labels), True)
+        else:
+            return (self.dispatch(n.expr, target), False)
 
-    def visitReturn(self, n, func):
+    def visitReturn(self, n, func, labels):
         (name, _type) = func
         val = self.dispatch(n.value)
-        if(_type != val.type):
+        if(_type != getType(val)):
             raise Exception("Return type must match function type")
-        return ([retLLVM(val)], True)
+        return ([retLLVM(val)], False)
 
     def visitWhileFlatPhi(self, n, func):
         raise Exception("Not Yet Implemented")

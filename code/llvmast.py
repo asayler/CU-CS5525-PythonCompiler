@@ -173,18 +173,18 @@ class BlockLLVMInst(LLVMInst):
         pass
 
 class defineLLVM(BlockLLVMInst):
-    def __init__(self, _type, name, args, instrs):
+    def __init__(self, _type, name, args, blocks):
         self.type = _type
         self.name = name
         self.args = args
-        self.instrs = instrs
+        self.blocks = blocks
     def __repr__(self):
         return ("define %s %s(%s) {\n\t%s\n}" % (str(self.type),
                                                  str(self.name),
                                                  ", ".join(map(lambda x: str(x),
                                                                self.args)),
                                                  '\n\t'.join(map(lambda x: str(x),
-                                                                 self.instrs))))
+                                                                 self.blocks))))
 
 class blockLLVM(BlockLLVMInst):
     def __init__(self, label, instrs):
