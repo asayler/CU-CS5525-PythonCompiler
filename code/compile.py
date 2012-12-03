@@ -23,44 +23,59 @@ USAGE:
     compile.py <file path>
 """
 
+# External Imports
 import sys
 import argparse
 
-# Data Types
-from pyast import *
-from x86ast import *
+# Compiler Stage Imports
 
-# Compiler Stages
-from declassify import *
-from uniquify import *
-from explicate import *
-from heapify import *
-from closureconvert import *
-from expand import *
-from flatten import *
-from instr_select import *
-from x86regalloc import *
-from stringfind import *
+from declassify import ClassFindVisitor
+from uniquify import UniquifyVisitor
+from explicate import ExplicateVisitor
+from heapify import HeapifyVisitor
+from closureconvert import ClosureVisitor
+from expand import ExpandVisitor
+from flatten import FlattenVisitor
+
+from x86regalloc import x86funcRegAlloc
+from x86regalloc import x86setup_strings
+from x86instr_select import x86InstrSelectVisitor
+
 from ssa import SSAVisitor
+from propagate import PropagateVisitor
+from llvminstr_select import LLVMInstrSelectVisitor
 
-# Helper Tools
-from graph_visitor import *
+# Helper Tool Imports
+from graph_visitor import GraphVisitor
 
-parser = 'CURRENT'
+DECLARESFILE = './helper/runtime-declares.ll'
+PARSER = 'CURRENT'
 
-if parser == 'DEPRECATED':
+if PARSER == 'DEPRECATED':
     from depr_parse import *
-elif parser == 'CURRENT':
+elif PARSER == 'CURRENT':
     from py3parse import *
 else:
     raise Exception('Invalid parser name')
 
-def write_to_file(assembly, outputFileName):
+def write_to_file(assembly, outputFilePath):
     """Function to write assembly to file"""
-    assembly = '\n'.join(map(lambda x: x.mnemonic(), assembly))
-    outputfile = open(outputFileName, 'w+')
+    assembly = '\n'.join(map(lambda x: str(x), assembly))
+    outputfile = open(outputFilePath, 'w')
     outputfile.write(assembly + '\n')
     outputfile.close()
+
+def read_declares_file(declaresFilePath):
+    """Function to read LLVM 'declare' statments from a file"""
+    declares = []
+    inputFile = open(declaresFilePath, 'r')
+    for line in inputFile:
+        cline = line.replace('\n', '')
+        words = cline.split()
+        if(len(words) > 0):
+            if(words[0] == 'declare'):
+                declares += [cline]
+    return declares
 
 ### Main Function ###
 
@@ -71,6 +86,7 @@ def main(argv=None):
         argv = sys.argv
 
     # Setup and Check Args
+
     parser = argparse.ArgumentParser(description='Compile a Python file')
     parser.add_argument('inputfilepath',
                         help='Input File Path')
@@ -101,8 +117,12 @@ def main(argv=None):
     outputFileNameList = outputFileName.split('.')
     outputFileNameBase = '.'.join(outputFileNameList[:-1])
     outputFileNameExt  = (outputFileNameList[-1:])[0]
-    if(outputFileNameExt != "s"):
-        sys.stderr.write(str(argv[0]) + ": output file must be of type *.s\n")
+    if(outputFileNameExt == "s"):
+        compileType = "x86"
+    elif(outputFileNameExt == "ll"):
+        compileType = "LLVM"
+    else:
+        sys.stderr.write(str(argv[0]) + ": unrecognized output file type\n")
         return 1
 
     dotFileDir      = args.dotfiledirectory
@@ -210,26 +230,64 @@ def main(argv=None):
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
 
-    # SSA conversion
-    ssast = SSAVisitor().preorder(flatast)
-    #flatast = None
-    #print ssast
-    #print "\nThe above is a dump of the flat, SSA-converted program.\nHalting here due to unimplemented SSA compiler"
-    #return 0
+    if(compileType == "x86"):
 
-    # Compile flat tree
-    (strings, assembly) = InstrSelectVisitor().preorder(flatast)
-    flatast = None
-    if(debug):
-        sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
+        # Compile flat tree
+        (strings, assembly) = x86InstrSelectVisitor().preorder(flatast)
+        flatast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
 
-    # Reg Alloc
-    assembly = setup_strings(strings) + funcRegAlloc(assembly)
-    if(debug):
-        sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
-    
+        # Reg Alloc
+        assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
+        if(debug):
+            # Print ast
+            sys.stderr.write("post instr ast = \n" + str(assembly) + "\n")
+
+    elif(compileType == "LLVM"):
+
+        # SSA conversion
+        ssaast = SSAVisitor().preorder(flatast)
+        flatast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("ssa ast = \n" + str(ssaast) + "\n")
+        if(dotFileFlag):
+            # Graph ast
+            dotFileName = dotFilePath + "-ssa" + dotFileNameExt
+            GraphVisitor().writeGraph(ssaast, dotFileName)
+
+        # Propogate Assignments
+        propagatedast = PropagateVisitor().preorder(ssaast)
+        ssaast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("propagated ast = \n" + str(propagatedast) + "\n")
+        if(dotFileFlag):
+            # Graph ast
+            dotFileName = dotFilePath + "-propagate" + dotFileNameExt
+            GraphVisitor().writeGraph(ssaast, dotFileName)
+
+        # Compile to LLVM
+        llvm = LLVMInstrSelectVisitor().preorder(propagatedast)
+        propagatedast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("LLVM ast = \n" + str(llvm) + "\n")
+
+        # Add external declare statments
+        declares = read_declares_file(DECLARESFILE)
+        assembly = declares + llvm
+
+    else:
+
+        sys.stderr.write(str(argv[0]) + ": unrecognized compileType\n")
+        return 1
+
+
     # Write output
-    write_to_file(assembly, outputFileName)
+    write_to_file(assembly, outputFilePath)
 
     return 0
 

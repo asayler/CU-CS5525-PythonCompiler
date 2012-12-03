@@ -16,8 +16,10 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
+# Data Types
 from x86ast import *
 
+# Helper Tools
 from utilities import generate_name
 from utilities import generate_return_label
 
@@ -26,7 +28,7 @@ debug = False
 MAXITERATIONS = 9
 MAXLOOPCNT = 3
 
-def setup_strings(strings):
+def x86setup_strings(strings):
     instrs = []
     for (location, name) in strings:
         instrs.append(String86(location, name))
@@ -685,7 +687,7 @@ def regAlloc(instrs, regOnlyVars, funcName):
 
     return instrseq
 
-def funcRegAlloc(funcs):
+def x86funcRegAlloc(funcs):
     outFuncs = []
     for func in funcs:
         outFuncs += [Func86(func.name, regAlloc(func.nodes, [], func.name))]

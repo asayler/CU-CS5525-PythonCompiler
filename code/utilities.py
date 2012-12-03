@@ -21,6 +21,7 @@
 from pyast import *
 
 SEPERATOR    = '_'
+NAME_PREFIX  = 'n'
 LABEL_PREFIX = 'l'
 RETURNL      = "return"
 ELSEL        = "else"
@@ -30,27 +31,30 @@ WHILEENDL    = "whileend"
 
 counter = 1
 
-def generte_cnt_str():
+def generate_cnt_str():
     global counter
     name = str(counter)
     counter += 1
     return name
 
 def generate_name(x):
-    name = generte_cnt_str() + SEPERATOR + x
+    name = NAME_PREFIX + SEPERATOR + generate_cnt_str() + SEPERATOR + x
     return name
+
+def generate_label(x):
+    return LABEL_PREFIX + SEPERATOR + generate_cnt_str()+ SEPERATOR + x
 
 def generate_return_label(funcName):
     return LABEL_PREFIX + SEPERATOR + str(funcName) + SEPERATOR + RETURNL
 
 def generate_while_labels():
-    cntStr = generte_cnt_str()
+    cntStr = generate_cnt_str()
     startLStr = LABEL_PREFIX + SEPERATOR + WHILESTARTL + SEPERATOR + cntStr
     endLStr   = LABEL_PREFIX + SEPERATOR + WHILEENDL   + SEPERATOR + cntStr
     return (startLStr, endLStr)
 
 def generate_if_labels(length):
-    cntStr = generte_cnt_str()
+    cntStr = generate_cnt_str()
     caseLStr = []
     for i in xrange(0, length):
         caseLStr += [LABEL_PREFIX + SEPERATOR + ELSEL + SEPERATOR + str(i) + SEPERATOR + cntStr]

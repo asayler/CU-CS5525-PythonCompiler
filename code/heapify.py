@@ -18,14 +18,19 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-# Helper Tools
-from utilities import generate_name
-from copy_visitor import CopyVisitor
-from free_vars import *
-from functionwrappers import *
 
 # Data Types
 from pyast import *
+
+# Parents
+from copy_visitor import CopyVisitor
+
+# Helper Tools
+from utilities import generate_name
+from free_vars import FreeVarsVisitor
+from free_vars import LocalVarsVisitor
+from free_vars import NestedFreeVarsVisitor
+from functionwrappers import *
 
 ZERO = InjectFrom(INT_t, Const(0))
 

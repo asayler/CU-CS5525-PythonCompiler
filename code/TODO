@@ -1,0 +1,5 @@
+General:
+* Strip out Name node in CallFunc -> parallel structure with SLambda name handeling
+
+LLVM:
+* Detect void function types and use void call style and type

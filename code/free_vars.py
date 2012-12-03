@@ -18,10 +18,12 @@
 
 # Data Types
 from pyast import *
-from functionwrappers import RESERVED_NAMES
+
+# Parents
+from set_visitor import SetVisitor
 
 # Helper Tools
-from set_visitor import SetVisitor
+from functionwrappers import RESERVED_NAMES
 
 def name(n):
     if isinstance(n, Name):
