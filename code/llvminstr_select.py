@@ -68,7 +68,7 @@ class LLVMInstrSelectVisitor(Visitor):
         name  = n.label
         args  = n.params
         instrs = self.dispatch(n.code, (name, _type))
-        return DefineLLVM(_type, GlobalLLVM(name), args, instrs)
+        return defineLLVM(_type, GlobalLLVM(name), args, instrs)
         
     # Statements    
 
@@ -169,7 +169,8 @@ class LLVMInstrSelectVisitor(Visitor):
         raise Exception("Not Yet Implemented")
         #Setup Label
         caseLs, endIfL = generate_if_labels(1)
-        elseL = caseLs[0]
+        endIfL = LLVMLabel(endIfL)
+        elseL  = LLVMLabel(caseLs[0])
         # Test Instructions
         test  = []
         test += self.dispatch(n.test, target)
@@ -181,7 +182,7 @@ class LLVMInstrSelectVisitor(Visitor):
         then += [Jump86(endIfL)]
         # Else Instructions
         else_ = []
-        else_ += [Label86(elseL)]
+        else_ += [labelLLVM(elseL)]
         else_ += self.dispatch(n.else_, target)
         else_ += [Label86(endIfL)]
         return (test + [If86(then, else_)])
@@ -211,10 +212,4 @@ class LLVMInstrSelectVisitor(Visitor):
         instrs += [Move86(EAX, target)]
         if(cntargs > 0):
             instrs += [Add86(Const86(offset), ESP)]
-        return instrs
-
-    def visitInstrSeq(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = self.dispatch(n.node, None)
-        instrs += [Move86(Var86(n.expr.name), target)]
         return instrs

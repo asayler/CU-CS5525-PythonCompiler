@@ -56,6 +56,12 @@ class LLVMPointer(LLVMType):
     def __repr__(self):
         return ('%s*' % (str(self.type)))
 
+class LLVMLabel(LLVMType):
+    def __init__(self):
+        pass
+    def __repr__(self):
+        return ('label')
+
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
 I64  = LLVMInt(64)
@@ -83,7 +89,7 @@ class LocalLLVM(LLVMName):
     def __repr__(self):
         return "%%%s" % (str(self.name))
 
-# LLVM Args
+# LLVM Primitive Args
 
 class LLVMArg(object):
     def __hash__(self):
@@ -105,13 +111,22 @@ class VarLLVM(LLVMArg):
     def __repr__(self):
         return "%s %s" % (str(self.type), str(self.name))
 
+class LabelArgLLVM(LLVMArg):
+    def __init__(self, name):
+        self.name = name
+        self.type = LLVMLabel
+    def __repr__(self):
+        return "%s %s" % (str(self.type), str(self.name))
+
 LLVMZERO  = ConstLLVM(0, I32)
 LLVMONE   = ConstLLVM(1, I32)
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
         return arg.type
-    if(isinstance(arg, VarLLVM)):
+    elif(isinstance(arg, VarLLVM)):
+        return arg.type
+    elif(isinstance(arg, LabelArgLLVM)):
         return arg.type
     else:
         raise Exception("Attempting to get type of invalid argument: " + str(arg))
@@ -119,10 +134,28 @@ def getType(arg):
 def getArg(arg):
     if(isinstance(arg, ConstLLVM)):
         return arg.value
-    if(isinstance(arg, VarLLVM)):
+    elif(isinstance(arg, VarLLVM)):
+        return arg.name
+    elif(isinstance(arg, LabelArgLLVM)):
         return arg.name
     else:
         raise Exception("Attempting to get name of invalid argument: " + str(arg))
+
+# LLVM Compound Args
+
+class PhiPairLLVM(LLVMArg):
+    def __init__(self, val, label):
+        self.val   = val
+        self.label = label
+    def __repr__(self):
+        return "[ %s, %s ]" % (str(getArg(self.val)), str(getArg(self.label)))
+
+class SwitchPairLLVM(LLVMArg):
+    def __init__(self, val, label):
+        self.val   = val
+        self.label = label
+    def __repr__(self):
+        return " %s, %s " % (str(self.val), str(self.label))
 
 # LLVM Instructions
 
@@ -136,7 +169,7 @@ class BlockLLVMInst(LLVMInst):
     def __init__():
         pass
 
-class DefineLLVM(BlockLLVMInst):
+class defineLLVM(BlockLLVMInst):
     def __init__(self, _type, name, args, instrs):
         self.type = _type
         self.name = name
@@ -149,6 +182,15 @@ class DefineLLVM(BlockLLVMInst):
                                                                self.args)),
                                                  '\n\t'.join(map(lambda x: str(x),
                                                                  self.instrs))))
+
+class labelLLVM(BlockLLVMInst):
+    def __init__(self, label, instrs):
+        self.label  = label
+        self.instrs = instrs
+    def __repr__(self):
+        return "%s:\n\t%s\n" % (str(getArg(self.label)),
+                                '\n\t'.join(map(lambda x: str(x),
+                                                self.instrs)))
 
 # Terminator Instructions
 
@@ -165,6 +207,18 @@ class retLLVM(TermLLVMInst):
         else:
             return ("ret %s %s") % (str(getType(self.value)),
                                     str(getArg(self.value)))
+
+class switchLLVM(TermLLVMInst):
+    def __init__(self, value, defaultDest, altDests):
+        self.value = value
+        self.defaultDest = defaultDest
+        self.altDests = altDests
+    def __repr__(self):
+        return ("switch %s %s, label %s [\n\t%s\n]") % (str(getType(self.value)),
+                                                        str(getArg(self.value)),
+                                                        str(defaultDest),
+                                                        '\n\t'.join(map(lambda x: str(x),
+                                                                        self.altDests)))
 
 # Binary Instructions
 
@@ -234,3 +288,20 @@ class callLLVM(OtherLLVMInst):
             return string
         else:
             return "%s = %s" % (str(getArg(self.target)), string)
+
+class phiLLVM(OtherLLVMInst):
+    def __init__(self, target, pairs):
+        _type = None
+        for pair in pairs:
+            if(_type == None):
+                _type = getType(pair.val)
+            else:
+                if(_type != getType(pair.val)):
+                    raise Exception("phi instruction requires uniform val types")
+        self.type   = _type
+        self.target = target
+        self.pairs  = pairs
+    def __repr__(self):
+        return "%s = phi %s %s" % (str(getArg(self.target)),
+                                   str(self.type),
+                                   ", ".join(map(lambda x: str(x), self.pairs)))
