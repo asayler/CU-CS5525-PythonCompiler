@@ -13,17 +13,17 @@
 # Description:
 #     This is the Makefile for the compiler test files
 
-CC = gcc
-AS = gcc
-PC = ./compile.py
-CP = cp
-MV = mv
-CD = cd
+CC        = gcc
+AS        = gcc
+PC        = ./compile.py
+CP        = cp
+MV        = mv
+CD        = cd
 
-CFLAGS  = -c -m32 -g
-ASFLAGS = -g -x assembler
-LFLAGS  = -m32 -g
-PCFLAGS = #-v 0 --dot
+CFLAGS    = -c -m32 -g
+ASFLAGS   = -g -x assembler
+LFLAGS    = -m32 -g
+PCFLAGS   = #-v 0 --dot
 
 LLAS      = clang
 LLASFLAGS = -g -x assembler
@@ -43,16 +43,16 @@ HELPERDIR     = ./helper/
 BUILDDIR      = ./build/
 TESTDIR       = ./test/
 
-HELPERSOURCE = $(wildcard $(HELPERDIR)*.c)
-HELPEROBJECT = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
-HELPERLLVMLL = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.ll, $(HELPERSOURCE))
-HELPERLLVMBC = $(patsubst $(BUILDDIR)%.ll, $(BUILDDIR)%.bc, $(HELPERLLVMLL))
+HELPERSOURCE        = $(wildcard $(HELPERDIR)*.c)
+HELPEROBJECT        = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
+HELPERLLVMLL        = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.ll, $(HELPERSOURCE))
+HELPERLLVMBC        = $(patsubst $(BUILDDIR)%.ll, $(BUILDDIR)%.bc, $(HELPERLLVMLL))
 
-MTESTCASESLL  = $(wildcard $(TESTDIR)*.ll)
-MTESTCASESBC  = $(patsubst $(TESTDIR)%.ll,    $(BUILDDIR)%.mbc,   $(MTESTCASESLL))
-MTESTCASESLBC = $(patsubst $(BUILDDIR)%.mbc,  $(BUILDDIR)%.mlbc,  $(MTESTCASESBC))
-MTESTCASESASS = $(patsubst $(BUILDDIR)%.mlbc, $(BUILDDIR)%.ms,    $(MTESTCASESLBC))
-MTESTCASES    = $(patsubst $(BUILDDIR)%.ms,   $(BUILDDIR)%.mout,  $(MTESTCASESASS))
+MTESTCASESLL        = $(wildcard $(TESTDIR)*.ll)
+MTESTCASESBC        = $(patsubst $(TESTDIR)%.ll,    $(BUILDDIR)%.mbc,   $(MTESTCASESLL))
+MTESTCASESLBC       = $(patsubst $(BUILDDIR)%.mbc,  $(BUILDDIR)%.mlbc,  $(MTESTCASESBC))
+MTESTCASESASS       = $(patsubst $(BUILDDIR)%.mlbc, $(BUILDDIR)%.ms,    $(MTESTCASESLBC))
+MTESTCASES          = $(patsubst $(BUILDDIR)%.ms,   $(BUILDDIR)%.mout,  $(MTESTCASESASS))
 
 TESTCASESSOURCE     = $(wildcard $(TESTDIR)*.py)
 LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
