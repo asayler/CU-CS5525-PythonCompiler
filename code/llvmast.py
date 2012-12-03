@@ -119,10 +119,10 @@ class LabelArgLLVM(LLVMArg):
     def __repr__(self):
         return "%s %s" % (str(self.type), str(self.name))
 
-LLVMZERO  = ConstLLVM(0, I32)
-LLVMONE   = ConstLLVM(1, I32)
-LLVMFALSE = ConstLLVM(0, I1)
-LLVMTRUE  = ConstLLVM(1, I1)
+LLVMZERO  = ConstLLVM(0, I64)
+LLVMONE   = ConstLLVM(1, I64)
+LLVMFALSE = LLVMZERO
+LLVMTRUE  = LLVMONE
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
