@@ -6,3 +6,5 @@
 
 a = True if True else False
 print(a)
+b = True if False else False
+print(b)
