@@ -18,8 +18,8 @@ By:
 A Python compiler implementation of CU CS5525 in F12
 
 Requirements:  
-*python 2.7+
-*llvm
-*clang
-*latex (for report)
-*inkscape (for report)
+* python 2.7+
+* llvm
+* clang
+* latex (for report)
+* inkscape (for report)
