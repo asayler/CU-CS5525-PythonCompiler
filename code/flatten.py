@@ -29,6 +29,7 @@ from utilities import generate_name, make_assign
 from functionwrappers import *
 
 class FlattenVisitor(ListVisitor):
+
     def __init__(self):
         super(FlattenVisitor,self).__init__()
 
