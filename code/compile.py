@@ -36,14 +36,14 @@ from heapify import HeapifyVisitor
 from closureconvert import ClosureVisitor
 from expand import ExpandVisitor
 from flatten import FlattenVisitor
-from ssa import SSAVisitor
 
 from x86regalloc import x86funcRegAlloc
 from x86regalloc import x86setup_strings
 from x86instr_select import x86InstrSelectVisitor
 
+from ssa import SSAVisitor
+from propagate import PropagateVisitor
 from llvminstr_select import LLVMInstrSelectVisitor
-
 
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
@@ -258,9 +258,20 @@ def main(argv=None):
             dotFileName = dotFilePath + "-ssa" + dotFileNameExt
             GraphVisitor().writeGraph(ssaast, dotFileName)
 
-        # Compile to LLVM
-        llvm = LLVMInstrSelectVisitor().preorder(ssaast)
+        # Propogate Assignments
+        propagatedast = PropagateVisitor().preorder(ssaast)
         ssaast = None
+        if(debug):
+            # Print ast
+            sys.stderr.write("propagated ast = \n" + str(propagate) + "\n")
+        if(dotFileFlag):
+            # Graph ast
+            dotFileName = dotFilePath + "-propagate" + dotFileNameExt
+            GraphVisitor().writeGraph(ssaast, dotFileName)
+
+        # Compile to LLVM
+        llvm = LLVMInstrSelectVisitor().preorder(propagatedast)
+        propagatedast = None
         if(debug):
             # Print ast
             sys.stderr.write("LLVM ast = \n" + str(llvm) + "\n")

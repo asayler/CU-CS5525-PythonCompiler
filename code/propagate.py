@@ -32,4 +32,4 @@ class PropagateVisitor(CopyVisitor):
 
     def preorder(self, tree):
         self.names = {}
-        return super(SSAVisitor, self).preorder(tree)
+        return super(PropagateVisitor, self).preorder(tree)
