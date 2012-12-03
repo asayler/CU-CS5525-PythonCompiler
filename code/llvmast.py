@@ -42,8 +42,8 @@ class LLVMVoid(LLVMType):
     def __init__(self):
         pass
     def __repr__(self):
-        return ('void')    
-
+        return ('void')
+    
 class LLVMInt(LLVMType):
     def __init__(self, length):
         self.length = length
@@ -115,7 +115,7 @@ class VarLLVM(LLVMArg):
 class LabelArgLLVM(LLVMArg):
     def __init__(self, name):
         self.name = name
-        self.type = LLVMLabel
+        self.type = LLVMLabel()
     def __repr__(self):
         return "%s %s" % (str(self.type), str(self.name))
 
@@ -217,11 +217,11 @@ class switchLLVM(TermLLVMInst):
         self.defaultDest = defaultDest
         self.altDests = altDests
     def __repr__(self):
-        return ("switch %s %s, label %s [\n\t%s\n]") % (str(getType(self.value)),
-                                                        str(getArg(self.value)),
-                                                        str(defaultDest),
-                                                        '\n\t'.join(map(lambda x: str(x),
-                                                                        self.altDests)))
+        return ("switch %s %s, %s [ %s ]") % (str(getType(self.value)),
+                                              str(getArg(self.value)),
+                                              str(self.defaultDest),
+                                              ' '.join(map(lambda x: str(x),
+                                                           self.altDests)))
 
 # Binary Instructions
 

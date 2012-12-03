@@ -200,7 +200,6 @@ class LLVMInstrSelectVisitor(Visitor):
         return [subLLVM(target, left, right)]
 
     def visitIfExpFlat(self, n, target):
-        raise Exception("IfExpFlat Not Yet Working")
         # Setup Values
         testVal =  self.dispatch(n.test)
         thenVal =  self.dispatch(n.then.expr)
@@ -220,13 +219,21 @@ class LLVMInstrSelectVisitor(Visitor):
         # Then Block
         thenI   = []
         for node in n.then.node.nodes:
-            thenI += self.dispatch(node, None)
+            (ret, blocked) = self.dispatch(node, None)
+            if(blocked):
+                raise Exception("Found blocks where none should occure")
+            else:
+                thenI += ret
         thenI  += [switchLLVM(LLVMZERO, endL, [])]
         thenB   = blockLLVM(thenL, thenI)
         # Else Block
         elseI   = []
         for node in n.else_.node.nodes:
-            elseI += self.dispatch(node, None)
+            (ret, blocked) = self.dispatch(node, None)
+            if(blocked):
+                raise Exception("Found blocks where none should occure")
+            else:
+                elseI += ret
         elseI  += [switchLLVM(LLVMZERO, endL, [])]
         elseB   = blockLLVM(elseL, elseI)
         # End Block

@@ -16,7 +16,7 @@ declare i64 @inject_int(i64)
 ; pyobj inject_bool(int b);
 declare i64 @inject_bool(i64)
 ; pyobj inject_big(big_pyobj* p);
-declare i64 @inject_big(i8*)
+;declare i64 @inject_big(i8*)
 
 ; INJECT
 ;int project_int(pyobj val);
@@ -24,19 +24,29 @@ declare i64 @project_int(i64)
 ;int project_bool(pyobj val);
 declare i64 @project_bool(i64)
 ;big_pyobj* project_big(pyobj val);
-declare i8* @project_big(i64)
+;declare i8* @project_big(i64)
 
 ;int is_true(pyobj v);
+declare i64 @is_true(i64)
 ;int tag(pyobj val);
+declare i64 @tag(i64)
 
 ;int is_int(pyobj val);
+declare i64 @is_int(i64);
 ;int is_bool(pyobj val);
+declare i64 @is_bool(i64);
 ;int is_big(pyobj val);
+declare i64 @is_big(i64);
 ;int is_function(pyobj val);
+declare i64 @is_function(i64);
 ;int is_object(pyobj val);
+declare i64 @is_object(i64);
 ;int is_class(pyobj val);
+declare i64 @is_class(i64);
 ;int is_unbound_method(pyobj val);
+declare i64 @is_unbound_method(i64);
 ;int is_bound_method(pyobj val);
+declare i64 @is_bound_method(i64);
 
 ;big_pyobj* create_list(pyobj length);
 ;big_pyobj* create_dict();
