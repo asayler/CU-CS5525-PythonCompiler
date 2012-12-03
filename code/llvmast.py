@@ -183,13 +183,13 @@ class defineLLVM(BlockLLVMInst):
                                                  '\n\t'.join(map(lambda x: str(x),
                                                                  self.instrs))))
 
-class labelLLVM(BlockLLVMInst):
+class blockLLVM(BlockLLVMInst):
     def __init__(self, label, instrs):
         self.label  = label
         self.instrs = instrs
     def __repr__(self):
-        return "%s:\n\t%s\n" % (str(getArg(self.label)),
-                                '\n\t'.join(map(lambda x: str(x),
+        return "%s:\n\t\t%s" % (str(getArg(self.label).name),
+                              '\n\t\t'.join(map(lambda x: str(x),
                                                 self.instrs)))
 
 # Terminator Instructions

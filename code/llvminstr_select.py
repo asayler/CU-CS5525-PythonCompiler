@@ -27,6 +27,7 @@ from vis import Visitor
 from stringfind import StringFindVisitor
 
 from utilities import generate_name
+from utilities import generate_label
 from utilities import generate_return_label
 from utilities import generate_while_labels
 from utilities import generate_if_labels
@@ -73,25 +74,34 @@ class LLVMInstrSelectVisitor(Visitor):
     # Statements    
 
     def visitStmtList(self, n, func):
+        blocks = []
         instrs = []
+        newlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
         for node in n.nodes:
-            instrs += self.dispatch(node, func)
-        return instrs
+            (instr, term) = self.dispatch(node, func)
+            instrs += instr
+            if(term):
+                oldlabel = newlabel
+                newlabel = LabelArgLLVM(LocalLLVM(generate_label("block")))
+                blocks += [blockLLVM(oldlabel, instrs)]
+                #TODO: Add br to newlable if not last block
+                instrs = []
+        return blocks
 
     def visitVarAssign(self, n, func):
         target = VarLLVM(LocalLLVM(n.target), DEFAULTTYPE)
-        return self.dispatch(n.value, target)
+        return (self.dispatch(n.value, target), False)
 
     def visitDiscard(self, n, func):
         target = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
-        return self.dispatch(n.expr, target)
+        return (self.dispatch(n.expr, target), False)
 
     def visitReturn(self, n, func):
         (name, _type) = func
         val = self.dispatch(n.value)
         if(_type != val.type):
             raise Exception("Return type must match function type")
-        return [retLLVM(val)]
+        return ([retLLVM(val)], True)
 
     def visitWhileFlatPhi(self, n, func):
         raise Exception("Not Yet Implemented")
@@ -111,6 +121,29 @@ class LLVMInstrSelectVisitor(Visitor):
         body += [Jump86(whileStartL)]
         body += [Label86(whileEndL)]
         return [Loop86(test, body)]
+
+    def visitIfPhi(self, n, func_name):
+        raise Exception("Not Yet Implemented")
+        #Setup Label
+        caseLs, endIfL = generate_if_labels(len(n.tests))
+        def make_branches(testlist, caseLs, else_):
+            if testlist:
+                test, body = testlist[0]
+                tmp = Var86(generate_name(IFTEMP))
+                tinstrs = self.dispatch(test, tmp)
+                tinstrs += [Comp86(x86FALSE, tmp)]
+                tinstrs += [JumpEqual86(caseLs[0])]
+                
+                ninstrs = self.dispatch(body, func_name)
+                ninstrs += [Jump86(endIfL)]
+                
+                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
+                return tinstrs + [If86(ninstrs, einstrs)]
+            else:
+                instrs = self.dispatch(else_, func_name)
+                instrs += [Label86(endIfL)]
+                return instrs
+        return make_branches(n.tests, caseLs, n.else_)
     
     # Terminal Expressions
 
@@ -141,29 +174,6 @@ class LLVMInstrSelectVisitor(Visitor):
         left = LLVMZERO
         right = self.dispatch(n.expr)
         return [subLLVM(target, left, right)]
-
-    def visitIfPhi(self, n, func_name):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(len(n.tests))
-        def make_branches(testlist, caseLs, else_):
-            if testlist:
-                test, body = testlist[0]
-                tmp = Var86(generate_name(IFTEMP))
-                tinstrs = self.dispatch(test, tmp)
-                tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caseLs[0])]
-                
-                ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(endIfL)]
-                
-                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
-                return tinstrs + [If86(ninstrs, einstrs)]
-            else:
-                instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(endIfL)]
-                return instrs
-        return make_branches(n.tests, caseLs, n.else_)
 
     def visitIfExpFlat(self, n, target):
         raise Exception("Not Yet Implemented")
