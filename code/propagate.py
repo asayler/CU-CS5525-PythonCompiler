@@ -41,7 +41,6 @@ class PropagateVisitor(CopyVisitor):
 
     def visitVarAssign(self, n):
         if(isinstance(n.value, Name)):
-            print "Direct Assignment: " + str(n)
             if(n.value.name in self.names):
                 n.value.name = self.names[n.value.name]
             if(n.target in self.names):
