@@ -48,7 +48,7 @@ from llvminstr_select import LLVMInstrSelectVisitor
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
 
-DECLARESFILE = './helper/runtime-declares.ll'
+DECLARESFILE = './helper/runtime-declares-x64.ll'
 PARSER = 'CURRENT'
 
 if PARSER == 'DEPRECATED':
