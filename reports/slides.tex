@@ -177,10 +177,11 @@
   \item<1->LLVM Intermediate Representation(IR)
   \begin{itemize}
   \item<1->In-memory data structure
-  \item<2->Human readable "assembly" language (.ll)
+  \item<2->Human readable ``assembly'' language (.ll)
   \item<3->File-oriented bitcode (colloqially, bytecode) (.bc)
   \end{itemize}
   \item<2->We convert to assemble (.ll) code
+  \item<3->Example...
   \end{itemize}
 \end{frame}
 
@@ -193,20 +194,19 @@
 \end{frame}
 
 %---SSA---%
-\subsection{Static Single Assignment Form}
+\begin{frame}{Static Single Assignment Form}
+  \begin{itemize}
+  \item<1->Each variable assigned only once
+  \item<2->If branching involved, use phi nodes
+  \item<3->LLVM has phi node already integrated
+  \end{itemize}
+\end{frame}
 
 \section{Approach}
 
 \section{Design}
 
 \subsection{Module Flow}
-
-%---Module Flow Slide---%
-\begin{frame}{\bf Module Flow}
-  \begin{center}
-    \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
-  \end{center}
-\end{frame}
 
 \subsection{SSA Conversion}
 
@@ -220,6 +220,13 @@
   language=python,
   label=lst:ssa-step2,
 ]{include/py/ssa-step2.py}
+\end{frame}
+
+%---Module Flow Slide---%
+\begin{frame}{\bf Module Flow}
+  \begin{center}
+    \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
+  \end{center}
 \end{frame}
 
 \begin{frame}[shrink]{\bf Conversions of If statements}
