@@ -161,6 +161,7 @@
   \end{itemize}
 \end{frame}
 
+%---Background Slide---%
 \begin{frame}{\bf Background: LLVM}
   \begin{itemize}
   \item<1->Open source
@@ -170,7 +171,18 @@
   \end{itemize}
 \end{frame}
 
-\subsection{LLVM}
+%---LLVM Slide---%
+\begin{frame}{\bf LLVM}
+  \begin{itemize}
+  \item<1->LLVM Intermediate Representation(IR)
+  \begin{itemize}
+  \item<1->In-memory data structure
+  \item<2->Human readable "assembly" language (.ll)
+  \item<3->File-oriented bitcode (colloqially, bytecode) (.bc)
+  \end{itemize}
+  \item<2->We convert to assemble (.ll) code
+  \end{itemize}
+\end{frame}
 
 %---LLVM Hello World Slide---%
 \begin{frame}{\bf LLVM ``Hello World''}
@@ -180,6 +192,7 @@
   ]{../code/llvm-examples/hello0.ll}
 \end{frame}
 
+%---SSA---%
 \subsection{Static Single Assignment Form}
 
 \section{Approach}
