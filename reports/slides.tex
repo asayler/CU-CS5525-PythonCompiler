@@ -208,18 +208,6 @@
 
 \subsection{SSA Conversion}
 
-\begin{frame}{\bf Simple conversion}
-  \lstinputlisting[
-  language=python,
-  label=lst:ssa-step1,
-]{include/py/ssa-step1.py}
-\pause
-  \lstinputlisting[
-  language=python,
-  label=lst:ssa-step2,
-]{include/py/ssa-step2.py}
-\end{frame}
-
 \begin{frame}{Approach and Design}
   \begin{itemize}
   \item<1->"Compiled" tests programs by hand to LLVM IR
@@ -239,6 +227,18 @@
   \begin{center}
     \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
   \end{center}
+\end{frame}
+
+\begin{frame}{\bf Simple conversion}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step1,
+]{include/py/ssa-step1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step2,
+]{include/py/ssa-step2.py}
 \end{frame}
 
 \begin{frame}[shrink]{\bf SSA Conversions of If statements}
@@ -274,10 +274,11 @@
     \item<3->External functions must be Declared
     \item<4-> \%x = 5 is not allowed, why?
     \item<5->Use internal constants:
-    \item<6->@1 = constant i32 5 #at top of file
-    \item<7->\%x = load i32* @V1 #loaded pointer to the constant 
+    \item<6->@1 = constant i32 5 \#at top of file
+    \item<7->\%x = load i32* @V1 \#loaded pointer to the constant 
     \end{itemize}
   \end{itemize}
+\end{frame}
 
 \subsection{LLVM Build Process}
 
