@@ -338,8 +338,19 @@ class callLLVM(OtherLLVMInst):
         else:
             return "%s = %s" % (str(getArg(self.target)), string)
 
-class icallLLVM(OtherLLVMInst):
-    def __init__(self, )
+# class icallLLVM(OtherLLVMInst):
+#     def __init__(self, _type, name, args, target=None):
+#         self.type = _type
+#         self.name = name
+#         self.args = args
+#         self.target = target
+#     def __repr__(self):
+#         #<result> = [tail] call [cconv] <ty>* <fnptrval>(<param list>)
+#         string = ("call %s")
+#         string = ("call %s* %s(%s)") % (str(self.type),
+#                                        str(self.name),
+#                                        ", ".join(map(lambda x: str(x),
+#                                                      self.args)))
 
 class phiLLVM(OtherLLVMInst):
     def __init__(self, target, pairs):

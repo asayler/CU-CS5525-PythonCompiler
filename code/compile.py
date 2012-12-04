@@ -230,6 +230,9 @@ def main(argv=None):
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
     sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
+    dotFileName = dotFilePath + "-flat" + dotFileNameExt
+    GraphVisitor().writeGraph(flatast, dotFileName)
+    #return 0
     if(compileType == "x86"):
 
         # Compile flat tree

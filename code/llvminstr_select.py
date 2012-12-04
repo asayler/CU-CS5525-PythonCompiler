@@ -263,22 +263,7 @@ class LLVMInstrSelectVisitor(Visitor):
         return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
         
     def visitIndirectCallFunc(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += self.dispatch(n.node, target)
-        cntargs = 0
-        align = (STACKALIGN - (len(n.args) % STACKALIGN))
-        offset = 0
-        if align != 0:
-            offset += WORDLEN * align
-            instrs += [Sub86(Const86(offset), ESP)]
-        n.args.reverse()
+        #raise Exception("Not Yet Implemented")
         for arg in n.args:
-            cntargs += 1
-            instrs += [Push86(arg_select(arg))]
-            offset += WORDLEN
-        instrs += [IndirectCall86(target)]
-        instrs += [Move86(EAX, target)]
-        if(cntargs > 0):
-            instrs += [Add86(Const86(offset), ESP)]
-        return instrs
+            args += [self.dispatch(arg)]
+        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
