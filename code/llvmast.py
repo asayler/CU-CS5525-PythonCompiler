@@ -249,9 +249,9 @@ class addLLVM(BinaryLLVMInst):
 
 class subLLVM(BinaryLLVMInst):
     def __init__(self, *args, **kwargs):
-        super(addLLVM, self).__init__(*args, **kwargs)
+        super(subLLVM, self).__init__(*args, **kwargs)
     def __repr__(self):
-        return super(addLLVM, self).emit("sub")
+        return super(subLLVM, self).emit("sub")
 
 # Other Instructions
 
