@@ -191,7 +191,7 @@ class blockLLVM(BlockLLVMInst):
         self.label  = label
         self.instrs = instrs
     def __repr__(self):
-        return "%s:\n\t\t%s" % (str(getArg(self.label).name),
+        return "%s:\n\t\t%s\n" % (str(getArg(self.label).name),
                               '\n\t\t'.join(map(lambda x: str(x),
                                                 self.instrs)))
 
@@ -237,7 +237,7 @@ class BinaryLLVMInst(LLVMInst):
     def emit(self, name):
         return ("%s = %s %s %s, %s" % (str(getArg(self.target)),
                                        str(name),
-                                       str(self._type),
+                                       str(self.type),
                                        str(getArg(self.left)),
                                        str(getArg(self.right)))) 
 

@@ -77,12 +77,11 @@ class LLVMInstrSelectVisitor(Visitor):
     # Statements    
 
     def visitStmtList(self, n, func):
-        blocks = []
         instrs = []
+        blocks = []
         thisL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         length = len(n.nodes)
-        cnt = 0
         if(length > 0):
             # None-Empty List
             for node in n.nodes:
@@ -104,10 +103,10 @@ class LLVMInstrSelectVisitor(Visitor):
                 elif(isinstance(ret[0], LLVMInst)):
                     # If list of instructions returned
                     instrs += ret
-                    #if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
-                    if((cnt == (length-1)) and not(isinstance(instrs[-1], TermLLVMInst))):
+                    if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
                         # If this is the last node and no terminal instruction has been reached
                         instrs += [switchLLVM(LLVMZERO, DUMMYL, [])]
+                        
                     if(isinstance(instrs[-1], TermLLVMInst)):
                         # If last instruction returned is terminal, end block
                         blocks += [blockLLVM(thisL, instrs)]
@@ -116,12 +115,10 @@ class LLVMInstrSelectVisitor(Visitor):
                         nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
                 else:
                     raise Exception("Unhandled return type")
-                cnt += 1
         else:
             # Empty List
             # Add Dummy Block (will be patched into soemthing usefull later)
             blocks += [blockLLVM(DUMMYL, [switchLLVM(LLVMZERO, DUMMYL, [])])]
-
         return blocks
 
     def visitVarAssign(self, n, func):
@@ -229,9 +226,7 @@ class LLVMInstrSelectVisitor(Visitor):
         testI  += [switchLLVM(testVal, elseL, [thenS])]
         testB   = [blockLLVM(testL, testI)]
         # Then Block
-        sys.stderr.write("n.then.node = " + str(n.then.node) + "\n")
         thenB   = self.dispatch(n.then.node, None)
-        sys.stderr.write("thenB = " + str(n.then.node) + "\n")
         # Patch in proper label for first block
         thenB[0].label = thenL
         # Patch in proper destination in last block

@@ -16,7 +16,7 @@ declare i64 @inject_int(i64)
 ; pyobj inject_bool(int b);
 declare i64 @inject_bool(i64)
 ; pyobj inject_big(big_pyobj* p);
-;declare i64 @inject_big(i8*)
+declare i64 @inject_big(i64)
 
 ; INJECT
 ;int project_int(pyobj val);
@@ -24,7 +24,7 @@ declare i64 @project_int(i64)
 ;int project_bool(pyobj val);
 declare i64 @project_bool(i64)
 ;big_pyobj* project_big(pyobj val);
-;declare i8* @project_big(i64)
+declare i64 @project_big(i64)
 
 ;int is_true(pyobj v);
 declare i64 @is_true(i64)
@@ -49,13 +49,20 @@ declare i64 @is_unbound_method(i64);
 declare i64 @is_bound_method(i64);
 
 ;big_pyobj* create_list(pyobj length);
+declare i64 @create_list(i64);
 ;big_pyobj* create_dict();
+declare i64 @create_dict(i64);
 ;pyobj set_subscript(pyobj c, pyobj key, pyobj val);
+declare i64 @set_subscript(i64, i64, i64);
 ;pyobj get_subscript(pyobj c, pyobj key);
+declare i64 @get_subscript(i64, i64);
 
 ;big_pyobj* add(big_pyobj* a, big_pyobj* b);
+declare i64 @add(i64, i64);
 ;int equal(big_pyobj* a, big_pyobj* b);
+declare i64 @equal(i64, i64);
 ;int not_equal(big_pyobj* x, big_pyobj* y);
+declare i64 @not_equal(i64, i64);
 
 ;big_pyobj* create_closure(void* fun_ptr, pyobj free_vars);
 ;void* get_fun_ptr(pyobj);
@@ -73,3 +80,4 @@ declare i64 @is_bound_method(i64);
 ;pyobj set_attr(pyobj obj, char* attr, pyobj val);
 
 ;pyobj error_pyobj(char* string);
+declare i64 @error_pyobj();
