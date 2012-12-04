@@ -202,8 +202,6 @@
   \end{itemize}
 \end{frame}
 
-\section{Approach}
-
 \section{Design}
 
 \subsection{Module Flow}
@@ -222,6 +220,20 @@
 ]{include/py/ssa-step2.py}
 \end{frame}
 
+\begin{frame}{Approach and Design}
+  \begin{itemize}
+  \item<1->"Compiled" tests programs by hand to LLVM IR
+  \item<2->Ran assembly
+  \item<3->Refactored existing compiler
+  \item<4->Added an SSA conversion pass after Flatten pass
+  \item<5->Added an LLVM Instruction Selection pass to produce LLVM IR
+  \item<6->Modified build and test system to handle both x86 and LLVM
+  \item<7->Testing compares Python, x86, and LLVM execution
+  \item<8->Compiler pass to add support for Python2.7+ parser
+  \end{itemize}
+\end{frame}
+
+
 %---Module Flow Slide---%
 \begin{frame}{\bf Module Flow}
   \begin{center}
@@ -229,7 +241,7 @@
   \end{center}
 \end{frame}
 
-\begin{frame}[shrink]{\bf Conversions of If statements}
+\begin{frame}[shrink]{\bf SSA Conversions of If statements}
   \lstinputlisting[
   language=python,
   label=lst:ssa-if1,
@@ -241,7 +253,7 @@
 ]{include/py/ssa-if2.py}
 \end{frame}
 
-\begin{frame}[shrink]{\bf Conversions of While statements}
+\begin{frame}[shrink]{\bf SSA Conversions of While statements}
   \lstinputlisting[
   language=python,
   label=lst:ssa-while1,
@@ -253,11 +265,24 @@
 ]{include/py/ssa-while2.py}
 \end{frame}
 
-\subsection{LLVM Instructions}
+\begin{frame}{LLVM Instructions}
+  \begin{itemize}
+  \item<1->LLVM is higher level than x86 -> more features
+    \begin{itemize}
+    \item<1->Keep track of register types
+    \item<2->Lucky: Pyobj pointers
+    \item<3->External functions must be Declared
+    \item<4-> \%x = 5 is not allowed, why?
+    \item<5->Use internal constants:
+    \item<6->@1 = constant i32 5 #at top of file
+    \item<7->\%x = load i32* @V1 #loaded pointer to the constant 
+    \end{itemize}
+  \end{itemize}
 
 \subsection{LLVM Build Process}
 
 \section{Results}
+
 
 \section{Discussion}
 
