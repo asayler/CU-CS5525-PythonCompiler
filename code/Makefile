@@ -76,12 +76,27 @@ P0TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p0-*.py)
 P0TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P0TESTCASESSOURCE))
 P0TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P0TESTCASESSOURCE))
 
+P1TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p1-*.py)
+P1TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P1TESTCASESSOURCE))
+P1TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P1TESTCASESSOURCE))
+
+P2TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p2-*.py)
+P2TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P2TESTCASESSOURCE))
+P2TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P2TESTCASESSOURCE))
+
+P3TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p3-*.py)
+P3TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P3TESTCASESSOURCE))
+P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TESTCASESSOURCE))
 
 .PHONY: all clean \
 	Assemb Assemb86 AssembLL \
 	Tests Tests86 TestsLL \
 	TestsRun TestsRun86 TestsRunLL \
-	LLVMTestsRunLL \
+	LLVMTestsRun86 LLVMTestRunLL \
+	P0TestsRun86 P0TestsRunLL \
+	P1TestsRun86 P1TestsRunLL \
+	P2TestsRun86 P2TestsRunLL \
+	P3TestsRun86 P3TestsRunLL \
 	MTests
 
 all: Tests
@@ -118,6 +133,24 @@ P0TestsRun86: $(P0TESTDIFFS86)
 	cat $^
 
 P0TestsRunLL: $(P0TESTDIFFSLL)
+	cat $^
+
+P1TestsRun86: $(P1TESTDIFFS86)
+	cat $^
+
+P1TestsRunLL: $(P1TESTDIFFSLL)
+	cat $^
+
+P2TestsRun86: $(P2TESTDIFFS86)
+	cat $^
+
+P2TestsRunLL: $(P2TESTDIFFSLL)
+	cat $^
+
+P3TestsRun86: $(P3TESTDIFFS86)
+	cat $^
+
+P3TestsRunLL: $(P3TESTDIFFSLL)
 	cat $^
 
 $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in

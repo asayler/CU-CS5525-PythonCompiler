@@ -26,11 +26,15 @@ declare i64 @project_bool(i64)
 ;big_pyobj* project_big(pyobj val);
 declare i64 @project_big(i64)
 
+; UTILITIES
 ;int is_true(pyobj v);
 declare i64 @is_true(i64)
 ;int tag(pyobj val);
 declare i64 @tag(i64)
+;pyobj error_pyobj(char* string);
+declare i64 @error_pyobj();
 
+; IS_*
 ;int is_int(pyobj val);
 declare i64 @is_int(i64);
 ;int is_bool(pyobj val);
@@ -51,7 +55,7 @@ declare i64 @is_bound_method(i64);
 ;big_pyobj* create_list(pyobj length);
 declare i64 @create_list(i64);
 ;big_pyobj* create_dict();
-declare i64 @create_dict(i64);
+declare i64 @create_dict();
 ;pyobj set_subscript(pyobj c, pyobj key, pyobj val);
 declare i64 @set_subscript(i64, i64, i64);
 ;pyobj get_subscript(pyobj c, pyobj key);
@@ -78,6 +82,3 @@ declare i64 @not_equal(i64, i64);
 ;int has_attr(pyobj o, char* attr);
 ;pyobj get_attr(pyobj c, char* attr);
 ;pyobj set_attr(pyobj obj, char* attr, pyobj val);
-
-;pyobj error_pyobj(char* string);
-declare i64 @error_pyobj();

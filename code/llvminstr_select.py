@@ -50,8 +50,11 @@ DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
+ICMPTEMP     = "icmptemp"
 
 DEFAULTTYPE = I64
+ICMPTYPE    = I1
+
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
@@ -196,12 +199,20 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        return [icmpLLVM(target, ICMP_EQ, left, right)]
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_EQ, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
 
     def visitIntNotEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        return [icmpLLVM(target, ICMP_NE, left, right)]
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
 
     def visitIntUnarySub(self, n, target):
         left = LLVMZERO
