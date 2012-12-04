@@ -50,8 +50,11 @@ DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
 IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
+ICMPTEMP     = "icmptemp"
 
 DEFAULTTYPE = I64
+ICMPTYPE    = I1
+
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
@@ -77,12 +80,11 @@ class LLVMInstrSelectVisitor(Visitor):
     # Statements    
 
     def visitStmtList(self, n, func):
-        blocks = []
         instrs = []
+        blocks = []
         thisL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         length = len(n.nodes)
-        cnt = 0
         if(length > 0):
             # None-Empty List
             for node in n.nodes:
@@ -104,10 +106,10 @@ class LLVMInstrSelectVisitor(Visitor):
                 elif(isinstance(ret[0], LLVMInst)):
                     # If list of instructions returned
                     instrs += ret
-                    #if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
-                    if((cnt == (length-1)) and not(isinstance(instrs[-1], TermLLVMInst))):
+                    if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
                         # If this is the last node and no terminal instruction has been reached
                         instrs += [switchLLVM(LLVMZERO, DUMMYL, [])]
+                        
                     if(isinstance(instrs[-1], TermLLVMInst)):
                         # If last instruction returned is terminal, end block
                         blocks += [blockLLVM(thisL, instrs)]
@@ -116,12 +118,10 @@ class LLVMInstrSelectVisitor(Visitor):
                         nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
                 else:
                     raise Exception("Unhandled return type")
-                cnt += 1
         else:
             # Empty List
             # Add Dummy Block (will be patched into soemthing usefull later)
             blocks += [blockLLVM(DUMMYL, [switchLLVM(LLVMZERO, DUMMYL, [])])]
-
         return blocks
 
     def visitVarAssign(self, n, func):
@@ -199,12 +199,20 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        return [icmpLLVM(target, ICMP_EQ, left, right)]
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_EQ, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
 
     def visitIntNotEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        return [icmpLLVM(target, ICMP_NE, left, right)]
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
 
     def visitIntUnarySub(self, n, target):
         left = LLVMZERO
@@ -219,19 +227,15 @@ class LLVMInstrSelectVisitor(Visitor):
         # Setup Labels
         testL = LabelArgLLVM(LocalLLVM(generate_label("test")))
         thenL = LabelArgLLVM(LocalLLVM(generate_label("then")))
-        thenP = PhiPairLLVM(thenVal, thenL)
-        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
         elseL = LabelArgLLVM(LocalLLVM(generate_label("else")))
-        elseP = PhiPairLLVM(elseVal, elseL)
         endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
         # Test Block
+        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
         testI   = []
         testI  += [switchLLVM(testVal, elseL, [thenS])]
         testB   = [blockLLVM(testL, testI)]
         # Then Block
-        sys.stderr.write("n.then.node = " + str(n.then.node) + "\n")
         thenB   = self.dispatch(n.then.node, None)
-        sys.stderr.write("thenB = " + str(n.then.node) + "\n")
         # Patch in proper label for first block
         thenB[0].label = thenL
         # Patch in proper destination in last block
@@ -244,6 +248,8 @@ class LLVMInstrSelectVisitor(Visitor):
         # Patch in proper destination in last block
         elseB[-1].instrs[-1].defaultDest = endL
         # End Block
+        thenP = PhiPairLLVM(thenVal, thenB[-1].label)
+        elseP = PhiPairLLVM(elseVal, elseB[-1].label)
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
         endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]

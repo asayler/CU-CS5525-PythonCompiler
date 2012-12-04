@@ -134,6 +134,16 @@ def getType(arg):
     else:
         raise Exception("Attempting to get type of invalid argument: " + str(arg))
 
+def setType(arg, _type):
+    if(isinstance(arg, ConstLLVM)):
+        arg.type = _type
+    elif(isinstance(arg, VarLLVM)):
+        arg.type = _type
+    elif(isinstance(arg, LabelArgLLVM)):
+        arg.type = _type
+    else:
+        raise Exception("Attempting to set type of invalid argument: " + str(arg))
+
 def getArg(arg):
     if(isinstance(arg, ConstLLVM)):
         return arg.value
@@ -143,6 +153,16 @@ def getArg(arg):
         return arg.name
     else:
         raise Exception("Attempting to get name of invalid argument: " + str(arg))
+
+def setArg(arg, val):
+    if(isinstance(arg, ConstLLVM)):
+        arg.value = val
+    elif(isinstance(arg, VarLLVM)):
+        arg.name = val
+    elif(isinstance(arg, LabelArgLLVM)):
+        arg.name = val
+    else:
+        raise Exception("Attempting to set type of invalid argument: " + str(arg))
 
 # LLVM Compound Args
 
@@ -191,7 +211,7 @@ class blockLLVM(BlockLLVMInst):
         self.label  = label
         self.instrs = instrs
     def __repr__(self):
-        return "%s:\n\t\t%s" % (str(getArg(self.label).name),
+        return "%s:\n\t\t%s\n" % (str(getArg(self.label).name),
                               '\n\t\t'.join(map(lambda x: str(x),
                                                 self.instrs)))
 
@@ -237,7 +257,7 @@ class BinaryLLVMInst(LLVMInst):
     def emit(self, name):
         return ("%s = %s %s %s, %s" % (str(getArg(self.target)),
                                        str(name),
-                                       str(self._type),
+                                       str(self.type),
                                        str(getArg(self.left)),
                                        str(getArg(self.right)))) 
 
@@ -249,9 +269,35 @@ class addLLVM(BinaryLLVMInst):
 
 class subLLVM(BinaryLLVMInst):
     def __init__(self, *args, **kwargs):
-        super(addLLVM, self).__init__(*args, **kwargs)
+        super(subLLVM, self).__init__(*args, **kwargs)
     def __repr__(self):
-        return super(addLLVM, self).emit("sub")
+        return super(subLLVM, self).emit("sub")
+
+# Conversion Instructions
+
+class ConversionLLVMInst(LLVMInst):
+    def __init__(self, target, value, outType):
+        self.target  = target
+        self.value   = value
+        self.outType = outType
+    def emit(self, name):
+        return ("%s = %s %s %s to %s" % (str(getArg(self.target)),
+                                         str(name),
+                                         str(getType(self.value)),
+                                         str(getArg(self.value)),
+                                         str(self.outType))) 
+
+class zextLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(zextLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(zextLLVM, self).emit("zext")
+
+class sextLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(sextLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(sextLLVM, self).emit("sext")
 
 # Other Instructions
 
@@ -270,11 +316,11 @@ class icmpLLVM(OtherLLVMInst):
         self.left = left
         self.right = right
     def __repr__(self):
-        return ("%s = icmp %s %s %s, %s)" % (str(getArg(self.target)),
+        return ("%s = icmp %s %s %s, %s" % (str(getArg(self.target)),
                                              str(self.op),
                                              str(self.argType),
-                                             set(getArg(self.left)),
-                                             set(getArg(self.right))))
+                                             str(getArg(self.left)),
+                                             str(getArg(self.right))))
 
 class callLLVM(OtherLLVMInst):
     def __init__(self, _type, name, args, target=None):
