@@ -16,6 +16,8 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
+import sys
+
 # Data Types
 from pyast import *
 from llvmast import *
@@ -79,53 +81,63 @@ class LLVMInstrSelectVisitor(Visitor):
         instrs = []
         thisL = LabelArgLLVM(LocalLLVM(generate_label("block")))
         nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
-        for node in n.nodes:
-            (ret, blocked) = self.dispatch(node, func)
-            if(blocked):
-                # If list of blocks returned
-                # Add jump to start of first returned block
-                instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
-                # Add new block
-                blocks += [blockLLVM(thisL, instrs)]
-                # Patch in proper label for jump in last block
-                ret[-1].instrs[-1].defaultDest = nextL
-                # Add returned blocks
-                blocks += ret
-                # Reset instructiosn and update labels
-                instrs = []
-                thisL = nextL
-                nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
-            else:
-                # If list of instructions returned
-                instrs += ret
-                # If last instruction returned is terminal, end block
-                if(isinstance(instrs[-1], TermLLVMInst)):
+        length = len(n.nodes)
+        cnt = 0
+        if(length > 0):
+            # None-Empty List
+            for node in n.nodes:
+                ret = self.dispatch(node, func)
+                if(isinstance(ret[0], BlockLLVMInst)):
+                    # If list of blocks returned
+                    # Add jump to start of first returned block
+                    instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
+                    # Add new block
                     blocks += [blockLLVM(thisL, instrs)]
+                    # Patch in proper destination in last block
+                    ret[-1].instrs[-1].defaultDest = nextL
+                    # Add returned blocks
+                    blocks += ret
+                    # Reset instructiosn and update labels
                     instrs = []
                     thisL = nextL
                     nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
+                elif(isinstance(ret[0], LLVMInst)):
+                    # If list of instructions returned
+                    instrs += ret
+                    #if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
+                    if((cnt == (length-1)) and not(isinstance(instrs[-1], TermLLVMInst))):
+                        # If this is the last node and no terminal instruction has been reached
+                        instrs += [switchLLVM(LLVMZERO, DUMMYL, [])]
+                    if(isinstance(instrs[-1], TermLLVMInst)):
+                        # If last instruction returned is terminal, end block
+                        blocks += [blockLLVM(thisL, instrs)]
+                        instrs = []
+                        thisL = nextL
+                        nextL = LabelArgLLVM(LocalLLVM(generate_label("block")))
+                else:
+                    raise Exception("Unhandled return type")
+                cnt += 1
+        else:
+            # Empty List
+            # Add Dummy Block (will be patched into soemthing usefull later)
+            blocks += [blockLLVM(DUMMYL, [switchLLVM(LLVMZERO, DUMMYL, [])])]
+
         return blocks
 
     def visitVarAssign(self, n, func):
         target = VarLLVM(LocalLLVM(n.target), DEFAULTTYPE)
-        if(isinstance(n.value, IfExpFlat)):
-            return (self.dispatch(n.value, target), True)
-        else:
-            return (self.dispatch(n.value, target), False)
+        return (self.dispatch(n.value, target))
 
     def visitDiscard(self, n, func):
         target = VarLLVM(LocalLLVM(generate_name(DISCARDTEMP)), DEFAULTTYPE)
-        if(isinstance(n.expr, IfExpFlat)):
-            return (self.dispatch(n.expr, target), True)
-        else:
-            return (self.dispatch(n.expr, target), False)
+        return (self.dispatch(n.expr, target))
 
     def visitReturn(self, n, func):
         (name, _type) = func
         val = self.dispatch(n.value)
         if(_type != getType(val)):
             raise Exception("Return type must match function type")
-        return ([retLLVM(val)], False)
+        return ([retLLVM(val)])
 
     def visitWhileFlatPhi(self, n, func):
         raise Exception("Not Yet Implemented")
@@ -215,33 +227,28 @@ class LLVMInstrSelectVisitor(Visitor):
         # Test Block
         testI   = []
         testI  += [switchLLVM(testVal, elseL, [thenS])]
-        testB   = blockLLVM(testL, testI)
+        testB   = [blockLLVM(testL, testI)]
         # Then Block
-        thenI   = []
-        for node in n.then.node.nodes:
-            (ret, blocked) = self.dispatch(node, None)
-            if(blocked):
-                raise Exception("Found blocks where none should occure")
-            else:
-                thenI += ret
-        thenI  += [switchLLVM(LLVMZERO, endL, [])]
-        thenB   = blockLLVM(thenL, thenI)
+        sys.stderr.write("n.then.node = " + str(n.then.node) + "\n")
+        thenB   = self.dispatch(n.then.node, None)
+        sys.stderr.write("thenB = " + str(n.then.node) + "\n")
+        # Patch in proper label for first block
+        thenB[0].label = thenL
+        # Patch in proper destination in last block
+        thenB[-1].instrs[-1].defaultDest = endL
         # Else Block
-        elseI   = []
-        for node in n.else_.node.nodes:
-            (ret, blocked) = self.dispatch(node, None)
-            if(blocked):
-                raise Exception("Found blocks where none should occure")
-            else:
-                elseI += ret
-        elseI  += [switchLLVM(LLVMZERO, endL, [])]
-        elseB   = blockLLVM(elseL, elseI)
+        #elseI   = []
+        elseB   = self.dispatch(n.else_.node, None)
+        # Patch in proper label for first block
+        elseB[0].label = elseL
+        # Patch in proper destination in last block
+        elseB[-1].instrs[-1].defaultDest = endL
         # End Block
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
         endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]
-        endB    = blockLLVM(endL, endI)
-        return [testB, thenB, elseB, endB]
+        endB    = [blockLLVM(endL, endI)]
+        return testB + thenB + elseB + endB
 
     def visitCallFunc(self, n, target):
         args = []
