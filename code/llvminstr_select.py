@@ -216,12 +216,10 @@ class LLVMInstrSelectVisitor(Visitor):
         # Setup Labels
         testL = LabelArgLLVM(LocalLLVM(generate_label("test")))
         thenL = LabelArgLLVM(LocalLLVM(generate_label("then")))
-        thenP = PhiPairLLVM(thenVal, thenL)
-        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
         elseL = LabelArgLLVM(LocalLLVM(generate_label("else")))
-        elseP = PhiPairLLVM(elseVal, elseL)
         endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
         # Test Block
+        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
         testI   = []
         testI  += [switchLLVM(testVal, elseL, [thenS])]
         testB   = [blockLLVM(testL, testI)]
@@ -239,6 +237,8 @@ class LLVMInstrSelectVisitor(Visitor):
         # Patch in proper destination in last block
         elseB[-1].instrs[-1].defaultDest = endL
         # End Block
+        thenP = PhiPairLLVM(thenVal, thenB[-1].label)
+        elseP = PhiPairLLVM(elseVal, elseB[-1].label)
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
         endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]
