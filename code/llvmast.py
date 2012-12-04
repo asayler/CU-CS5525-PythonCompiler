@@ -292,6 +292,9 @@ class callLLVM(OtherLLVMInst):
         else:
             return "%s = %s" % (str(getArg(self.target)), string)
 
+class icallLLVM(OtherLLVMInst):
+    def __init__(self, )
+
 class phiLLVM(OtherLLVMInst):
     def __init__(self, target, pairs):
         _type = None
