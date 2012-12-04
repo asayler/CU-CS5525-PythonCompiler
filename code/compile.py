@@ -249,9 +249,6 @@ def main(argv=None):
 
         # SSA conversion
         ssaast = SSAVisitor().preorder(flatast)
-        print ssaast
-        return 0
-
         flatast = None
         if(debug):
             # Print ast
