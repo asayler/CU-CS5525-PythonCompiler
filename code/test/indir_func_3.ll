@@ -19,3 +19,21 @@ define i32 @main() {
   %5 = call i32 %4(i32 5)
   ret i32 %5
 }
+
+
+;int test(int a){
+
+ ;   return a;
+
+;}
+
+;int main(){
+    
+;    int (*func)(int);
+;    void* any;
+
+;    any = test;
+;    func = any;
+
+;    return func(5);
+;}

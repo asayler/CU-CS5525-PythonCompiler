@@ -26,6 +26,11 @@ declare i64 @project_bool(i64)
 ;big_pyobj* project_big(pyobj val);
 declare i8* @project_big(i64)
 
+;CLOSURE
+;big_pyobj* create_closure(void* fun_ptr, pyobj free_vars) 
+;declare i8* @create_closure()
+
+
 define void @my_int_func(i64 %x){
 
   call void (i64)* @print_int_nl(i64 %x)
