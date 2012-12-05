@@ -3,3 +3,7 @@ General:
 
 LLVM:
 * Detect void function types and use void call style and type
+
+HELPER:
+* The helper function sling a lot of ints around. It woudl be ebst to make these
+  longs for consistency with pyobjs
