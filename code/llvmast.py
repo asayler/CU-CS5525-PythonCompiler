@@ -69,6 +69,7 @@ I64  = LLVMInt(64)
 PI32 = LLVMPointer(I8)
 PI32 = LLVMPointer(I32)
 PI64 = LLVMPointer(I64)
+LLVMBOOLTYPE = I1
 
 # LLVM Names
 
@@ -119,10 +120,8 @@ class LabelArgLLVM(LLVMArg):
     def __repr__(self):
         return "%s %s" % (str(self.type), str(self.name))
 
-LLVMZERO  = ConstLLVM(0, I64)
-LLVMONE   = ConstLLVM(1, I64)
-LLVMFALSE = LLVMZERO
-LLVMTRUE  = LLVMONE
+LLVMFALSE = ConstLLVM(0, LLVMBOOLTYPE)
+LLVMTRUE  = ConstLLVM(1, LLVMBOOLTYPE)
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
