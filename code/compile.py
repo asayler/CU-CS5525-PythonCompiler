@@ -25,6 +25,7 @@ USAGE:
 
 # External Imports
 import sys
+import platform
 import argparse
 
 # Compiler Stage Imports
@@ -48,7 +49,14 @@ from llvminstr_select import LLVMInstrSelectVisitor
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
 
-DECLARESFILE = './helper/runtime-declares-x64.ll'
+(bits, linkage) = platform.architecture()
+if(bits == '32bit'):
+    DECLARESFILE = './helper/runtime-declares-x32.ll'
+elif(bits == '64bit'):
+    DECLARESFILE = './helper/runtime-declares-x64.ll'
+else:
+    raise Exception("Unknown bits type")
+
 PARSER = 'CURRENT'
 
 if PARSER == 'DEPRECATED':

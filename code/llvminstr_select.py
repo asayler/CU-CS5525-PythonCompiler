@@ -17,6 +17,7 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 import sys
+import platform
 
 # Data Types
 from pyast import *
@@ -52,8 +53,18 @@ IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 ICMPTEMP     = "icmptemp"
 
-DEFAULTTYPE = I64
-ICMPTYPE    = I1
+(bits, linkage) = platform.architecture()
+if(bits == '32bit'):
+    DEFAULTTYPE = I32
+elif(bits == '64bit'):
+    DEFAULTTYPE = I64
+else:
+    raise Exception("Unknown bits type")
+
+DEFAULTZERO  = ConstLLVM(0, DEFAULTTYPE)
+DEFAULTONE   = ConstLLVM(1, DEFAULTTYPE)
+DEFAULTFALSE = DEFAULTZERO
+DEFAULTTRUE  = DEFAULTONE
 
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
@@ -92,7 +103,7 @@ class LLVMInstrSelectVisitor(Visitor):
                 if(isinstance(ret[0], BlockLLVMInst)):
                     # If list of blocks returned
                     # Add jump to start of first returned block
-                    instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
+                    instrs += [switchLLVM(DEFAULTZERO, ret[0].label, [])]
                     # Add new block
                     blocks += [blockLLVM(thisL, instrs)]
                     # Patch in proper destination in last block
@@ -108,7 +119,7 @@ class LLVMInstrSelectVisitor(Visitor):
                     instrs += ret
                     if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
                         # If this is the last node and no terminal instruction has been reached
-                        instrs += [switchLLVM(LLVMZERO, DUMMYL, [])]
+                        instrs += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
                         
                     if(isinstance(instrs[-1], TermLLVMInst)):
                         # If last instruction returned is terminal, end block
@@ -121,7 +132,7 @@ class LLVMInstrSelectVisitor(Visitor):
         else:
             # Empty List
             # Add Dummy Block (will be patched into soemthing usefull later)
-            blocks += [blockLLVM(DUMMYL, [switchLLVM(LLVMZERO, DUMMYL, [])])]
+            blocks += [blockLLVM(DUMMYL, [switchLLVM(DEFAULTZERO, DUMMYL, [])])]
         return blocks
 
     def visitVarAssign(self, n, func):
@@ -199,7 +210,7 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
         instrs = []
         instrs += [icmpLLVM(tmp, ICMP_EQ, left, right)]
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
@@ -208,14 +219,14 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntNotEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
         instrs = []
         instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
         return instrs
 
     def visitIntUnarySub(self, n, target):
-        left = LLVMZERO
+        left = DEFAULTZERO
         right = self.dispatch(n.expr)
         return [subLLVM(target, left, right)]
 
@@ -230,7 +241,7 @@ class LLVMInstrSelectVisitor(Visitor):
         elseL = LabelArgLLVM(LocalLLVM(generate_label("else")))
         endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
         # Test Block
-        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
+        thenS = SwitchPairLLVM(DEFAULTTRUE, thenL)
         testI   = []
         testI  += [switchLLVM(testVal, elseL, [thenS])]
         testB   = [blockLLVM(testL, testI)]
@@ -252,7 +263,7 @@ class LLVMInstrSelectVisitor(Visitor):
         elseP = PhiPairLLVM(elseVal, elseB[-1].label)
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
-        endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]
+        endI   += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
         endB    = [blockLLVM(endL, endI)]
         return testB + thenB + elseB + endB
 
