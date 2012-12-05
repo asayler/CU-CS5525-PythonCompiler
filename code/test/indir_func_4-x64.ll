@@ -32,17 +32,11 @@ declare i64 @get_free_vars(i64)
 declare i64 @set_free_vars(i64, i64)
 
 define i64 @ftest(i64 %a) {
-  %1 = alloca i64
-  store i64 %a, i64* %1
-  %2 = load i64* %1
-  ret i64 %2
+  ret i64 %a
 }
 
 define i64 @main() {
-  %func = alloca i64 (i64)*
-  store i64 (i64)* @ftest, i64 (i64)** %func
-  %fptr0  = load i64 (i64)** %func
-  %fptr1  = ptrtoint i64 (i64)* %fptr0 to i64
+  %fptr1  = ptrtoint i64 (i64)* @ftest to i64
   %1      = call i64 @print_int_nl(i64 %fptr1)
   %fvars0 = call i64 @create_list(i64 0)
   %fvars1 = call i64 @inject_big(i64 %fvars0)

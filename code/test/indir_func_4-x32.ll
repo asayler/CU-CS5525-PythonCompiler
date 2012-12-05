@@ -32,17 +32,11 @@ declare i32 @get_free_vars(i32)
 declare i32 @set_free_vars(i32, i32)
 
 define i32 @ftest(i32 %a) {
-  %1 = alloca i32
-  store i32 %a, i32* %1
-  %2 = load i32* %1
-  ret i32 %2
+  ret i32 %a
 }
 
 define i32 @main() {
-  %func = alloca i32 (i32)*
-  store i32 (i32)* @ftest, i32 (i32)** %func
-  %fptr0  = load i32 (i32)** %func
-  %fptr1  = ptrtoint i32 (i32)* %fptr0 to i32
+  %fptr1  = ptrtoint i32 (i32)* @ftest to i32
   %1      = call i32 @print_int_nl(i32 %fptr1)
   %fvars0 = call i32 @create_list(i32 0)
   %fvars1 = call i32 @inject_big(i32 %fvars0)
