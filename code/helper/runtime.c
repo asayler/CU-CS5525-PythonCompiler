@@ -125,13 +125,13 @@ static int is_zero(pyobj val) {
   return (val >> SHIFT) == 0;
 }
 
-static void print_int(int x) {
-  printf("%d", x);
+static void print_int(long x) {
+  printf("%ld", x);
 }
-void print_int_nl(int x) {
-  printf("%d\n", x);
+void print_int_nl(long x) {
+  printf("%ld\n", x);
 }
-static void print_bool(int b) {
+static void print_bool(long b) {
   if (b)
     printf ("True");
   else
@@ -168,15 +168,15 @@ static void print_pyobj(pyobj x) {
   }
 }
 
-int input() {
-  int i;
-  scanf("%d", &i);
+long input() {
+  long i;
+  scanf("%ld", &i);
   return i;
 }
 
 pyobj input_int() {
-  int i;
-  scanf("%d", &i);
+  long i;
+  scanf("%ld", &i);
   return inject_int(i);
 }
 
@@ -205,17 +205,17 @@ static pyobj make_list(pyobj length) {
 
 static char is_in_list(list ls, pyobj b)
 {
-    int i;
+    long i;
     for(i = 0; i < ls.len; i++)
       if (ls.data[i] == b)
 	return 1;
     return 0;
 }
 
-static int list_equal(list x, list y)
+static long list_equal(list x, list y)
 {
   char eq = 1;
-  int i;
+  long i;
   for (i = 0; i != min(x.len, y.len); ++i)
     eq = eq && equal_pyobj(x.data[i], y.data[i]);
   if (x.len == y.len)
