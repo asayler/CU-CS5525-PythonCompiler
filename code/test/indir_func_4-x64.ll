@@ -57,6 +57,8 @@ define i64 @main() {
   %close1 = call i64 @inject_big(i64 %close0)
   %fptr1  = call i64 @get_fun_ptr(i64 %close1)
   %7      = call i64 @print_int_nl(i64 %fptr1)
-  %8      = call i64 %4(i64 5)
-  ret i64 %5
+  %fptr2  = inttoptr i64 %fptr1 to i64 (i64)*
+  %8      = call i64 %fptr2(i64 5)
+  %9      = call i64 @print_int_nl(i64 %8)
+  ret i64 0
 }
