@@ -69,9 +69,13 @@ declare i32 @equal(i32, i32);
 declare i32 @not_equal(i32, i32);
 
 ;big_pyobj* create_closure(void* fun_ptr, pyobj free_vars);
+declare i32 @create_closure(i32, i32);
 ;void* get_fun_ptr(pyobj);
+declare i32 @get_fun_ptr(i32);
 ;pyobj get_free_vars(pyobj);
+declare i32 @get_free_vars(i32);
 ;big_pyobj* set_free_vars(big_pyobj* b, pyobj free_vars);
+declare i32 @set_free_vars(i32, i32);
 
 ;big_pyobj* create_class(pyobj bases);
 ;big_pyobj* create_object(pyobj cl);

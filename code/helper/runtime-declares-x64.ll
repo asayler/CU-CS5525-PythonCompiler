@@ -69,9 +69,13 @@ declare i64 @equal(i64, i64);
 declare i64 @not_equal(i64, i64);
 
 ;big_pyobj* create_closure(void* fun_ptr, pyobj free_vars);
+declare i64 @create_closure(i64, i64);
 ;void* get_fun_ptr(pyobj);
+declare i64 @get_fun_ptr(i64);
 ;pyobj get_free_vars(pyobj);
+declare i64 @get_free_vars(i64);
 ;big_pyobj* set_free_vars(big_pyobj* b, pyobj free_vars);
+declare i64 @set_free_vars(i64, i64);
 
 ;big_pyobj* create_class(pyobj bases);
 ;big_pyobj* create_object(pyobj cl);
