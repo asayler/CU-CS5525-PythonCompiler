@@ -171,46 +171,52 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitIfPhi(self, n, func_name):
         raise Exception("Not Yet Implemented")
-
         blocks = []
-        phis = []
-
+        phis = {}
         # Setup Labels
         nextL = LabelArgLLVM(LocalLLVM(generate_label("if")))    
         endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
-
         # Tests
         for test in n.tests:
-            (test, tbody) = test
-            testVal =  self.dispatch(n.test)
+            (test, tbody, phiD) = test
+            testV   =  self.dispatch(n.test)
             testB   =  self.dispatch(tbody, func_name)
             testL   =  nextL
             nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
             testS   =  SwitchPairLLVM(DEFAULTTRUE, testB[0].label)
-            testI   =  [switchLLVM(testVal, nextL, [testS])]
-            phis    += [PhiPairLLVM(thenVal, thenB[-1].label)]
+            testI   =  [switchLLVM(testV, nextL, [testS])]
+            for key in phiD.keys():
+                phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+                phiP = [PhiPairLLVM(phiV, testB[-1].label)]
+                if key in phis:
+                    phis[key] += phiP
+                else:
+                    phis[key] =  phiP
             testB[-1].instrs[-1].defaultDest = endL
-            testB   =  [blockLLVM(testL, testI)] + testB
-            blocks  += testB
-            
+            blocks  += [blockLLVM(testL, testI)] + testB
         # Else
-        ebody = n.else_
+        (ebody, phiD) = n.else_
         elseB   =  self.dispatch(ebody, func_name)
         elseL   = nextL
         nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
         elseI   =  [switchLLVM(elseVal, testB[0].label, [])]
+        for key in phiD.keys():
+            phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+            phiP = [PhiPairLLVM(phiV, elseB[-1].label)]
+            if key in phis:
+                phis[key] += phiP
+            else:
+                phis[key] =  phiP
         elseB[-1].instrs[-1].defaultDest = endL
-        elseB   =  [blockLLVM(testL, testI)] + elseB
-        testBs  += elseB
-        
+        blocks  += [blockLLVM(testL, testI)] + elseB
         # End
         endI    =  []
-        endI    += [phiLLVM(target, phis)]
+        for key in phis.keys():
+            phiT =  VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            endI += [phiLLVM(phiT, phis[key])]
         endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
-        endB    =  [blockLLVM(endL, endI)]
-        blocks  += endB
-        return testB + thenB + elseB + endB
-
+        blocks  +=  [blockLLVM(endL, endI)]
+        return blocks
     
     # Terminal Expressions
 
