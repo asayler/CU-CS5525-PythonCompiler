@@ -219,11 +219,6 @@ class BlockLLVMInst(LLVMInst):
     def __init__():
         pass
 
-class declareLLVMString(BlockLLVMInst):
-    def __init__(self, _str):
-        self.string = _str
-    def __repr__(self):
-        return ("private unnamed_addr constant %s" % str(self.string))
 
 class defineLLVM(BlockLLVMInst):
     def __init__(self, _type, name, args, blocks):
@@ -349,6 +344,14 @@ class inttoptrLLVM(ConversionLLVMInst):
 class OtherLLVMInst(LLVMInst):
     def __init__():
         pass
+
+class declareLLVMString(LLVMInst):
+    def __init__(self, _str, target):
+        self.string = _str
+        self.target = target
+    def __repr__(self):
+        return ("%s = private unnamed_addr constant %s" % str(self.target), str(self.string))
+
 
 class icmpLLVM(OtherLLVMInst):
     def __init__(self, target, op, left, right):
