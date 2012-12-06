@@ -25,11 +25,13 @@ class CopyVisitor(Visitor):
     visitStmtList = StmtList.copy
     visitDiscard = Discard.copy
     visitIf = If.copy
+    visitIfPhi = IfPhi.copy
     visitClass = Class.copy
     visitFunction = Function.copy
     visitReturn = Return.copy
-    visitWhileFlat = WhileFlat.copy
     visitWhile = While.copy
+    visitWhileFlat = WhileFlat.copy
+    visitWhileFlatPhi = WhileFlatPhi.copy
     visitVarAssign = VarAssign.copy
     visitSubscriptAssign = SubscriptAssign.copy
     visitAttrAssign = AttrAssign.copy
