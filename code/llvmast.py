@@ -62,6 +62,10 @@ class LLVMLabel(LLVMType):
     def __repr__(self):
         return ('label')
 
+# class LLVMFuncArgType(LLVMType):
+    # def __int__(self):
+
+
 I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
@@ -297,6 +301,18 @@ class sextLLVM(ConversionLLVMInst):
         super(sextLLVM, self).__init__(*args, **kwargs)
     def __repr__(self):
         return super(sextLLVM, self).emit("sext")
+
+class ptrtointLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(ptrtointLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(ptrtointLLVM, self).emit("ptrtoint")
+
+class inttoptrLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(inttoptrLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(inttoptrLLVM, self).emit("inttoptr")
 
 # Other Instructions
 

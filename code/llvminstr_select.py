@@ -268,13 +268,34 @@ class LLVMInstrSelectVisitor(Visitor):
         return testB + thenB + elseB + endB
 
     def visitCallFunc(self, n, target):
+        instrList = []
         args = []
+        print "target " + str(target)
         for arg in n.args:
-            args += [self.dispatch(arg)]
+            if isinstance(arg, SLambdaLabel):
+                print "FUCK YES"
+                numargs = 0
+                temp = VarLLVM(LocalLLVM(generate_name("instrsel_SLamdaLabel")), DEFAULTTYPE)
+                print "temp  " + str(temp)
+                print "SLambdaLabel: "+ str(arg)
+                print "argDispatched "+ str(self.dispatch(arg.name))
+                print "argl "+str(n.args[1])
+                temp1 = self.dispatch(n.args[1])
+                print "dispatched " + str(temp1)
+
+                # for(argle in n.args[1]):
+                #     numargs += 1
+                # print 
+                instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
+                args += [temp]
+            #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
+            else:
+                args += [self.dispatch(arg)]
         return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
         
     def visitIndirectCallFunc(self, n, target):
         #raise Exception("Not Yet Implemented")
+        #add the casting
         for arg in n.args:
             args += [self.dispatch(arg)]
         return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
