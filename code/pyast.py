@@ -216,7 +216,7 @@ class If(PyNode):
         return lines
 
 class IfPhi(PyNode):
-    def __init__(self, tests, else_, else_phis, phi):
+    def __init__(self, tests, (else_, else_phis), phi):
         self.tests = tests
         self.else_ = else_
         self.else_phis = else_phis
