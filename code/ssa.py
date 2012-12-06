@@ -77,6 +77,7 @@ class SSAVisitor(CopyVisitor):
             prephi[x] = self.make_ssa_read(x)
         tests = []
         bodies = []
+        dicts = []
         choices = []
         for (test, _) in n.tests:
             tests.append(self.dispatch(test))
@@ -91,18 +92,28 @@ class SSAVisitor(CopyVisitor):
             choices.append(lchoices)
             self.scope = topscope.copy()
         else_ = self.dispatch(n.else_)
-        phi = {}
+        elsechoices = {}
+        phimunge = {}
+        phinames = []
         for x in assigns:
-            xphi = []
-            for lchoices in choices:
-                xphi.append(lchoices[x])
             if x in assign_else:
-                xphi.append(self.make_ssa_read(x))
-            else: xphi.append(prephi[x])
+                elsechoices[x]=self.make_ssa_read(x)
+            else: elsechoices[x]=append(prephi[x])
+
             self.names[x] = self.names[x] + 1
             self.scope[x] = self.names[x]
-            phi[self.make_ssa_write(x)] = xphi
-        return IfPhi(zip(tests,bodies), else_, phi)
+            phimunge[x] = self.make_ssa_write(x)
+            phinames.append(x)
+        finalchoices = []
+        finalelsechoices = {}
+        for lchoices in choices:
+            finallchoice = {}
+            for x in lchoices:
+                finallchoice[phimunge[x]] = lchoices[x]
+            finalchoices.append(finallchoice)
+        for x in elsechoices:
+            finalelsechoices[phimunge[x]] = elsechoices[x]
+        return IfPhi(zip(tests,bodies,finalchoices), else_, finalelsechoices, phinames)
 
     def visitWhileFlat(self, n):
         assigns = [x for x in (self.assign_find.preorder(n.body))
