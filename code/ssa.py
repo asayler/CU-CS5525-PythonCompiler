@@ -103,7 +103,7 @@ class SSAVisitor(CopyVisitor):
             self.names[x] = self.names[x] + 1
             self.scope[x] = self.names[x]
             phimunge[x] = self.make_ssa_write(x)
-            phinames.append(x)
+            phinames.append(phimunge[x])
         finalchoices = []
         finalelsechoices = {}
         for lchoices in choices:
