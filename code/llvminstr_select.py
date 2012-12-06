@@ -70,9 +70,11 @@ DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
     
-
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
+
+    # def preorder(self, tree, *args):
+    #     strings = StringFindVisitor().
         
     # Modules
 
