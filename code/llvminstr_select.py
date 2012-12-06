@@ -69,10 +69,11 @@ DEFAULTTRUE  = DEFAULTONE
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
+    
 
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
-
+        self.user_defined_funcs_and_args = {}
     # Modules
 
     def visitProgram(self, n):
@@ -85,6 +86,8 @@ class LLVMInstrSelectVisitor(Visitor):
         _type = DEFAULTTYPE
         name  = n.label
         args  = n.params
+        self.user_defined_funcs_and_args[name] = args
+        print self.user_defined_funcs_and_args
         blocks = self.dispatch(n.code, (name, _type))
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
@@ -277,11 +280,11 @@ class LLVMInstrSelectVisitor(Visitor):
                 numargs = 0
                 temp = VarLLVM(LocalLLVM(generate_name("instrsel_SLamdaLabel")), DEFAULTTYPE)
                 print "temp  " + str(temp)
-                print "SLambdaLabel: "+ str(arg)
-                print "argDispatched "+ str(self.dispatch(arg.name))
-                print "argl "+str(n.args[1])
-                temp1 = self.dispatch(n.args[1])
-                print "dispatched " + str(temp1)
+                print "SLambdaLabel: "+ str(arg) + "args "+ str(len(self.user_defined_funcs_and_args[str(arg.name)]))
+                # arg_types = 
+                # print "argl "+str(n.args[1])
+                # temp1 = self.dispatch(n.args[1])
+                # print "dispatched " + str(temp1)
 
                 # for(argle in n.args[1]):
                 #     numargs += 1
