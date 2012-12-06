@@ -211,8 +211,11 @@ class LLVMInstrSelectVisitor(Visitor):
         print stringArray
         stringType = LLVMString(stringArray, n.string)
         print stringType
-        stringDeclare = declareLLVMString(stringType)
+        tmp = VarLLVM(LocalLLVM(generate_name("stringName")), stringArray)
+        print tmp
+        stringDeclare = declareLLVMString(tmp, LocalLLVM(tempname)stringType)
         print stringDeclare
+        
         self.stringsInstr += [stringDeclare]
 
     # Non-Terminal Expressions
