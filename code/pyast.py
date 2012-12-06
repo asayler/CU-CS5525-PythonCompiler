@@ -216,33 +216,35 @@ class If(PyNode):
         return lines
 
 class IfPhi(PyNode):
-    def __init__(self, tests, else_, phi):
+    def __init__(self, tests, else_, else_phis, phi):
         self.tests = tests
         self.else_ = else_
+        self.else_phis = else_phis
         self.phi = phi
     def __repr__(self):
-        return 'IfPhi(%s,%s,%s)' % (self.tests, self.else_, self.phi)
+        return 'IfPhi(%s,%s,%s,%s)' % (self.tests, self.else_, self.else_phis, self.phi)
     @staticmethod
     def copy(self, n, *args):
-        return IfPhi(map(lambda (x, y): (self.dispatch(x, *args),
-                                         self.dispatch(y, *args)), n.tests),
+        return IfPhi(map(lambda (x, y, z): (self.dispatch(x, *args),
+                                         self.dispatch(y, *args), z), n.tests),
                      self.dispatch(n.else_, *args),
+                     n.else_phis,
                      n.phi)
     @staticmethod
     def list(self, n, *args):
-        plist = map(lambda (x, y): (self.dispatch(x, *args),
-                                    self.dispatch(y, *args)), n.tests)
+        plist = map(lambda (x, y, z): (self.dispatch(x, *args),
+                                    self.dispatch(y, *args), z), n.tests)
         else_ = self.dispatch(n.else_, *args)
         tests = []
         ss = []
         for ((test, ssn), body) in plist:
             ss += ssn
             tests += [(test, body)]
-        return ss + [If(tests, else_, n.phi)]
+        return ss + [If(tests, else_, n.else_phis, n.phi)]
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.else_, *args) | \
-            reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | \
+            reduce(lambda x,y: x | y, map(lambda (x,y,z): self.dispatch(x, *args) | \
                                               self.dispatch(y, *args), n.tests), set([]))
     @staticmethod
     def graph(self, n, p):
@@ -250,7 +252,7 @@ class IfPhi(PyNode):
         myid = Graphvis_dot().uniqueid(n)
         lines += Graphvis_dot().lineLabel(myid, ("IfPhi"))
         lines += Graphvis_dot().linePair(p, myid)
-        for (test, body) in n.tests:
+        for (test, body, _) in n.tests:
             lines += self.dispatch(test, myid)
             lines += self.dispatch(body, myid)
         lines += self.dispatch(n.else_, myid)
