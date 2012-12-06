@@ -190,7 +190,47 @@ class LLVMInstrSelectVisitor(Visitor):
                 instrs = self.dispatch(else_, func_name)
                 instrs += [Label86(endIfL)]
                 return instrs
-        return make_branches(n.tests, caseLs, n.else_)
+    #    return make_branches(n.tests, caseLs, n.else_)
+
+        blocks = []
+        phis = []
+
+        # Setup Labels
+        nextL = LabelArgLLVM(LocalLLVM(generate_label("if")))    
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
+
+        # Tests
+        for test in n.tests:
+            (test, tbody) = test
+            testVal =  self.dispatch(n.test)
+            testB   =  self.dispatch(tbody, func_name)
+            testL   =  nextL
+            nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+            testS   =  SwitchPairLLVM(DEFAULTTRUE, testB[0].label)
+            testI   =  [switchLLVM(testVal, nextL, [testS])]
+            phis    += [PhiPairLLVM(thenVal, thenB[-1].label)]
+            testB[-1].instrs[-1].defaultDest = endL
+            testB   =  [blockLLVM(testL, testI)] + testB
+            blocks  += testB
+            
+        # Else
+        ebody = n.else_
+        elseB   =  self.dispatch(ebody, func_name)
+        elseL   = nextL
+        nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+        elseI   =  [switchLLVM(elseVal, testB[0].label, [])]
+        elseB[-1].instrs[-1].defaultDest = endL
+        elseB   =  [blockLLVM(testL, testI)] + elseB
+        testBs  += elseB
+        
+        # End
+        endI    =  []
+        endI    += [phiLLVM(target, phis)]
+        endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        endB    =  [blockLLVM(endL, endI)]
+        blocks  += endB
+        return testB + thenB + elseB + endB
+
     
     # Terminal Expressions
 
