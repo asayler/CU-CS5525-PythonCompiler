@@ -170,7 +170,6 @@ class LLVMInstrSelectVisitor(Visitor):
         return [Loop86(test, body)]
 
     def visitIfPhi(self, n, func_name):
-        raise Exception("Not Yet Implemented")
         blocks = []
         phis = {}
         # Setup Labels
