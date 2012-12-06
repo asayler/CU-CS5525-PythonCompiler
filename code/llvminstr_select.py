@@ -208,27 +208,52 @@ class LLVMInstrSelectVisitor(Visitor):
         return entryB + testprepB + testB + loopB + elseB + endB
 
     def visitIfPhi(self, n, func_name):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(len(n.tests))
-        def make_branches(testlist, caseLs, else_):
-            if testlist:
-                test, body = testlist[0]
-                tmp = Var86(generate_name(IFTEMP))
-                tinstrs = self.dispatch(test, tmp)
-                tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caseLs[0])]
-                
-                ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(endIfL)]
-                
-                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
-                return tinstrs + [If86(ninstrs, einstrs)]
+        blocks = []
+        phis = {}
+        # Setup Labels
+        nextL = LabelArgLLVM(LocalLLVM(generate_label("if")))    
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
+        # Tests
+        for test in n.tests:
+            (test, tbody, phiD) = test
+            testV   =  self.dispatch(test)
+            testB   =  self.dispatch(tbody, func_name)
+            testL   =  nextL
+            nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+            testS   =  SwitchPairLLVM(DEFAULTTRUE, testB[0].label)
+            testI   =  [switchLLVM(testV, nextL, [testS])]
+            for key in phiD.keys():
+                phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+                phiP = [PhiPairLLVM(phiV, testB[-1].label)]
+                if key in phis:
+                    phis[key] += phiP
+                else:
+                    phis[key] =  phiP
+            testB[-1].instrs[-1].defaultDest = endL
+            blocks  += [blockLLVM(testL, testI)] + testB
+        # Else
+        (ebody, phiD) = n.else_
+        elseB   =  self.dispatch(ebody, func_name)
+        elseL   = nextL
+        nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+        elseI   =  [switchLLVM(DEFAULTZERO, elseB[0].label, [])]
+        for key in phiD.keys():
+            phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+            phiP = [PhiPairLLVM(phiV, elseB[-1].label)]
+            if key in phis:
+                phis[key] += phiP
             else:
-                instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(endIfL)]
-                return instrs
-        return make_branches(n.tests, caseLs, n.else_)
+                phis[key] =  phiP
+        elseB[-1].instrs[-1].defaultDest = endL
+        blocks  += [blockLLVM(elseL, elseI)] + elseB
+        # End
+        endI    =  []
+        for key in phis.keys():
+            phiT =  VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            endI += [phiLLVM(phiT, phis[key])]
+        endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        blocks  +=  [blockLLVM(endL, endI)]
+        return blocks
     
     # Terminal Expressions
 

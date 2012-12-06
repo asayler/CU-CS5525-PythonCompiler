@@ -92,7 +92,7 @@ P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TE
 	Assemb Assemb86 AssembLL \
 	Tests Tests86 TestsLL \
 	TestsRun TestsRun86 TestsRunLL \
-	LLVMTestsRun86 LLVMTestRunLL \
+	LLVMTestsRun86 LLVMTestsRunLL \
 	P0TestsRun86 P0TestsRunLL \
 	P1TestsRun86 P1TestsRunLL \
 	P2TestsRun86 P2TestsRunLL \
