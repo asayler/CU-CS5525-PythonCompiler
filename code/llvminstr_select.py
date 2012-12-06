@@ -72,9 +72,12 @@ class LLVMInstrSelectVisitor(Visitor):
     
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
+        self.stringsInstr = []
 
-    # def preorder(self, tree, *args):
-    #     strings = StringFindVisitor().
+    def preorder(self, tree, *args):
+        ret = self.stringsInstr + super(LLVMInstrSelectVisitor, self).preorder(tree)
+        print ret
+        return ret
         
     # Modules
 
@@ -202,6 +205,11 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitName(self, n):
         return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
+
+    def visitString(self, n):
+        stringArray = LLVMArray(len(n.string), I8)
+        print stringArray
+        self.stringsInstr += []
 
     # Non-Terminal Expressions
 

@@ -62,6 +62,14 @@ class LLVMLabel(LLVMType):
     def __repr__(self):
         return ('label')
 
+class LLVMArray(LLVMType):
+    def __init__(self, numelem, _type):
+        self.numelem = numelem
+        self.type = _type
+    def __repr__(self):
+        return ('[%d x %s]' % (self.numelem, str(self.type)))
+
+
 I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
