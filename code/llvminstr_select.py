@@ -207,16 +207,21 @@ class LLVMInstrSelectVisitor(Visitor):
         return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
 
     def visitString(self, n):
-        stringArray = LLVMArray(len(n.string), I8)
-        print stringArray
-        actualString = LLVMString(stringArray, n.string)
-        print actualString
-        tmp = VarLLVM(LocalLLVM(generate_name("stringName")), stringArray)
-        print tmp
-        stringDeclare = declareLLVMString(actualString, tmp)
-        print stringDeclare
-        self.stringsInstr += [stringDeclare]
-        return tmp
+        raise Exception("You should not have come here, Frodo")
+        # stringArray = LLVMArray(len(n.string), I8)
+        # print stringArray
+        # actualString = LLVMString(stringArray, n.string)
+        # print actualString
+        # tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
+        # print tmp
+        # stringDeclare = declareLLVMString(tmp, actualString)
+        # print stringDeclare
+        # self.stringsInstr += [stringDeclare]
+
+        # cast = getelementptrLLVM(VarLLVM(LocalLLVM(generate_name("cast")), PI8), tmp, [DEFAULTZERO, DEFAULTZERO])
+        # print cast
+
+        # return cast
 
     # Non-Terminal Expressions
 
@@ -309,15 +314,33 @@ class LLVMInstrSelectVisitor(Visitor):
                 instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
                 args += [temp]
             #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
+            elif isinstance(arg, String):
+                print "STRING"
+                stringArray = LLVMArray(len(arg.string), I8)
+                print stringArray
+                actualString = LLVMString(stringArray, arg.string)
+                print actualString
+                tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
+                print "tm" + str(tmp)
+                stringDeclare = declareLLVMString(tmp, actualString)
+                print stringDeclare
+                self.stringsInstr += [stringDeclare]
+                placeholder = VarLLVM(LocalLLVM(generate_name("cast")), PI8)
+                print "placeholder" + str(placeholder)
+                cast = getelementptrLLVM(placeholder, tmp, [DEFAULTZERO, DEFAULTZERO])
+                print cast
+                instrList += [cast]
+                args += [placeholder]
             else:
                 print "here"
                 args += [self.dispatch(arg)]
+        print "args" + str(args)
         instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
         print instrList
         return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        #raise Exception("Not Yet Implemented")
+        raise Exception("Not Yet Implemented")
         #add the casting
         for arg in n.args:
             args += [self.dispatch(arg)]

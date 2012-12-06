@@ -74,7 +74,7 @@ I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
 I64  = LLVMInt(64)
-PI32 = LLVMPointer(I8)
+PI8 = LLVMPointer(I8)
 PI32 = LLVMPointer(I32)
 PI64 = LLVMPointer(I64)
 LLVMBOOLTYPE = I1
@@ -345,13 +345,26 @@ class OtherLLVMInst(LLVMInst):
     def __init__():
         pass
 
-class declareLLVMString(LLVMInst):
-    def __init__(self, _str, target):
+class declareLLVMString(OtherLLVMInst):
+    def __init__(self, target, _str):
         self.string = _str
         self.target = target
     def __repr__(self):
         return ("%s = private unnamed_addr constant %s" % (str(self.target.name), str(self.string)))
 
+class getelementptrLLVM(OtherLLVMInst):
+    #%cast210 = getelementptr [13 x i8]* @.str, i64 0, i64 0
+    #<result> = getelementptr <pty>* <ptrval>{, <ty> <idx>}*
+    def __init__(self, target, pointedTo, args):
+        self.ptdTo = pointedTo
+        self.target = target
+        self.args = args
+    def __repr__(self):
+        return "%s = getelementptr %s* %s, %s" % (str(getArg(self.target)),
+                                                str(self.ptdTo.type),
+                                                str(self.ptdTo.name),
+                                                ", ".join(map(lambda x: str(x),
+                                                     self.args)))
 
 class icmpLLVM(OtherLLVMInst):
     def __init__(self, target, op, left, right):
