@@ -92,6 +92,13 @@ class LLVMFuncPtrType(LLVMType):
         return ("%s (%s)*" % (str(self.ret),
                                 ", ".join(map(lambda x: str(x), self.args))))
 
+class LLVMString(LLVMType):
+    def __init__(self, _type, _str):
+        self.type = _type
+        self.str = _str
+    def __repr__(self):
+        return ("%s c\"%s\"") %(self.type, self.str)
+
 # LLVM Names
 
 class LLVMName(object):
@@ -211,6 +218,8 @@ class LLVMInst(object):
 class BlockLLVMInst(LLVMInst):
     def __init__():
         pass
+
+# class declareString(BlockLLVMInst):
 
 class defineLLVM(BlockLLVMInst):
     def __init__(self, _type, name, args, blocks):

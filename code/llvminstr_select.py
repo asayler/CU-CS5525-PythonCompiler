@@ -209,6 +209,8 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitString(self, n):
         stringArray = LLVMArray(len(n.string), I8)
         print stringArray
+        stringType = LLVMString(stringArray, n.string)
+        print stringType
         self.stringsInstr += []
 
     # Non-Terminal Expressions
