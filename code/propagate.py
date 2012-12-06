@@ -59,6 +59,7 @@ class PropagateVisitor(CopyVisitor):
 
     def visitWhileFlatPhi(self, n):
         new_phi = {}
+        body = self.dispatch(n.body)
         for key in n.phi:
             values = n.phi[key]
             new_values = []
@@ -70,7 +71,7 @@ class PropagateVisitor(CopyVisitor):
         return WhileFlatPhi(new_phi,
                             self.dispatch(n.testss),
                             self.dispatch(n.test),
-                            self.dispatch(n.body),
+                            body,
                             self.dispatch(n.else_) if n.else_ else None)
 
     # TODO: Handle Branching/Phi Update
