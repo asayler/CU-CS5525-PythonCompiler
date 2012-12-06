@@ -350,7 +350,7 @@ class declareLLVMString(LLVMInst):
         self.string = _str
         self.target = target
     def __repr__(self):
-        return ("%s = private unnamed_addr constant %s" % str(self.target.name), str(self.string))
+        return ("%s = private unnamed_addr constant %s" % (str(self.target.name), str(self.string)))
 
 
 class icmpLLVM(OtherLLVMInst):

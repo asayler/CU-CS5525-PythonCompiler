@@ -209,11 +209,11 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitString(self, n):
         stringArray = LLVMArray(len(n.string), I8)
         print stringArray
-        stringType = LLVMString(stringArray, n.string)
-        print stringType
+        actualString = LLVMString(stringArray, n.string)
+        print actualString
         tmp = VarLLVM(LocalLLVM(generate_name("stringName")), stringArray)
         print tmp
-        stringDeclare = declareLLVMString(tmp, LocalLLVM(tempname)stringType)
+        stringDeclare = declareLLVMString(actualString, tmp)
         print stringDeclare
         
         self.stringsInstr += [stringDeclare]
