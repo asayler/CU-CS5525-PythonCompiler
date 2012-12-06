@@ -219,7 +219,11 @@ class BlockLLVMInst(LLVMInst):
     def __init__():
         pass
 
-# class declareString(BlockLLVMInst):
+class declareLLVMString(BlockLLVMInst):
+    def __init__(self, _str):
+        self.string = _str
+    def __repr__(self):
+        return ("private unnamed_addr constant %s" % str(self.string))
 
 class defineLLVM(BlockLLVMInst):
     def __init__(self, _type, name, args, blocks):
