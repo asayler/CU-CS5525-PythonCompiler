@@ -171,26 +171,6 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitIfPhi(self, n, func_name):
         raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(len(n.tests))
-        def make_branches(testlist, caseLs, else_):
-            if testlist:
-                test, body = testlist[0]
-                tmp = Var86(generate_name(IFTEMP))
-                tinstrs = self.dispatch(test, tmp)
-                tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caseLs[0])]
-                
-                ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(endIfL)]
-                
-                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
-                return tinstrs + [If86(ninstrs, einstrs)]
-            else:
-                instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(endIfL)]
-                return instrs
-    #    return make_branches(n.tests, caseLs, n.else_)
 
         blocks = []
         phis = []
