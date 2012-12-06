@@ -27,11 +27,13 @@ class ListVisitor(Visitor):
     visitStmtList = StmtList.list
     visitDiscard = Discard.list
     visitIf = If.list
+    visitIfPhi = IfPhi.list
     visitClass = Class.list
     visitFunction = Function.list
     visitReturn = Return.list
-    visitWhileFlat = WhileFlat.list
     visitWhile = While.list
+    visitWhileFlat = WhileFlat.list
+    visitWhileFlatPhi = WhileFlatPhi.list
     visitVarAssign = VarAssign.list
     visitSubscriptAssign = SubscriptAssign.list
     visitAttrAssign = AttrAssign.list
