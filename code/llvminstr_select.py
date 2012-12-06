@@ -304,13 +304,6 @@ class LLVMInstrSelectVisitor(Visitor):
                 arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
                 print arg_types
                 value = VarLLVM(GlobalLLVM(arg.name),arg_types)
-                # print "argl "+str(n.args[1])
-                # temp1 = self.dispatch(n.args[1])
-                # print "dispatched " + str(temp1)
-
-                # for(argle in n.args[1]):
-                #     numargs += 1
-                # print 
                 instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
                 args += [temp]
             #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
@@ -340,8 +333,9 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        raise Exception("Not Yet Implemented")
+        #raise Exception("Not Yet Implemented")
         #add the casting
+        args = []
         for arg in n.args:
             args += [self.dispatch(arg)]
         return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
