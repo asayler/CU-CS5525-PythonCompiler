@@ -226,9 +226,9 @@ class IfPhi(PyNode):
     @staticmethod
     def copy(self, n, *args):
         return IfPhi(map(lambda (x, y, z): (self.dispatch(x, *args),
-                                         self.dispatch(y, *args), z), n.tests),
-                     self.dispatch(n.else_, *args),
-                     n.else_phis,
+                                            self.dispatch(y, *args), z), n.tests),
+                     (self.dispatch(n.else_, *args),
+                      n.else_phis),
                      n.phi)
     @staticmethod
     def list(self, n, *args):
@@ -240,7 +240,7 @@ class IfPhi(PyNode):
         for ((test, ssn), body) in plist:
             ss += ssn
             tests += [(test, body)]
-        return ss + [If(tests, else_, n.else_phis, n.phi)]
+        return ss + [If(tests, (else_, n.else_phis), n.phi)]
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.else_, *args) | \
