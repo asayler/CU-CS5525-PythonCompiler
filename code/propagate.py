@@ -57,4 +57,20 @@ class PropagateVisitor(CopyVisitor):
             name = n.name
         return Name(name)
 
+    def visitWhileFlatPhi(self, n):
+        new_phi = {}
+        for key in n.phi:
+            values = n.phi[key]
+            new_values = []
+            for name in values:
+                if name in self.names:
+                    new_values.append(self.names[name])
+                else: new_values.append(name)
+            new_phi[key] = new_values
+        return WhileFlatPhi(new_phi,
+                            self.dispatch(n.testss),
+                            self.dispatch(n.test),
+                            self.dispatch(n.body),
+                            self.dispatch(n.else_) if n.else_ else None)
+
     # TODO: Handle Branching/Phi Update
