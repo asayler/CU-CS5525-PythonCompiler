@@ -215,8 +215,8 @@ class LLVMInstrSelectVisitor(Visitor):
         print tmp
         stringDeclare = declareLLVMString(actualString, tmp)
         print stringDeclare
-        
         self.stringsInstr += [stringDeclare]
+        return tmp
 
     # Non-Terminal Expressions
 
@@ -317,7 +317,7 @@ class LLVMInstrSelectVisitor(Visitor):
         return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        raise Exception("Not Yet Implemented")
+        #raise Exception("Not Yet Implemented")
         #add the casting
         for arg in n.args:
             args += [self.dispatch(arg)]
