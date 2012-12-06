@@ -178,7 +178,7 @@ class LLVMInstrSelectVisitor(Visitor):
         # Tests
         for test in n.tests:
             (test, tbody, phiD) = test
-            testV   =  self.dispatch(n.test)
+            testV   =  self.dispatch(test)
             testB   =  self.dispatch(tbody, func_name)
             testL   =  nextL
             nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
@@ -198,7 +198,7 @@ class LLVMInstrSelectVisitor(Visitor):
         elseB   =  self.dispatch(ebody, func_name)
         elseL   = nextL
         nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
-        elseI   =  [switchLLVM(elseVal, testB[0].label, [])]
+        elseI   =  [switchLLVM(DEFAULTZERO, elseB[0].label, [])]
         for key in phiD.keys():
             phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
             phiP = [PhiPairLLVM(phiV, elseB[-1].label)]
@@ -207,7 +207,7 @@ class LLVMInstrSelectVisitor(Visitor):
             else:
                 phis[key] =  phiP
         elseB[-1].instrs[-1].defaultDest = endL
-        blocks  += [blockLLVM(testL, testI)] + elseB
+        blocks  += [blockLLVM(elseL, elseI)] + elseB
         # End
         endI    =  []
         for key in phis.keys():
