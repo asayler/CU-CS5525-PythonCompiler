@@ -73,7 +73,7 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
-        self.user_defined_funcs_and_args = {}
+        
     # Modules
 
     def visitProgram(self, n):
@@ -86,8 +86,6 @@ class LLVMInstrSelectVisitor(Visitor):
         _type = DEFAULTTYPE
         name  = n.label
         args  = n.params
-        self.user_defined_funcs_and_args[name] = args
-        print self.user_defined_funcs_and_args
         blocks = self.dispatch(n.code, (name, _type))
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
@@ -276,12 +274,14 @@ class LLVMInstrSelectVisitor(Visitor):
         print "target " + str(target)
         for arg in n.args:
             if isinstance(arg, SLambdaLabel):
-                print "FUCK YES"
+                name = generate_name("instrsel_SLamdaLabel")
                 numargs = 0
-                temp = VarLLVM(LocalLLVM(generate_name("instrsel_SLamdaLabel")), DEFAULTTYPE)
+                temp = VarLLVM(LocalLLVM(name), DEFAULTTYPE)
                 print "temp  " + str(temp)
-                print "SLambdaLabel: "+ str(arg) + "args "+ str(len(self.user_defined_funcs_and_args[str(arg.name)]))
-                # arg_types = 
+                print "SLambdaLabel: "+ str(arg) + "args "+ str(arg.numargs)
+                arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
+                print arg_types
+                value = VarLLVM(GlobalLLVM(arg.name),arg_types)
                 # print "argl "+str(n.args[1])
                 # temp1 = self.dispatch(n.args[1])
                 # print "dispatched " + str(temp1)
@@ -293,11 +293,14 @@ class LLVMInstrSelectVisitor(Visitor):
                 args += [temp]
             #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
             else:
+                print "here"
                 args += [self.dispatch(arg)]
-        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        print instrList
+        return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        #raise Exception("Not Yet Implemented")
+        raise Exception("Not Yet Implemented")
         #add the casting
         for arg in n.args:
             args += [self.dispatch(arg)]

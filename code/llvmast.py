@@ -62,10 +62,6 @@ class LLVMLabel(LLVMType):
     def __repr__(self):
         return ('label')
 
-# class LLVMFuncArgType(LLVMType):
-    # def __int__(self):
-
-
 I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
@@ -74,6 +70,19 @@ PI32 = LLVMPointer(I8)
 PI32 = LLVMPointer(I32)
 PI64 = LLVMPointer(I64)
 LLVMBOOLTYPE = I1
+
+class LLVMFuncPtrType(LLVMType):
+    def __init__(self, ret, typeargs,numargs):
+        self.ret = ret
+        self.args = []
+        n = numargs
+        while(n>0):
+            self.args += [typeargs]
+            n -= 1
+
+    def __repr__(self):
+        return ("%s (%s)*" % (str(self.ret),
+                                ", ".join(map(lambda x: str(x), self.args))))
 
 # LLVM Names
 
