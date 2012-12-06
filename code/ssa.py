@@ -113,7 +113,7 @@ class SSAVisitor(CopyVisitor):
             finalchoices.append(finallchoice)
         for x in elsechoices:
             finalelsechoices[phimunge[x]] = elsechoices[x]
-        return IfPhi(zip(tests,bodies,finalchoices), else_, finalelsechoices, phinames)
+        return IfPhi(zip(tests,bodies,finalchoices), (else_, finalelsechoices), phinames)
 
     def visitWhileFlat(self, n):
         assigns = [x for x in (self.assign_find.preorder(n.body))
@@ -124,7 +124,7 @@ class SSAVisitor(CopyVisitor):
         body = self.dispatch(n.body)
         phi = {}
         for x in assigns:
-            xphi = [prephi[x], self.make_ssa_read(x)]
+            xphi = (prephi[x], self.make_ssa_read(x))
             self.names[x] = self.names[x] + 1
             self.scope[x] = self.names[x]
             phi[self.make_ssa_write(x)] = xphi
