@@ -70,7 +70,7 @@ class HeapifyVisitor(CopyVisitor):
         new_stmts = []
         for param in n.params:
             if param in self.needs_heapification:
-                new_param = generate_name('heaped@')+param
+                new_param = generate_name('heaped_at_')+param
                 new_stmts.append(VarAssign(param, List([ZERO])))
                 new_stmts.append(SubscriptAssign(Name(param), [ZERO], Name(new_param)))
                 new_params.append(new_param)

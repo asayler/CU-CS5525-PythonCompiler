@@ -237,7 +237,8 @@ def main(argv=None):
         # Graph ast
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
-
+    
+    #return 0
     if(compileType == "x86"):
 
         # Compile flat tree
@@ -246,7 +247,7 @@ def main(argv=None):
         if(debug):
             # Print ast
             sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
-
+        #sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
         # Reg Alloc
         assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
         if(debug):

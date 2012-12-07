@@ -31,21 +31,6 @@ from stringfind import StringFindVisitor
 
 from utilities import generate_name
 from utilities import generate_label
-from utilities import generate_return_label
-from utilities import generate_while_labels
-from utilities import generate_if_labels
-
-def arg_select(ast):
-    if isinstance(ast, Name):
-        return Var86(ast.name)
-    elif isinstance(ast, Const):
-        return Const86(ast.value)
-    elif isinstance(ast, SLambdaLabel):
-        return IndirectJumpLabel86(ast.name)
-    elif isinstance(ast, String):
-        return Const86(ast.location)
-    else:
-        raise Exception("InstrSelect: Invalid argument - " + str(ast))
 
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
@@ -69,10 +54,15 @@ DEFAULTTRUE  = DEFAULTONE
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
-
+    
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
+        self.stringsInstr = []
 
+    def preorder(self, tree, *args):
+        ret = self.stringsInstr + super(LLVMInstrSelectVisitor, self).preorder(tree)
+        return ret
+        
     # Modules
 
     def visitProgram(self, n):
@@ -86,8 +76,14 @@ class LLVMInstrSelectVisitor(Visitor):
         name  = n.label
         args = []
         for param in n.params:
-            args  += VarLLVM(LocalLLVM(param), DEFAULTTYPE)
+            args  += [VarLLVM(LocalLLVM(param), DEFAULTTYPE)]
         blocks = self.dispatch(n.code, (name, _type))
+        # Fix up functions with no return
+        if(isinstance(blocks[-1].instrs[-1], TermLLVMInst)):
+            if(not isinstance(blocks[-1].instrs[-1], retLLVM)):
+                blocks[-1].instrs[-1] = retLLVM(DEFAULTZERO)
+        else:
+            raise Exception("Each block must end with a terminal instruction")
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
     # Statements    
@@ -122,7 +118,6 @@ class LLVMInstrSelectVisitor(Visitor):
                     if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
                         # If this is the last node and no terminal instruction has been reached
                         instrs += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
-                        
                     if(isinstance(instrs[-1], TermLLVMInst)):
                         # If last instruction returned is terminal, end block
                         blocks += [blockLLVM(thisL, instrs)]
@@ -133,7 +128,7 @@ class LLVMInstrSelectVisitor(Visitor):
                     raise Exception("Unhandled return type")
         else:
             # Empty List
-            # Add Dummy Block (will be patched into soemthing usefull later)
+            # Add Dummy Block (will be patched into something usefull later)
             blocks += [blockLLVM(DUMMYL, [switchLLVM(DEFAULTZERO, DUMMYL, [])])]
         return blocks
 
@@ -186,7 +181,6 @@ class LLVMInstrSelectVisitor(Visitor):
         testprepB[0].instrs = phis + testprepB[0].instrs
         testprepB[0].label = testprepL
         testprepB[-1].instrs[-1].defaultDest = testL
-
         # Test Block
         loopS = SwitchPairLLVM(DEFAULTTRUE, loopL)
         testI   = []
@@ -265,6 +259,9 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitName(self, n):
         return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
 
+    def visitString(self, n):
+        raise Exception("You should not have come here, Frodo")
+
     # Non-Terminal Expressions
 
     def visitIntAdd(self, n, target):
@@ -317,7 +314,6 @@ class LLVMInstrSelectVisitor(Visitor):
         # Patch in proper destination in last block
         thenB[-1].instrs[-1].defaultDest = endL
         # Else Block
-        #elseI   = []
         elseB   = self.dispatch(n.else_.node, None)
         # Patch in proper label for first block
         elseB[0].label = elseL
@@ -333,28 +329,39 @@ class LLVMInstrSelectVisitor(Visitor):
         return testB + thenB + elseB + endB
 
     def visitCallFunc(self, n, target):
+        instrList = []
         args = []
         for arg in n.args:
-            args += [self.dispatch(arg)]
-        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+            if isinstance(arg, SLambdaLabel):
+                name = generate_name("instrsel_SLamdaLabel")
+                numargs = 0
+                temp = VarLLVM(LocalLLVM(name), DEFAULTTYPE)
+                arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
+                value = VarLLVM(GlobalLLVM(arg.name),arg_types)
+                instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
+                args += [temp]
+            elif isinstance(arg, String):
+                stringArray = LLVMArray(len(arg.string) + 1, I8)
+                actualString = LLVMString(stringArray, arg.string)
+                tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
+                stringDeclare = declareLLVMString(tmp, actualString)
+                self.stringsInstr += [stringDeclare]
+                placeholder = VarLLVM(LocalLLVM(generate_name("cast")), PI8)
+                cast = getelementptrLLVM(placeholder, tmp, [DEFAULTZERO, DEFAULTZERO])
+                instrList += [cast]
+                args += [placeholder]
+            else:
+                args += [self.dispatch(arg)]
+        instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += self.dispatch(n.node, target)
-        cntargs = 0
-        align = (STACKALIGN - (len(n.args) % STACKALIGN))
-        offset = 0
-        if align != 0:
-            offset += WORDLEN * align
-            instrs += [Sub86(Const86(offset), ESP)]
-        n.args.reverse()
+        args = []
+        instrList = []
         for arg in n.args:
-            cntargs += 1
-            instrs += [Push86(arg_select(arg))]
-            offset += WORDLEN
-        instrs += [IndirectCall86(target)]
-        instrs += [Move86(EAX, target)]
-        if(cntargs > 0):
-            instrs += [Add86(Const86(offset), ESP)]
-        return instrs
+            args += [self.dispatch(arg)]
+        arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, len(n.args))
+        tmp = VarLLVM(LocalLLVM(generate_name("inttoptrConversion")), DEFAULTTYPE)
+        instrList += [inttoptrLLVM(tmp, VarLLVM(LocalLLVM(n.node.name), DEFAULTTYPE), arg_types)]
+        instrList += [callLLVM(DEFAULTTYPE, getArg(tmp), args, target)]
+        return instrList

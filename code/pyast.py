@@ -972,16 +972,17 @@ class SLambda(PyNode):
         return lines
 
 class SLambdaLabel(PyNode):
-    def __init__(self, name):
+    def __init__(self, name, numargs):
         self.name = name
+        self.numargs = numargs
     def __repr__(self):
-        return 'SLambdaLabel(%s)' % (self.name) 
+        return 'SLambdaLabel(%s, %d)' % (self.name, self.numargs) 
     @staticmethod
     def copy(self, n, *args):
-        return SLambdaLabel(n.name)
+        return SLambdaLabel(n.name, n.numargs)
     @staticmethod
     def list(self, n, *args):
-        return (SLambdaLabel(n.name), [])
+        return (SLambdaLabel(n.name, n.numargs), [])
     @staticmethod
     def find(self, n, *args):
         return set([])
@@ -989,7 +990,7 @@ class SLambdaLabel(PyNode):
     def graph(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("SLambdaLabel(%s)" % n.name))
+        lines += Graphvis_dot().lineLabel(myid, ("SLambdaLabel(%s, %d)" % (n.name, n.numargs)))
         lines += Graphvis_dot().linePair(p, myid)
         return lines
 
