@@ -92,7 +92,7 @@ class LLVMInstrSelectVisitor(Visitor):
         name  = n.label
         args = []
         for param in n.params:
-            args  += VarLLVM(LocalLLVM(param), DEFAULTTYPE)
+            args  += [VarLLVM(LocalLLVM(param), DEFAULTTYPE)]
         blocks = self.dispatch(n.code, (name, _type))
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
@@ -401,7 +401,13 @@ class LLVMInstrSelectVisitor(Visitor):
         #raise Exception("Not Yet Implemented")
         #add the casting
         #%fptr3  = inttoptr i64 %fptr2 to i64 (i64)*
+        #%res0   = call i64 %fptr3(i64 5)
         args = []
+        instrList = []
         for arg in n.args:
             args += [self.dispatch(arg)]
-        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, len(n.args))
+        tmp = VarLLVM(LocalLLVM(generate_name("inttoptrConversion")), DEFAULTTYPE)
+        instrList += [inttoptrLLVM(tmp, VarLLVM(LocalLLVM(n.node.name), DEFAULTTYPE), arg_types)]
+        instrList += [callLLVM(DEFAULTTYPE, getArg(tmp), args, target)]
+        return instrList
