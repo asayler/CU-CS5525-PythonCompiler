@@ -29,15 +29,15 @@ from pyast import *
 class SSAVisitor(CopyVisitor):
     assign_find = AssigneeVisitor()
 
-    def make_ssa_write(self, name):
+    def make_ssa_write(self, name, special=None):
         if name in RESERVED_NAMES:
             return name
-        else: return "%s$%s" % (name, self.names[name])
+        else: return "%s$%s" % (name, special if special else self.names[name])
 
-    def make_ssa_read(self, name):
+    def make_ssa_read(self, name, special=None):
         if name in RESERVED_NAMES:
             return name
-        else: return "%s$%s" % (name, self.scope[name])
+        else: return "%s$%s" % (name, special if special else self.scope[name])
         
 
     def preorder(self, tree):
@@ -77,6 +77,7 @@ class SSAVisitor(CopyVisitor):
             prephi[x] = self.make_ssa_read(x)
         tests = []
         bodies = []
+        dicts = []
         choices = []
         for (test, _) in n.tests:
             tests.append(self.dispatch(test))
@@ -91,18 +92,28 @@ class SSAVisitor(CopyVisitor):
             choices.append(lchoices)
             self.scope = topscope.copy()
         else_ = self.dispatch(n.else_)
-        phi = {}
+        elsechoices = {}
+        phimunge = {}
+        phinames = []
         for x in assigns:
-            xphi = []
-            for lchoices in choices:
-                xphi.append(lchoices[x])
             if x in assign_else:
-                xphi.append(self.make_ssa_read(x))
-            else: xphi.append(prephi[x])
+                elsechoices[x]=self.make_ssa_read(x)
+            else: elsechoices[x]=append(prephi[x])
+
             self.names[x] = self.names[x] + 1
             self.scope[x] = self.names[x]
-            phi[self.make_ssa_write(x)] = xphi
-        return IfPhi(zip(tests,bodies), else_, phi)
+            phimunge[x] = self.make_ssa_write(x)
+            phinames.append(phimunge[x])
+        finalchoices = []
+        finalelsechoices = {}
+        for lchoices in choices:
+            finallchoice = {}
+            for x in lchoices:
+                finallchoice[phimunge[x]] = lchoices[x]
+            finalchoices.append(finallchoice)
+        for x in elsechoices:
+            finalelsechoices[phimunge[x]] = elsechoices[x]
+        return IfPhi(zip(tests,bodies,finalchoices), (else_, finalelsechoices), phinames)
 
     def visitWhileFlat(self, n):
         assigns = [x for x in (self.assign_find.preorder(n.body))
@@ -110,16 +121,23 @@ class SSAVisitor(CopyVisitor):
         prephi = {}
         for x in assigns:
             prephi[x] = self.make_ssa_read(x)
-        body = self.dispatch(n.body)
+        phicounts = {}
+        for x in assigns:
+            phicount = self.names[x] + 1
+            self.names[x] = phicount
+            self.scope[x] = phicount
+            phicounts[x] = phicount
         phi = {}
+        testss = self.dispatch(n.testss)
+        test = self.dispatch(n.test)
+        body = self.dispatch(n.body)    
         for x in assigns:
             xphi = [prephi[x], self.make_ssa_read(x)]
-            self.names[x] = self.names[x] + 1
-            self.scope[x] = self.names[x]
-            phi[self.make_ssa_write(x)] = xphi
+            phi[self.make_ssa_write(x, phicounts[x])] = xphi
+            self.scope[x] = phicounts[x]
         return WhileFlatPhi(phi, 
-                            self.dispatch(n.testss), 
-                            self.dispatch(n.test), body, 
+                            testss, 
+                            test, body, 
                             self.dispatch(n.else_) if n.else_ else None)
             
             

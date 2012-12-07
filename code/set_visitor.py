@@ -28,11 +28,13 @@ class SetVisitor(Visitor):
     visitStmtList = StmtList.find
     visitDiscard = Discard.find
     visitIf = If.find
+    visitIfPhi = IfPhi.find
     visitClass = Class.find
     visitFunction = Function.find
     visitReturn = Return.find
-    visitWhileFlat = WhileFlat.find
     visitWhile = While.find
+    visitWhileFlat = WhileFlat.find
+    visitWhileFlatPhi = WhileFlatPhi.find
     visitVarAssign = VarAssign.find
     visitSubscriptAssign = SubscriptAssign.find
     visitAttrAssign = AttrAssign.find

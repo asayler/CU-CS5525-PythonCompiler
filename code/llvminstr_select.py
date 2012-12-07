@@ -157,46 +157,109 @@ class LLVMInstrSelectVisitor(Visitor):
         return ([retLLVM(val)])
 
     def visitWhileFlatPhi(self, n, func):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        whileStartL, whileEndL = generate_while_labels()
-        # Test Instructions
-        testtmp = Var86(generate_name(WHILETESTTMP))
-        test  = []
-        test += [Label86(whileStartL)]
-        test += self.dispatch(n.testss, func)
-        test += self.dispatch(n.test, testtmp)
-        test += [Comp86(x86FALSE, testtmp)]
-        test += [JumpEqual86(whileEndL)]
-        # Body Instructions
-        body  = []
-        body += self.dispatch(n.body, func)
-        body += [Jump86(whileStartL)]
-        body += [Label86(whileEndL)]
-        return [Loop86(test, body)]
+        # Setup Values
+        testVal =  self.dispatch(n.test)
+        # Setup Labels
+        entryL = LabelArgLLVM(LocalLLVM(generate_label("wentry")))
+        testprepL = LabelArgLLVM(LocalLLVM(generate_label("wtestprep")))
+        testL = LabelArgLLVM(LocalLLVM(generate_label("wtest")))
+        loopL = LabelArgLLVM(LocalLLVM(generate_label("wloop")))
+        elseL = LabelArgLLVM(LocalLLVM(generate_label("welse")))
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("wend")))
+        # Loop Block
+        loopB   = self.dispatch(n.body, None)
+        # Patch in proper label for first block
+        loopB[0].label = loopL
+        # Patch in proper destination in last block
+        loopB[-1].instrs[-1].defaultDest = testprepL
+        # Entry Block
+        entryI    = []
+        entryI   += [switchLLVM(DEFAULTZERO, testprepL, [])]
+        entryB    = [blockLLVM(entryL, entryI)]
+        # TestPrep Block
+        phis = []
+        for key in n.phi:
+            values = n.phi[key]
+            prePhi = PhiPairLLVM(self.dispatch(Name(values[0])), 
+                                 entryL)
+            postPhi = PhiPairLLVM(self.dispatch(Name(values[1])),
+                                  loopB[-1].label)
+            target = VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            phis += [phiLLVM(target, [prePhi, postPhi])]
+        testprepB = self.dispatch(n.testss, None)
+        testprepB[0].instrs = phis + testprepB[0].instrs
+        testprepB[0].label = testprepL
+        testprepB[-1].instrs[-1].defaultDest = testL
+
+        # Test Block
+        loopS = SwitchPairLLVM(DEFAULTTRUE, loopL)
+        testI   = []
+        testI  += [switchLLVM(testVal, elseL, [loopS])]
+        testB   = [blockLLVM(testL, testI)]
+        # Else Block
+        if n.else_:
+            elseB   = self.dispatch(n.else_, None)
+            # Patch in proper label for first block
+            elseB[0].label = elseL
+            # Patch in proper destination in last block
+            elseB[-1].instrs[-1].defaultDest = endL
+        else:
+            elseI    = []
+            elseI   += [switchLLVM(DEFAULTZERO, endL, [])]
+            elseB    = [blockLLVM(elseL, elseI)]
+        # Test Block
+        endI    = []
+        endI   += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        endB    = [blockLLVM(endL, endI)]
+        return entryB + testprepB + testB + loopB + elseB + endB
 
     def visitIfPhi(self, n, func_name):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(len(n.tests))
-        def make_branches(testlist, caseLs, else_):
-            if testlist:
-                test, body = testlist[0]
-                tmp = Var86(generate_name(IFTEMP))
-                tinstrs = self.dispatch(test, tmp)
-                tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caseLs[0])]
-                
-                ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(endIfL)]
-                
-                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
-                return tinstrs + [If86(ninstrs, einstrs)]
+        blocks = []
+        phis = {}
+        # Setup Labels
+        nextL = LabelArgLLVM(LocalLLVM(generate_label("if")))    
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
+        # Tests
+        for test in n.tests:
+            (test, tbody, phiD) = test
+            testV   =  self.dispatch(test)
+            testB   =  self.dispatch(tbody, func_name)
+            testL   =  nextL
+            nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+            testS   =  SwitchPairLLVM(DEFAULTTRUE, testB[0].label)
+            testI   =  [switchLLVM(testV, nextL, [testS])]
+            for key in phiD.keys():
+                phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+                phiP = [PhiPairLLVM(phiV, testB[-1].label)]
+                if key in phis:
+                    phis[key] += phiP
+                else:
+                    phis[key] =  phiP
+            testB[-1].instrs[-1].defaultDest = endL
+            blocks  += [blockLLVM(testL, testI)] + testB
+        # Else
+        (ebody, phiD) = n.else_
+        elseB   =  self.dispatch(ebody, func_name)
+        elseL   = nextL
+        nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+        elseI   =  [switchLLVM(DEFAULTZERO, elseB[0].label, [])]
+        for key in phiD.keys():
+            phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+            phiP = [PhiPairLLVM(phiV, elseB[-1].label)]
+            if key in phis:
+                phis[key] += phiP
             else:
-                instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(endIfL)]
-                return instrs
-        return make_branches(n.tests, caseLs, n.else_)
+                phis[key] =  phiP
+        elseB[-1].instrs[-1].defaultDest = endL
+        blocks  += [blockLLVM(elseL, elseI)] + elseB
+        # End
+        endI    =  []
+        for key in phis.keys():
+            phiT =  VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            endI += [phiLLVM(phiT, phis[key])]
+        endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        blocks  +=  [blockLLVM(endL, endI)]
+        return blocks
     
     # Terminal Expressions
 
