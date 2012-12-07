@@ -358,14 +358,14 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitCallFunc(self, n, target):
         instrList = []
         args = []
-        print "target " + str(target)
+        # print "target " + str(target)
         for arg in n.args:
             if isinstance(arg, SLambdaLabel):
                 name = generate_name("instrsel_SLamdaLabel")
                 numargs = 0
                 temp = VarLLVM(LocalLLVM(name), DEFAULTTYPE)
-                print "temp  " + str(temp)
-                print "SLambdaLabel: "+ str(arg) + "args "+ str(arg.numargs)
+                # print "temp  " + str(temp)
+                # print "SLambdaLabel: "+ str(arg) + "args "+ str(arg.numargs)
                 arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
                 print arg_types
                 value = VarLLVM(GlobalLLVM(arg.name),arg_types)
@@ -373,33 +373,30 @@ class LLVMInstrSelectVisitor(Visitor):
                 args += [temp]
             #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
             elif isinstance(arg, String):
-                print "STRING"
                 stringArray = LLVMArray(len(arg.string), I8)
-                print stringArray
+                # print stringArray
                 actualString = LLVMString(stringArray, arg.string)
-                print actualString
+                # print actualString
                 tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
-                print "tm" + str(tmp)
+                # print "tm" + str(tmp)
                 stringDeclare = declareLLVMString(tmp, actualString)
-                print stringDeclare
+                # print stringDeclare
                 self.stringsInstr += [stringDeclare]
                 placeholder = VarLLVM(LocalLLVM(generate_name("cast")), PI8)
-                print "placeholder" + str(placeholder)
+                # print "placeholder" + str(placeholder)
                 cast = getelementptrLLVM(placeholder, tmp, [DEFAULTZERO, DEFAULTZERO])
-                print cast
+                # print cast
                 instrList += [cast]
                 args += [placeholder]
             else:
-                print "here"
+                # print "here"
                 args += [self.dispatch(arg)]
-        print "args" + str(args)
+        # print "args" + str(args)
         instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
-        print instrList
+        # print instrList
         return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        #raise Exception("Not Yet Implemented")
-        #add the casting
         #%fptr3  = inttoptr i64 %fptr2 to i64 (i64)*
         #%res0   = call i64 %fptr3(i64 5)
         args = []
