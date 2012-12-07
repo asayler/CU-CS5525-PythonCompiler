@@ -74,13 +74,14 @@ I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
 I64  = LLVMInt(64)
-PI8 = LLVMPointer(I8)
+PI8  = LLVMPointer(I8)
 PI32 = LLVMPointer(I32)
 PI64 = LLVMPointer(I64)
+
 LLVMBOOLTYPE = I1
 
 class LLVMFuncPtrType(LLVMType):
-    def __init__(self, ret, typeargs,numargs):
+    def __init__(self, ret, typeargs, numargs):
         self.ret = ret
         self.args = []
         n = numargs
@@ -90,14 +91,14 @@ class LLVMFuncPtrType(LLVMType):
 
     def __repr__(self):
         return ("%s (%s)*" % (str(self.ret),
-                                ", ".join(map(lambda x: str(x), self.args))))
+                              ", ".join(map(lambda x: str(x), self.args))))
 
 class LLVMString(LLVMType):
     def __init__(self, _type, _str):
         self.type = _type
         self.str = _str
     def __repr__(self):
-        return ("%s c\"%s\00\"") %(self.type, self.str)
+        return ("%s c\"%s\00\"") % (self.type, self.str)
 
 # LLVM Names
 
@@ -353,18 +354,18 @@ class declareLLVMString(OtherLLVMInst):
         return ("%s = private unnamed_addr constant %s" % (str(self.target.name), str(self.string)))
 
 class getelementptrLLVM(OtherLLVMInst):
-    #%cast210 = getelementptr [13 x i8]* @.str, i64 0, i64 0
-    #<result> = getelementptr <pty>* <ptrval>{, <ty> <idx>}*
+    # %cast210 = getelementptr [13 x i8]* @.str, i64 0, i64 0
+    # <result> = getelementptr <pty>* <ptrval>{, <ty> <idx>}*
     def __init__(self, target, pointedTo, args):
         self.ptdTo = pointedTo
         self.target = target
         self.args = args
     def __repr__(self):
         return "%s = getelementptr %s* %s, %s" % (str(getArg(self.target)),
-                                                str(self.ptdTo.type),
-                                                str(self.ptdTo.name),
-                                                ", ".join(map(lambda x: str(x),
-                                                     self.args)))
+                                                  str(self.ptdTo.type),
+                                                  str(self.ptdTo.name),
+                                                  ", ".join(map(lambda x: str(x),
+                                                                self.args)))
 
 class icmpLLVM(OtherLLVMInst):
     def __init__(self, target, op, left, right):
@@ -378,10 +379,10 @@ class icmpLLVM(OtherLLVMInst):
         self.right = right
     def __repr__(self):
         return ("%s = icmp %s %s %s, %s" % (str(getArg(self.target)),
-                                             str(self.op),
-                                             str(self.argType),
-                                             str(getArg(self.left)),
-                                             str(getArg(self.right))))
+                                            str(self.op),
+                                            str(self.argType),
+                                            str(getArg(self.left)),
+                                            str(getArg(self.right))))
 
 class callLLVM(OtherLLVMInst):
     def __init__(self, _type, name, args, target=None):
@@ -398,20 +399,6 @@ class callLLVM(OtherLLVMInst):
             return string
         else:
             return "%s = %s" % (str(getArg(self.target)), string)
-
-# class icallLLVM(OtherLLVMInst):
-#     def __init__(self, _type, name, args, target=None):
-#         self.type = _type
-#         self.name = name
-#         self.args = args
-#         self.target = target
-#     def __repr__(self):
-#         #<result> = [tail] call [cconv] <ty>* <fnptrval>(<param list>)
-#         string = ("call %s")
-#         string = ("call %s* %s(%s)") % (str(self.type),
-#                                        str(self.name),
-#                                        ", ".join(map(lambda x: str(x),
-#                                                      self.args)))
 
 class phiLLVM(OtherLLVMInst):
     def __init__(self, target, pairs):
