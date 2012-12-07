@@ -62,7 +62,6 @@ TESTCASESINPUT      = $(patsubst %.py,               %.in,                $(TEST
 TESTCASESASS86      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.s,      $(TESTCASESSOURCE))
 TESTCASESOUT86      = $(patsubst $(BUILDDIR)%.s,     $(BUILDDIR)%.86out,  $(TESTCASESASS86))
 TESTDIFFS86         = $(patsubst $(BUILDDIR)%.86out, $(BUILDDIR)%.86diff, $(TESTCASESOUT86))
-TESTRT86            = $(patsubst $(BUILDDIR)%.86diff, $(BUILDDIR)%.86rt, $(TESTDIFFS86))
 
 TESTCASESLL         = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.ll,     $(TESTCASESSOURCE))
 TESTCASESBC         = $(patsubst $(BUILDDIR)%.ll,    $(BUILDDIR)%.bc,     $(TESTCASESLL))
@@ -70,8 +69,12 @@ TESTCASESLBC        = $(patsubst $(BUILDDIR)%.bc,    $(BUILDDIR)%.lbc,    $(TEST
 TESTCASESASSLL      = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.lls,    $(TESTCASESLBC))
 TESTCASESOUTLL      = $(patsubst $(BUILDDIR)%.lls,   $(BUILDDIR)%.llout,  $(TESTCASESASSLL))
 TESTDIFFSLL         = $(patsubst $(BUILDDIR)%.llout, $(BUILDDIR)%.lldiff, $(TESTCASESOUTLL))
-TESTRTLL            = $(patsubst $(BUILDDIR)%.lldiff, $(BUILDDIR)%.llrt, $(TESTDIFFSLL))
 
+BMTESTCASESSOURCE = $(wildcard $(TESTDIR)*benchmark*.py)
+BMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(BMTESTCASESSOURCE))
+BMTESTDIFFSLL     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(BMTESTCASESSOURCE))
+BMTESTRTLL            = $(patsubst $(BUILDDIR)%.lldiff, $(BUILDDIR)%.llrt, $(BMTESTDIFFSLL))
+BMTESTRT86            = $(patsubst $(BUILDDIR)%.86diff, $(BUILDDIR)%.86rt, $(BMTESTDIFFS86))
 
 LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
 LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(LLVMTESTCASESSOURCE))
@@ -102,9 +105,9 @@ P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TE
 	P1TestsRun86 P1TestsRunLL \
 	P2TestsRun86 P2TestsRunLL \
 	P3TestsRun86 P3TestsRunLL \
-	MTests TestsRunBenchmark \
-	TestsRunBenchmarkLL \
-	TestsRunBenchmark86
+	MTests BenchmarkTestsRun \
+	BenchmarkTestsRunLL \
+	BenchmarkTestsRun86
 
 all: Tests
 
@@ -130,11 +133,11 @@ TestsRun86: $(TESTDIFFS86)
 TestsRunLL: $(TESTDIFFSLL)
 	cat $^
 
-TestsRunBenchmark: TestsRunBenchmarkLL TestsRunBenchmark86
+BenchmarkTestsRun: BenchmarkTestsRunLL BenchmarkTestsRun86
 	python analyze.py
 
-TestsRunBenchmarkLL: $(TESTRTLL)
-TestsRunBenchmark86: $(TESTRT86)
+BenchmarkTestsRunLL: $(BMTESTRTLL)
+BenchmarkTestsRun86: $(BMTESTRT86)
 
 LLVMTestsRun86: $(LLVMTESTDIFFS86)
 	cat $^
@@ -171,7 +174,7 @@ $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.86output $(BUILDDIR)$*.correct > $@
 
-$(TESTRT86): $(BUILDDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
+$(BMTESTRT86): $(BUILDDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.86ct > $(BUILDDIR)$*.86ctk
 	mv $(BUILDDIR)$*.86ctk $(BUILDDIR)$*.86ct
 	cat $(TESTDIR)$*.in | $(TIME) --format=%e -o $@ $(BUILDDIR)$*.86out
@@ -181,7 +184,7 @@ $(TESTDIFFSLL): $(BUILDDIR)%.lldiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.lloutput $(BUILDDIR)$*.correct > $@
 
-$(TESTRTLL): $(BUILDDIR)%.llrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
+$(BMTESTRTLL): $(BUILDDIR)%.llrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
 	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
 	cat $(TESTDIR)$*.in | $(TIME) --format=%e -o $@ $(BUILDDIR)$*.llout
