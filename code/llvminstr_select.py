@@ -76,7 +76,6 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def preorder(self, tree, *args):
         ret = self.stringsInstr + super(LLVMInstrSelectVisitor, self).preorder(tree)
-        print ret
         return ret
         
     # Modules
@@ -273,20 +272,6 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitString(self, n):
         raise Exception("You should not have come here, Frodo")
-        # stringArray = LLVMArray(len(n.string), I8)
-        # print stringArray
-        # actualString = LLVMString(stringArray, n.string)
-        # print actualString
-        # tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
-        # print tmp
-        # stringDeclare = declareLLVMString(tmp, actualString)
-        # print stringDeclare
-        # self.stringsInstr += [stringDeclare]
-
-        # cast = getelementptrLLVM(VarLLVM(LocalLLVM(generate_name("cast")), PI8), tmp, [DEFAULTZERO, DEFAULTZERO])
-        # print cast
-
-        # return cast
 
     # Non-Terminal Expressions
 
@@ -367,18 +352,18 @@ class LLVMInstrSelectVisitor(Visitor):
                 # print "temp  " + str(temp)
                 # print "SLambdaLabel: "+ str(arg) + "args "+ str(arg.numargs)
                 arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
-                print arg_types
+                #print arg_types
                 value = VarLLVM(GlobalLLVM(arg.name),arg_types)
                 instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
                 args += [temp]
             #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
             elif isinstance(arg, String):
-                stringArray = LLVMArray(len(arg.string), I8)
+                stringArray = LLVMArray(len(arg.string) + 1, I8)
                 # print stringArray
                 actualString = LLVMString(stringArray, arg.string)
-                # print actualString
+                print actualString
                 tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
-                # print "tm" + str(tmp)
+                print "tm" + str(tmp)
                 stringDeclare = declareLLVMString(tmp, actualString)
                 # print stringDeclare
                 self.stringsInstr += [stringDeclare]

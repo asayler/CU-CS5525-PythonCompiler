@@ -237,9 +237,7 @@ def main(argv=None):
         # Graph ast
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
-    sys.stderr.write("flat ast = \n" + str(flatast) + "\n")
-    dotFileName = dotFilePath + "-flat" + dotFileNameExt
-    GraphVisitor().writeGraph(flatast, dotFileName)
+    
     #return 0
     if(compileType == "x86"):
 

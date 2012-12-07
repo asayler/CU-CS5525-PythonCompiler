@@ -97,7 +97,7 @@ class LLVMString(LLVMType):
         self.type = _type
         self.str = _str
     def __repr__(self):
-        return ("%s c\"%s\"") %(self.type, self.str)
+        return ("%s c\"%s\00\"") %(self.type, self.str)
 
 # LLVM Names
 
