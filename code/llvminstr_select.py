@@ -398,6 +398,7 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIndirectCallFunc(self, n, target):
         #raise Exception("Not Yet Implemented")
         #add the casting
+        #%fptr3  = inttoptr i64 %fptr2 to i64 (i64)*
         args = []
         for arg in n.args:
             args += [self.dispatch(arg)]
