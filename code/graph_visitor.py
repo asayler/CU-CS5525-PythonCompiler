@@ -31,11 +31,13 @@ class GraphVisitor(Visitor):
     visitStmtList = StmtList.graph
     visitDiscard = Discard.graph
     visitIf = If.graph
+    visitIfPhi = IfPhi.graph
     visitClass = Class.graph
     visitFunction = Function.graph
     visitReturn = Return.graph
-    visitWhileFlat = WhileFlat.graph
     visitWhile = While.graph
+    visitWhileFlat = WhileFlat.graph
+    visitWhileFlatPhi = WhileFlatPhi.graph
     visitVarAssign = VarAssign.graph
     visitSubscriptAssign = SubscriptAssign.graph
     visitAttrAssign = AttrAssign.graph

@@ -224,15 +224,15 @@ class IfPhi(PyNode):
         return 'IfPhi(%s,%s,%s)' % (self.tests, self.else_, self.phi)
     @staticmethod
     def copy(self, n, *args):
-        return IfPhi(map(lambda (x, y): (self.dispatch(x, *args),
-                                         self.dispatch(y, *args)), n.tests),
-                     self.dispatch(n.else_, *args),
+        return IfPhi(map(lambda (x, y, z): (self.dispatch(x, *args),
+                                            self.dispatch(y, *args), z), n.tests),
+                     (self.dispatch(n.else_[0], *args), n.else_[1]),
                      n.phi)
     @staticmethod
     def list(self, n, *args):
-        plist = map(lambda (x, y): (self.dispatch(x, *args),
-                                    self.dispatch(y, *args)), n.tests)
-        else_ = self.dispatch(n.else_, *args)
+        plist = map(lambda (x, y, z): (self.dispatch(x, *args),
+                                       self.dispatch(y, *args), z), n.tests)
+        else_ = (self.dispatch(n.else_[0], *args), n.else_[1])
         tests = []
         ss = []
         for ((test, ssn), body) in plist:
@@ -241,8 +241,8 @@ class IfPhi(PyNode):
         return ss + [If(tests, else_, n.phi)]
     @staticmethod
     def find(self, n, *args):
-        return self.dispatch(n.else_, *args) | \
-            reduce(lambda x,y: x | y, map(lambda (x,y): self.dispatch(x, *args) | \
+        return self.dispatch(n.else_[0], *args) | \
+            reduce(lambda x,y: x | y, map(lambda (x,y,z): self.dispatch(x, *args) | \
                                               self.dispatch(y, *args), n.tests), set([]))
     @staticmethod
     def graph(self, n, p):
@@ -250,7 +250,7 @@ class IfPhi(PyNode):
         myid = Graphvis_dot().uniqueid(n)
         lines += Graphvis_dot().lineLabel(myid, ("IfPhi"))
         lines += Graphvis_dot().linePair(p, myid)
-        for (test, body) in n.tests:
+        for (test, body, _) in n.tests:
             lines += self.dispatch(test, myid)
             lines += self.dispatch(body, myid)
         lines += self.dispatch(n.else_, myid)
@@ -972,16 +972,17 @@ class SLambda(PyNode):
         return lines
 
 class SLambdaLabel(PyNode):
-    def __init__(self, name):
+    def __init__(self, name, numargs):
         self.name = name
+        self.numargs = numargs
     def __repr__(self):
-        return 'SLambdaLabel(%s)' % (self.name) 
+        return 'SLambdaLabel(%s, %d)' % (self.name, self.numargs) 
     @staticmethod
     def copy(self, n, *args):
-        return SLambdaLabel(n.name)
+        return SLambdaLabel(n.name, n.numargs)
     @staticmethod
     def list(self, n, *args):
-        return (SLambdaLabel(n.name), [])
+        return (SLambdaLabel(n.name, n.numargs), [])
     @staticmethod
     def find(self, n, *args):
         return set([])
@@ -989,7 +990,7 @@ class SLambdaLabel(PyNode):
     def graph(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("SLambdaLabel(%s)" % n.name))
+        lines += Graphvis_dot().lineLabel(myid, ("SLambdaLabel(%s, %d)" % (n.name, n.numargs)))
         lines += Graphvis_dot().linePair(p, myid)
         return lines
 

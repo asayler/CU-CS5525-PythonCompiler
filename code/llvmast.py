@@ -62,13 +62,43 @@ class LLVMLabel(LLVMType):
     def __repr__(self):
         return ('label')
 
+class LLVMArray(LLVMType):
+    def __init__(self, numelem, _type):
+        self.numelem = numelem
+        self.type = _type
+    def __repr__(self):
+        return ('[%d x %s]' % (self.numelem, str(self.type)))
+
+
 I1   = LLVMInt(1)
 I8   = LLVMInt(8)
 I32  = LLVMInt(32)
 I64  = LLVMInt(64)
-PI32 = LLVMPointer(I8)
+PI8  = LLVMPointer(I8)
 PI32 = LLVMPointer(I32)
 PI64 = LLVMPointer(I64)
+
+LLVMBOOLTYPE = I1
+
+class LLVMFuncPtrType(LLVMType):
+    def __init__(self, ret, typeargs, numargs):
+        self.ret = ret
+        self.args = []
+        n = numargs
+        while(n>0):
+            self.args += [typeargs]
+            n -= 1
+
+    def __repr__(self):
+        return ("%s (%s)*" % (str(self.ret),
+                              ", ".join(map(lambda x: str(x), self.args))))
+
+class LLVMString(LLVMType):
+    def __init__(self, _type, _str):
+        self.type = _type
+        self.str = _str
+    def __repr__(self):
+        return ("%s c\"%s\00\"") % (self.type, self.str)
 
 # LLVM Names
 
@@ -119,10 +149,8 @@ class LabelArgLLVM(LLVMArg):
     def __repr__(self):
         return "%s %s" % (str(self.type), str(self.name))
 
-LLVMZERO  = ConstLLVM(0, I64)
-LLVMONE   = ConstLLVM(1, I64)
-LLVMFALSE = LLVMZERO
-LLVMTRUE  = LLVMONE
+LLVMFALSE = ConstLLVM(0, LLVMBOOLTYPE)
+LLVMTRUE  = ConstLLVM(1, LLVMBOOLTYPE)
 
 def getType(arg):
     if(isinstance(arg, ConstLLVM)):
@@ -191,6 +219,7 @@ class LLVMInst(object):
 class BlockLLVMInst(LLVMInst):
     def __init__():
         pass
+
 
 class defineLLVM(BlockLLVMInst):
     def __init__(self, _type, name, args, blocks):
@@ -299,11 +328,44 @@ class sextLLVM(ConversionLLVMInst):
     def __repr__(self):
         return super(sextLLVM, self).emit("sext")
 
+class ptrtointLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(ptrtointLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(ptrtointLLVM, self).emit("ptrtoint")
+
+class inttoptrLLVM(ConversionLLVMInst):
+    def __init__(self, *args, **kwargs):
+        super(inttoptrLLVM, self).__init__(*args, **kwargs)
+    def __repr__(self):
+        return super(inttoptrLLVM, self).emit("inttoptr")
+
 # Other Instructions
 
 class OtherLLVMInst(LLVMInst):
     def __init__():
         pass
+
+class declareLLVMString(OtherLLVMInst):
+    def __init__(self, target, _str):
+        self.string = _str
+        self.target = target
+    def __repr__(self):
+        return ("%s = private unnamed_addr constant %s" % (str(self.target.name), str(self.string)))
+
+class getelementptrLLVM(OtherLLVMInst):
+    # %cast210 = getelementptr [13 x i8]* @.str, i64 0, i64 0
+    # <result> = getelementptr <pty>* <ptrval>{, <ty> <idx>}*
+    def __init__(self, target, pointedTo, args):
+        self.ptdTo = pointedTo
+        self.target = target
+        self.args = args
+    def __repr__(self):
+        return "%s = getelementptr %s* %s, %s" % (str(getArg(self.target)),
+                                                  str(self.ptdTo.type),
+                                                  str(self.ptdTo.name),
+                                                  ", ".join(map(lambda x: str(x),
+                                                                self.args)))
 
 class icmpLLVM(OtherLLVMInst):
     def __init__(self, target, op, left, right):
@@ -317,10 +379,10 @@ class icmpLLVM(OtherLLVMInst):
         self.right = right
     def __repr__(self):
         return ("%s = icmp %s %s %s, %s" % (str(getArg(self.target)),
-                                             str(self.op),
-                                             str(self.argType),
-                                             str(getArg(self.left)),
-                                             str(getArg(self.right))))
+                                            str(self.op),
+                                            str(self.argType),
+                                            str(getArg(self.left)),
+                                            str(getArg(self.right))))
 
 class callLLVM(OtherLLVMInst):
     def __init__(self, _type, name, args, target=None):

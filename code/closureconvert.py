@@ -108,7 +108,7 @@ class ClosureVisitor(ListVisitor):
     def visitSLambda(self, n):
         # Creat New Label
         label_name = 'Q' + generate_name("SLambda")
-        label = SLambdaLabel(label_name)
+        
         # Recurse on code body
         slambdas = []
         (code, rslambdas) = self.dispatch(n.code, False)
@@ -131,6 +131,8 @@ class ClosureVisitor(ListVisitor):
         params = []
         params += [fvs_n]
         params += n.params
+        #Create SLambdaLabel
+        label = SLambdaLabel(label_name, len(params))
         # Create new closed slambda
         slambdas += [SLambda(params, StmtList(stmts), label_name)]
         # Return Call and list of SLambdas

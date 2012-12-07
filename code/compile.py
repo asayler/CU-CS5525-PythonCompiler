@@ -25,6 +25,7 @@ USAGE:
 
 # External Imports
 import sys
+import platform
 import argparse
 
 # Compiler Stage Imports
@@ -48,7 +49,14 @@ from llvminstr_select import LLVMInstrSelectVisitor
 # Helper Tool Imports
 from graph_visitor import GraphVisitor
 
-DECLARESFILE = './helper/runtime-declares.ll'
+(bits, linkage) = platform.architecture()
+if(bits == '32bit'):
+    DECLARESFILE = './helper/runtime-declares-x32.ll'
+elif(bits == '64bit'):
+    DECLARESFILE = './helper/runtime-declares-x64.ll'
+else:
+    raise Exception("Unknown bits type")
+
 PARSER = 'CURRENT'
 
 if PARSER == 'DEPRECATED':
@@ -229,7 +237,8 @@ def main(argv=None):
         # Graph ast
         dotFileName = dotFilePath + "-flat" + dotFileNameExt
         GraphVisitor().writeGraph(flatast, dotFileName)
-
+    
+    #return 0
     if(compileType == "x86"):
 
         # Compile flat tree
@@ -238,7 +247,7 @@ def main(argv=None):
         if(debug):
             # Print ast
             sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
-
+        #sys.stderr.write("pre  instr ast = \n" + str(assembly) + "\n")
         # Reg Alloc
         assembly = x86setup_strings(strings) + x86funcRegAlloc(assembly)
         if(debug):

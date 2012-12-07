@@ -6,8 +6,8 @@
 #include "hashtable_utility.h"
 
 /* for old times sake */
-void print_int_nl(int x);
-int input();
+void print_int_nl(long x);
+long input();
 
 /* Structure and type-tag definitions   */
 

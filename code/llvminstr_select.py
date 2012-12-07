@@ -17,6 +17,7 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 import sys
+import platform
 
 # Data Types
 from pyast import *
@@ -30,21 +31,6 @@ from stringfind import StringFindVisitor
 
 from utilities import generate_name
 from utilities import generate_label
-from utilities import generate_return_label
-from utilities import generate_while_labels
-from utilities import generate_if_labels
-
-def arg_select(ast):
-    if isinstance(ast, Name):
-        return Var86(ast.name)
-    elif isinstance(ast, Const):
-        return Const86(ast.value)
-    elif isinstance(ast, SLambdaLabel):
-        return IndirectJumpLabel86(ast.name)
-    elif isinstance(ast, String):
-        return Const86(ast.location)
-    else:
-        raise Exception("InstrSelect: Invalid argument - " + str(ast))
 
 DISCARDTEMP = "discardtemp"
 NULLTEMP = "nulltemp"
@@ -52,16 +38,31 @@ IFTEMP = "iftemp"
 WHILETESTTMP = "whiletesttmp"
 ICMPTEMP     = "icmptemp"
 
-DEFAULTTYPE = I64
-ICMPTYPE    = I1
+(bits, linkage) = platform.architecture()
+if(bits == '32bit'):
+    DEFAULTTYPE = I32
+elif(bits == '64bit'):
+    DEFAULTTYPE = I64
+else:
+    raise Exception("Unknown bits type")
+
+DEFAULTZERO  = ConstLLVM(0, DEFAULTTYPE)
+DEFAULTONE   = ConstLLVM(1, DEFAULTTYPE)
+DEFAULTFALSE = DEFAULTZERO
+DEFAULTTRUE  = DEFAULTONE
 
 DUMMYL = LabelArgLLVM(LocalLLVM("DUMMY_L"))
 
 class LLVMInstrSelectVisitor(Visitor):
-
+    
     def __init__(self):
         super(LLVMInstrSelectVisitor, self).__init__()
+        self.stringsInstr = []
 
+    def preorder(self, tree, *args):
+        ret = self.stringsInstr + super(LLVMInstrSelectVisitor, self).preorder(tree)
+        return ret
+        
     # Modules
 
     def visitProgram(self, n):
@@ -73,8 +74,16 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitSLambda(self, n):
         _type = DEFAULTTYPE
         name  = n.label
-        args  = n.params
+        args = []
+        for param in n.params:
+            args  += [VarLLVM(LocalLLVM(param), DEFAULTTYPE)]
         blocks = self.dispatch(n.code, (name, _type))
+        # Fix up functions with no return
+        if(isinstance(blocks[-1].instrs[-1], TermLLVMInst)):
+            if(not isinstance(blocks[-1].instrs[-1], retLLVM)):
+                blocks[-1].instrs[-1] = retLLVM(DEFAULTZERO)
+        else:
+            raise Exception("Each block must end with a terminal instruction")
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
     # Statements    
@@ -92,7 +101,7 @@ class LLVMInstrSelectVisitor(Visitor):
                 if(isinstance(ret[0], BlockLLVMInst)):
                     # If list of blocks returned
                     # Add jump to start of first returned block
-                    instrs += [switchLLVM(LLVMZERO, ret[0].label, [])]
+                    instrs += [switchLLVM(DEFAULTZERO, ret[0].label, [])]
                     # Add new block
                     blocks += [blockLLVM(thisL, instrs)]
                     # Patch in proper destination in last block
@@ -108,8 +117,7 @@ class LLVMInstrSelectVisitor(Visitor):
                     instrs += ret
                     if((node is n.nodes[-1]) and not(isinstance(instrs[-1], TermLLVMInst))):
                         # If this is the last node and no terminal instruction has been reached
-                        instrs += [switchLLVM(LLVMZERO, DUMMYL, [])]
-                        
+                        instrs += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
                     if(isinstance(instrs[-1], TermLLVMInst)):
                         # If last instruction returned is terminal, end block
                         blocks += [blockLLVM(thisL, instrs)]
@@ -120,8 +128,8 @@ class LLVMInstrSelectVisitor(Visitor):
                     raise Exception("Unhandled return type")
         else:
             # Empty List
-            # Add Dummy Block (will be patched into soemthing usefull later)
-            blocks += [blockLLVM(DUMMYL, [switchLLVM(LLVMZERO, DUMMYL, [])])]
+            # Add Dummy Block (will be patched into something usefull later)
+            blocks += [blockLLVM(DUMMYL, [switchLLVM(DEFAULTZERO, DUMMYL, [])])]
         return blocks
 
     def visitVarAssign(self, n, func):
@@ -140,46 +148,108 @@ class LLVMInstrSelectVisitor(Visitor):
         return ([retLLVM(val)])
 
     def visitWhileFlatPhi(self, n, func):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        whileStartL, whileEndL = generate_while_labels()
-        # Test Instructions
-        testtmp = Var86(generate_name(WHILETESTTMP))
-        test  = []
-        test += [Label86(whileStartL)]
-        test += self.dispatch(n.testss, func)
-        test += self.dispatch(n.test, testtmp)
-        test += [Comp86(x86FALSE, testtmp)]
-        test += [JumpEqual86(whileEndL)]
-        # Body Instructions
-        body  = []
-        body += self.dispatch(n.body, func)
-        body += [Jump86(whileStartL)]
-        body += [Label86(whileEndL)]
-        return [Loop86(test, body)]
+        # Setup Values
+        testVal =  self.dispatch(n.test)
+        # Setup Labels
+        entryL = LabelArgLLVM(LocalLLVM(generate_label("wentry")))
+        testprepL = LabelArgLLVM(LocalLLVM(generate_label("wtestprep")))
+        testL = LabelArgLLVM(LocalLLVM(generate_label("wtest")))
+        loopL = LabelArgLLVM(LocalLLVM(generate_label("wloop")))
+        elseL = LabelArgLLVM(LocalLLVM(generate_label("welse")))
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("wend")))
+        # Loop Block
+        loopB   = self.dispatch(n.body, None)
+        # Patch in proper label for first block
+        loopB[0].label = loopL
+        # Patch in proper destination in last block
+        loopB[-1].instrs[-1].defaultDest = testprepL
+        # Entry Block
+        entryI    = []
+        entryI   += [switchLLVM(DEFAULTZERO, testprepL, [])]
+        entryB    = [blockLLVM(entryL, entryI)]
+        # TestPrep Block
+        phis = []
+        for key in n.phi:
+            values = n.phi[key]
+            prePhi = PhiPairLLVM(self.dispatch(Name(values[0])), 
+                                 entryL)
+            postPhi = PhiPairLLVM(self.dispatch(Name(values[1])),
+                                  loopB[-1].label)
+            target = VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            phis += [phiLLVM(target, [prePhi, postPhi])]
+        testprepB = self.dispatch(n.testss, None)
+        testprepB[0].instrs = phis + testprepB[0].instrs
+        testprepB[0].label = testprepL
+        testprepB[-1].instrs[-1].defaultDest = testL
+        # Test Block
+        loopS = SwitchPairLLVM(DEFAULTTRUE, loopL)
+        testI   = []
+        testI  += [switchLLVM(testVal, elseL, [loopS])]
+        testB   = [blockLLVM(testL, testI)]
+        # Else Block
+        if n.else_:
+            elseB   = self.dispatch(n.else_, None)
+            # Patch in proper label for first block
+            elseB[0].label = elseL
+            # Patch in proper destination in last block
+            elseB[-1].instrs[-1].defaultDest = endL
+        else:
+            elseI    = []
+            elseI   += [switchLLVM(DEFAULTZERO, endL, [])]
+            elseB    = [blockLLVM(elseL, elseI)]
+        # Test Block
+        endI    = []
+        endI   += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        endB    = [blockLLVM(endL, endI)]
+        return entryB + testprepB + testB + loopB + elseB + endB
 
     def visitIfPhi(self, n, func_name):
-        raise Exception("Not Yet Implemented")
-        #Setup Label
-        caseLs, endIfL = generate_if_labels(len(n.tests))
-        def make_branches(testlist, caseLs, else_):
-            if testlist:
-                test, body = testlist[0]
-                tmp = Var86(generate_name(IFTEMP))
-                tinstrs = self.dispatch(test, tmp)
-                tinstrs += [Comp86(x86FALSE, tmp)]
-                tinstrs += [JumpEqual86(caseLs[0])]
-                
-                ninstrs = self.dispatch(body, func_name)
-                ninstrs += [Jump86(endIfL)]
-                
-                einstrs = [Label86(caseLs[0])] + make_branches(testlist[1:], caseLs[1:], else_)
-                return tinstrs + [If86(ninstrs, einstrs)]
+        blocks = []
+        phis = {}
+        # Setup Labels
+        nextL = LabelArgLLVM(LocalLLVM(generate_label("if")))    
+        endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
+        # Tests
+        for test in n.tests:
+            (test, tbody, phiD) = test
+            testV   =  self.dispatch(test)
+            testB   =  self.dispatch(tbody, func_name)
+            testL   =  nextL
+            nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+            testS   =  SwitchPairLLVM(DEFAULTTRUE, testB[0].label)
+            testI   =  [switchLLVM(testV, nextL, [testS])]
+            for key in phiD.keys():
+                phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+                phiP = [PhiPairLLVM(phiV, testB[-1].label)]
+                if key in phis:
+                    phis[key] += phiP
+                else:
+                    phis[key] =  phiP
+            testB[-1].instrs[-1].defaultDest = endL
+            blocks  += [blockLLVM(testL, testI)] + testB
+        # Else
+        (ebody, phiD) = n.else_
+        elseB   =  self.dispatch(ebody, func_name)
+        elseL   = nextL
+        nextL   =  LabelArgLLVM(LocalLLVM(generate_label("if")))
+        elseI   =  [switchLLVM(DEFAULTZERO, elseB[0].label, [])]
+        for key in phiD.keys():
+            phiV = VarLLVM(LocalLLVM(phiD[key]), DEFAULTTYPE)
+            phiP = [PhiPairLLVM(phiV, elseB[-1].label)]
+            if key in phis:
+                phis[key] += phiP
             else:
-                instrs = self.dispatch(else_, func_name)
-                instrs += [Label86(endIfL)]
-                return instrs
-        return make_branches(n.tests, caseLs, n.else_)
+                phis[key] =  phiP
+        elseB[-1].instrs[-1].defaultDest = endL
+        blocks  += [blockLLVM(elseL, elseI)] + elseB
+        # End
+        endI    =  []
+        for key in phis.keys():
+            phiT =  VarLLVM(LocalLLVM(key), DEFAULTTYPE)
+            endI += [phiLLVM(phiT, phis[key])]
+        endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        blocks  +=  [blockLLVM(endL, endI)]
+        return blocks
     
     # Terminal Expressions
 
@@ -188,6 +258,9 @@ class LLVMInstrSelectVisitor(Visitor):
 
     def visitName(self, n):
         return VarLLVM(LocalLLVM(n.name), DEFAULTTYPE)
+
+    def visitString(self, n):
+        raise Exception("You should not have come here, Frodo")
 
     # Non-Terminal Expressions
 
@@ -199,7 +272,7 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
         instrs = []
         instrs += [icmpLLVM(tmp, ICMP_EQ, left, right)]
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
@@ -208,14 +281,14 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitIntNotEqual(self, n, target):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), ICMPTYPE)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
         instrs = []
         instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
         return instrs
 
     def visitIntUnarySub(self, n, target):
-        left = LLVMZERO
+        left = DEFAULTZERO
         right = self.dispatch(n.expr)
         return [subLLVM(target, left, right)]
 
@@ -230,7 +303,7 @@ class LLVMInstrSelectVisitor(Visitor):
         elseL = LabelArgLLVM(LocalLLVM(generate_label("else")))
         endL  = LabelArgLLVM(LocalLLVM(generate_label("end")))
         # Test Block
-        thenS = SwitchPairLLVM(LLVMTRUE, thenL)
+        thenS = SwitchPairLLVM(DEFAULTTRUE, thenL)
         testI   = []
         testI  += [switchLLVM(testVal, elseL, [thenS])]
         testB   = [blockLLVM(testL, testI)]
@@ -241,7 +314,6 @@ class LLVMInstrSelectVisitor(Visitor):
         # Patch in proper destination in last block
         thenB[-1].instrs[-1].defaultDest = endL
         # Else Block
-        #elseI   = []
         elseB   = self.dispatch(n.else_.node, None)
         # Patch in proper label for first block
         elseB[0].label = elseL
@@ -252,33 +324,44 @@ class LLVMInstrSelectVisitor(Visitor):
         elseP = PhiPairLLVM(elseVal, elseB[-1].label)
         endI    = []
         endI   += [phiLLVM(target, [thenP, elseP])]
-        endI   += [switchLLVM(LLVMZERO, DUMMYL, [])]
+        endI   += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
         endB    = [blockLLVM(endL, endI)]
         return testB + thenB + elseB + endB
 
     def visitCallFunc(self, n, target):
+        instrList = []
         args = []
         for arg in n.args:
-            args += [self.dispatch(arg)]
-        return [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+            if isinstance(arg, SLambdaLabel):
+                name = generate_name("instrsel_SLamdaLabel")
+                numargs = 0
+                temp = VarLLVM(LocalLLVM(name), DEFAULTTYPE)
+                arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
+                value = VarLLVM(GlobalLLVM(arg.name),arg_types)
+                instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
+                args += [temp]
+            elif isinstance(arg, String):
+                stringArray = LLVMArray(len(arg.string) + 1, I8)
+                actualString = LLVMString(stringArray, arg.string)
+                tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
+                stringDeclare = declareLLVMString(tmp, actualString)
+                self.stringsInstr += [stringDeclare]
+                placeholder = VarLLVM(LocalLLVM(generate_name("cast")), PI8)
+                cast = getelementptrLLVM(placeholder, tmp, [DEFAULTZERO, DEFAULTZERO])
+                instrList += [cast]
+                args += [placeholder]
+            else:
+                args += [self.dispatch(arg)]
+        instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
+        return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        raise Exception("Not Yet Implemented")
-        instrs = []
-        instrs += self.dispatch(n.node, target)
-        cntargs = 0
-        align = (STACKALIGN - (len(n.args) % STACKALIGN))
-        offset = 0
-        if align != 0:
-            offset += WORDLEN * align
-            instrs += [Sub86(Const86(offset), ESP)]
-        n.args.reverse()
+        args = []
+        instrList = []
         for arg in n.args:
-            cntargs += 1
-            instrs += [Push86(arg_select(arg))]
-            offset += WORDLEN
-        instrs += [IndirectCall86(target)]
-        instrs += [Move86(EAX, target)]
-        if(cntargs > 0):
-            instrs += [Add86(Const86(offset), ESP)]
-        return instrs
+            args += [self.dispatch(arg)]
+        arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, len(n.args))
+        tmp = VarLLVM(LocalLLVM(generate_name("inttoptrConversion")), DEFAULTTYPE)
+        instrList += [inttoptrLLVM(tmp, VarLLVM(LocalLLVM(n.node.name), DEFAULTTYPE), arg_types)]
+        instrList += [callLLVM(DEFAULTTYPE, getArg(tmp), args, target)]
+        return instrList
