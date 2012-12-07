@@ -94,6 +94,12 @@ class LLVMInstrSelectVisitor(Visitor):
         for param in n.params:
             args  += [VarLLVM(LocalLLVM(param), DEFAULTTYPE)]
         blocks = self.dispatch(n.code, (name, _type))
+        # Fix up functions with no return
+        if(isinstance(blocks[-1].instrs[-1], TermLLVMInst)):
+            if(not isinstance(blocks[-1].instrs[-1], retLLVM)):
+                blocks[-1].instrs[-1] = retLLVM(DEFAULTZERO)
+        else:
+            raise Exception("Each block must end with a termianl instruction")
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
     # Statements    
