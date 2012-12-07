@@ -90,7 +90,9 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitSLambda(self, n):
         _type = DEFAULTTYPE
         name  = n.label
-        args  = n.params
+        args = []
+        for param in n.params:
+            args  += VarLLVM(LocalLLVM(param), DEFAULTTYPE)
         blocks = self.dispatch(n.code, (name, _type))
         return defineLLVM(_type, GlobalLLVM(name), args, blocks)
         
