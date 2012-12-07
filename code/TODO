@@ -3,6 +3,12 @@ General:
 
 LLVM:
 * Detect void function types and use void call style and type
+* Remove node-wide "phi" member from IfPhi AST class. It was not needed.
+* Make WhileFlatPhi nodes match format of IfPhi nodes
+* Generalize llvmCall nodes to take function pointers instead of names
+
+x86:
+* Make string handling nicer (like in LLVM)
 
 HELPER:
 * The helper function sling a lot of ints around. It woudl be ebst to make these
