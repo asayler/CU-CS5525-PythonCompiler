@@ -1,0 +1,13 @@
+1. The LLVM intermediate language requires identifiers to be of the form
+[%@][a-zA-Z$._][a-zA-Z$._0-9]*, which means that we either need to
+change the way we uniquify variables (with a number as the first
+letter) or we need to convert it to an LLVM form in the LLVM pass.
+
+2. Happily, the LLVM Assembly Language has a phi instruction that
+is used to implement the $\phi$ node in an SSA graph. The syntax is
+<result> = phi <ty> [ <val0>, <label0>], ... where the ty field
+is the incoming type of the data to be chosen from, which in our
+compiler will be a pointer to a pyobj. The type is followed by a list
+of pairs, one for each predecessor block of code in the current
+block. All values passed to the block must be first class values, so
+we will always use pointers.

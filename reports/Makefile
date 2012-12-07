@@ -16,9 +16,11 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
-PAPER_INCLUDES :=
+PROPOSAL_INCLUDES := 
+REPORT_INCLUDES   := CompilerFlow.pdf
+SLIDES_INCLUDES   := CompilerFlow.pdf
 
-INCLUDE_DIR    := include
+INCLUDE_DIR := include
 
 BIBTEX     ?= bibtex -terse
 LATEX      ?= pdflatex -file-line-error
@@ -32,7 +34,7 @@ VPATH = $(INCLUDE_DIR)/svg:$(INCLUDE_DIR)/pdf:$(INCLUDE_DIR)/png
 
 .PHONY: all clean cleanall
 
-all: proposal.pdf clean
+all: proposal.pdf report.pdf slides.pdf clean
 
 clean:
 	$(RM) *.aux *.bbl *.blg *.dvi *.log *.out *.nav *.snm *.toc *.vrb *~
@@ -41,21 +43,47 @@ clean:
 	$(RM) *.xml
 
 cleanall: clean
-	$(RM) proposal.pdf
+	$(RM) proposal.pdf report.pdf
 
-.PHONY: proposal
+.PHONY: proposal report slides
 
 proposal: proposal.pdf clean
+
+report: report.pdf clean
+
+slides: slides.pdf clean
 
 proposal.pdf: proposal.aux proposal.bbl
 	$(LATEX) $(LATEXFIRST) proposal.tex
 	$(LATEX) $(LATEXLAST) proposal.tex
 	@touch $^ $@
 
+report.pdf: report.aux report.bbl
+	$(LATEX) $(LATEXFIRST) report.tex
+	$(LATEX) $(LATEXLAST) report.tex
+	@touch $^ $@
+
+slides.pdf: slides.aux slides.bbl
+	$(LATEX) $(LATEXFIRST) slides.tex
+	$(LATEX) $(LATEXLAST) slides.tex
+	@touch $^ $@
+
 proposal.bbl: proposal.aux refs.bib
 	$(BIBTEX) $<
 
+report.bbl: report.aux refs.bib
+	$(BIBTEX) report.aux
+
+slides.bbl: slides.aux refs.bib
+	$(BIBTEX) slides.aux
+
 proposal.aux: proposal.tex $(PROPOSAL_INCLUDES)
+	$(LATEX) $(LATEXFIRST) $<
+
+report.aux: report.tex $(REPORT_INCLUDES)
+	$(LATEX) $(LATEXFIRST) $<
+
+slides.aux: slides.tex $(SLIDES_INCLUDES)
 	$(LATEX) $(LATEXFIRST) $<
 
 %.pdf:%-src.svg

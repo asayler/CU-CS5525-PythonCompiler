@@ -1,0 +1,336 @@
+% CU CS5525
+% Fall 2012
+% Python Compiler
+%
+% slides.tex
+% Semester Project Slides
+%
+% Repository:
+%    https://github.com/asayler/CU-CS5525-PythonCompiler
+%
+% By :
+%    Anne Gatchell
+%       http://annegatchell.com/
+%    Andy Sayler
+%       http://www.andysayler.com
+%    Michael (Mike) Vitousek
+%       http://csel.cs.colorado.edu/~mivi2269/
+
+\documentclass{beamer}
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+%\setbeamercovered{transparent=25}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{navigation symbols}{}
+\setcounter{tocdepth}{1}
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{biblatex}
+\usepackage{amssymb}
+\bibliography{refs}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\lstset{
+  language={},
+  basicstyle=\footnotesize,
+  numbers=none,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=4,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  frameround=tttt
+}
+
+\lstdefinelanguage{llvm}{
+  morecomment = [l]{;},
+  morestring=[b]'', 
+  sensitive = true,
+  classoffset=0,
+  morekeywords={
+    define, declare, global, constant,
+    internal, external, private,
+    linkonce, linkonce_odr, weak, weak_odr, appending,
+    common, extern_weak,
+    thread_local, dllimport, dllexport,
+    hidden, protected, default,
+    except, deplibs,
+    volatile, fastcc, coldcc, cc, ccc,
+    x86_stdcallcc, x86_fastcallcc,
+    ptx_kernel, ptx_device,
+    signext, zeroext, inreg, sret, nounwind, noreturn,
+    nocapture, byval, nest, readnone, readonly, noalias, uwtable,
+    inlinehint, noinline, alwaysinline, optsize, ssp, sspreq,
+    noredzone, noimplicitfloat, naked, alignstack,
+    module, asm, align, tail, to,
+    addrspace, section, alias, sideeffect, c, gc,
+    target, datalayout, triple,
+    blockaddress
+  },
+  classoffset=1,
+  morekeywords={
+    fadd, sub, fsub, mul, fmul,
+    sdiv, udiv, fdiv, srem, urem, frem,
+    and, or, xor,
+    icmp, fcmp,
+    eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
+    oeq, ogt, oge, olt, ole, one, ord, ueq, ugt, uge,
+    ult, ule, une, uno,
+    nuw, nsw, exact, inbounds,
+    phi, call, select, shl, lshr, ashr, va_arg,
+    trunc, zext, sext,
+    fptrunc, fpext, fptoui, fptosi, uitofp, sitofp,
+    ptrtoint, inttoptr, bitcast,
+    ret, br, indirectbr, switch, invoke, unwind, unreachable,
+    malloc, alloca, free, load, store, getelementptr,
+    extractelement, insertelement, shufflevector,
+    extractvalue, insertvalue,
+  },
+  alsoletter={\%},
+  keywordsprefix={\%},
+}
+
+\newenvironment{packed_enum}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\newenvironment{packed_item}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\title[LLVM Compiler]{
+  Building a LLVM Python Compiler
+}
+
+\author[Gatchell, Sayler, Vitousek]{
+  Anne Gatchell    \and
+  Andy Sayler      \and
+  Michael Vitousek
+}
+
+\institute[CU Boulder]{
+  University of Colorado at Boulder   \\
+  \texttt{anne.gatchell@colorado.edu} \\
+  \texttt{andrew.sayler@colorado.edu} \\
+  \texttt{michael.vitousek@colorado.edu}
+}
+
+\date{\today}
+
+\begin{document}
+
+%---Title Slide---%
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+%---TOC Slide---%
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+%---Goals Slide---%
+\begin{frame}{\bf Goals}
+  \begin{itemize}
+  \item<1-> Create Low Level Virtual Machine (LLVM) p3-compliant compiler
+  \item<2-> Compare to x86 compiler
+  \item<3-> Test on multiple architectures(x86, ARM, etc.)
+  \item<4-> Test with multiple runtime systems (compiled, JIT, etc.)
+  \end{itemize}
+\end{frame}
+
+\section{Background}
+
+\subsection{LLVM}
+
+%---Background Slide---%
+\begin{frame}{\bf LLVM Basics}
+  \begin{itemize}
+  \item<1->Open Source
+  \item<2->Static Single Assembly (SSA)
+  \item<3->Multi-platform support (x32, x64, ARM, etc)
+  \item<4->Multi-runtime support (compiled, interpreted, JIT, etc.)
+  \item<5->Becoming a very popular compiler infrastructure and IR
+    \begin{itemize}
+    \item<5-> Used heavily in OSX and IOS systems
+    \item<5-> Targeted to replace legacy GCC implementation (clang,
+      gcc-llvm, etc)
+    \item<5-> Used in heterogeneous platforms (CPU + GPU, etc) to
+      dynamically target code at different processors
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%---LLVM Slide---%
+\begin{frame}{\bf LLVM Concepts}
+  \begin{itemize}
+  \item<1->LLVM Intermediate Representation(IR)
+  \begin{itemize}
+  \item<2->In-memory data structure
+  \item<3->Human readable ``assembly'' language (.ll)
+  \item<4->File-oriented bitcode (colloqially, bytecode) (.bc)
+  \end{itemize}
+  \item<5->We convert to assemble (.ll) code
+  \item<6->Example...
+  \end{itemize}
+\end{frame}
+
+%---LLVM Hello World Slide---%
+\begin{frame}{\bf LLVM ``Hello World''}
+  \lstinputlisting[
+    language=llvm,
+    title={LLVM Assembly - Hello World Example \cite{lattner-llvmlangref}}
+  ]{../code/llvm-examples/hello0.ll}
+\end{frame}
+
+\subsection{SSA}
+
+%---SSA---%
+\begin{frame}{Static Single Assignment Form}
+  \begin{itemize}
+  \item<1->Each variable assigned only once
+  \item<2->If branching involved, use phi nodes
+  \item<3->LLVM has phi node already integrated
+  \end{itemize}
+\end{frame}
+
+\section{Design}
+
+\subsection{Approach}
+
+\begin{frame}{Approach}
+  \begin{itemize}
+  \item<1->Refactored existing compiler to fix all known issues, add
+    features, etc.
+  \item<2->"Compiled" tests programs by hand to LLVM IR
+  \item<3->Added an SSA Conversion pass after Flatten pass
+  \item<4->Added an LLVM Instruction Selection pass to produce LLVM IR
+  \item<5->Modified build and test system to handle both x86 and LLVM
+  \item<6->Tested and compared Python, x86, and LLVM execution
+  \end{itemize}
+\end{frame}
+
+\subsection{Module Flow}
+
+%---Module Flow Slide---%
+\begin{frame}{\bf Module Flow}
+  \begin{center}
+    \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
+  \end{center}
+\end{frame}
+
+\subsection{SSA Conversion}
+
+\begin{frame}{\bf Simple conversion}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step1,
+]{include/py/ssa-step1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-step2,
+]{include/py/ssa-step2.py}
+\end{frame}
+
+\begin{frame}[shrink]{\bf SSA Conversions of If statements}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-if1,
+]{include/py/ssa-if1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-if2,
+]{include/py/ssa-if2.py}
+\end{frame}
+
+\begin{frame}[shrink]{\bf SSA Conversions of While statements}
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-while1,
+]{include/py/ssa-while1.py}
+\pause
+  \lstinputlisting[
+  language=python,
+  label=lst:ssa-while2,
+]{include/py/ssa-while2.py}
+\end{frame}
+
+\subsection{Instruction Selection}
+
+\begin{frame}{LLVM Features and Restrictions}
+  LLVM is higher level than x86. This means...
+  \pause
+  \begin{itemize}
+  \item<1->It has more features
+    \begin{itemize}
+    \item<2->Unlimited registers
+    \item<3->Powerful and generalized functions (switch, compare, etc)
+    \item<4->Built-in stack and function management
+    \end{itemize}
+  \item<5->But also more restrictions
+    \begin{itemize}
+      \item<6-> No loose casting: types are enforced
+      \item<7-> External functions must be declared
+      \item<8-> Direct assignments (x=5, a=b) not allowed
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{LLVM Blocks}
+  To be added...
+\end{frame}
+
+\begin{frame}{LLVM Instruction Selection}
+  To be added...
+\end{frame}
+
+\subsection{LLVM Build Process}
+
+\begin{frame}{LLVM Build Chain}
+  To be added...
+\end{frame}
+
+\section{Results}
+
+\begin{frame}{Benchmark Results}
+  To be added...
+\end{frame}
+
+\section{Demo}
+
+\begin{frame}{Benchmark Results}
+  Live demo. (Maybe on ARM-based Raspberry Pi?)
+\end{frame}
+
+%---Bibliography Slide---%
+\begin{frame}[t,allowframebreaks]{\bf Bibliography}
+  \nocite{*}
+  \printbibliography
+\end{frame}
+
+\end{document}
