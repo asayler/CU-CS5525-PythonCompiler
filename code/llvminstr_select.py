@@ -268,6 +268,11 @@ class LLVMInstrSelectVisitor(Visitor):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
         return [addLLVM(target, left, right)]
+
+    def visitIntUnarySub(self, n, target):
+        left = DEFAULTZERO
+        right = self.dispatch(n.expr)
+        return [subLLVM(target, left, right)]
         
     def visitIntEqual(self, n, target):
         left  = self.dispatch(n.left)
@@ -286,11 +291,6 @@ class LLVMInstrSelectVisitor(Visitor):
         instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
         return instrs
-
-    def visitIntUnarySub(self, n, target):
-        left = DEFAULTZERO
-        right = self.dispatch(n.expr)
-        return [subLLVM(target, left, right)]
 
     def visitIfExpFlat(self, n, target):
         # Setup Values
