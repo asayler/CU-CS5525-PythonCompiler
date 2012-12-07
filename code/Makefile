@@ -109,13 +109,13 @@ Assemb86: $(TESTCASESASS86)
 
 AssembLL: $(TESTCASESASSLL)
 
-Tests: Tests86
+Tests: Tests86 TestsLL
 
 Tests86: $(TESTCASESOUT86)
 
 TestsLL: $(TESTCASESOUTLL)
 
-TestsRun: TestsRun86
+TestsRun: TestsRun86 TestsRunLL
 
 TestsRun86: $(TESTDIFFS86)
 	cat $^
