@@ -35,7 +35,10 @@ PROJECTBIG_n  = Name("project_big")
 BIGADD_n   = Name("add")
 BIGEQ_n    = Name("equal")
 BIGNEQ_n   = Name("not_equal")
+
 TERROR_n   = Name("error_pyobj")
+GERROR_n   = Name("error_general")
+BERROR_n   = Name("error_binary")
 PRINTANY_n = Name("print_any")
 ISTRUE_n   = Name("is_true")
 
@@ -73,6 +76,8 @@ RESERVED_NAMES = [
     BIGEQ_n.name,
     BIGNEQ_n.name,
     TERROR_n.name,
+    GERROR_n.name,
+    BERROR_n.name,
     PRINTANY_n.name,
     ISTRUE_n.name,
     MAKELIST_n.name,
@@ -160,7 +165,7 @@ def CallPROJECTBOOL(args):
 def CallPROJECTBIG(args):
     return CallFunc(PROJECTBIG_n, args)
 
-# Utility Macros
+# Operation Macros
 def CallBIGADD(args):
     return CallFunc(BIGADD_n, args)
 
@@ -170,8 +175,21 @@ def CallBIGEQ(args):
 def CallBIGNEQ(args):
     return CallFunc(BIGNEQ_n, args)
 
+def CallBIGGT(args):
+    return CallFunc(BERROR_n, args)
+
+def CallBIGLT(args):
+    return CallFunc(BERROR_n, args)
+
+# Utility Macros
 def CallTERROR(args):
     return CallFunc(TERROR_n, args)
+
+def CallGERROR(args):
+    return CallFunc(GERROR_n, args)
+
+def CallBERROR(args):
+    return CallFunc(BERROR_n, args)
 
 def CallPRINTANY(args):
     return CallFunc(PRINTANY_n, args)
@@ -180,7 +198,6 @@ def CallISTRUE(args):
     return CallFunc(ISTRUE_n, args)
 
 # List/Dict Macros
-
 def CallMAKELIST(args):
     return CallFunc(MAKELIST_n, args)
 

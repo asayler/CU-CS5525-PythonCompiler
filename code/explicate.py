@@ -37,6 +37,8 @@ FALSENODE  = InjectFrom(BOOL_t, Const(FALSEVALUE))
 COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
 COMPIS       = 'is'
+COMPGT       = '>'
+COMPLT       = '<'
 
 class ExplicateVisitor(CopyVisitor):
     def __init__(self):
@@ -118,6 +120,16 @@ class ExplicateVisitor(CopyVisitor):
         elif(op == COMPIS):
             t = InjectFrom(BOOL_t, IntEqual((self.dispatch(lhsexpr),
                                              self.dispatch(rhsexpr))))
+        elif(op == COMPGT):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntGT, BOOL_t,
+                                     CallBIGGT, BOOL_t,
+                                     CallGERROR([]))
+        elif(op == COMPLT):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntLT, BOOL_t,
+                                     CallBIGLT, BOOL_t,
+                                     CallGERROR([]))
         # Error case
         else:
             raise Exception("explicate:unrecognized operation %s" % str(op))
@@ -129,7 +141,7 @@ class ExplicateVisitor(CopyVisitor):
         t = self.explicateBinary(lhsexpr, rhsexpr,
                                  IntAdd, INT_t,
                                  CallBIGADD, BIG_t,
-                                 CallTERROR([]))
+                                 CallGERROR([]))
         return t
     
     def visitNot(self, n):
@@ -144,7 +156,7 @@ class ExplicateVisitor(CopyVisitor):
                       InjectFrom(INT_t, IntUnarySub(ProjectTo(INT_t, exprvar))),
                       IfExp(IsTag(BOOL_t, exprvar),
                             InjectFrom(INT_t, IntUnarySub(ProjectTo(BOOL_t, exprvar))),
-                            CallTERROR([]))))
+                            CallGERROR([]))))
         return t
 
     # Explicate P1 Pyobj functions

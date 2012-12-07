@@ -292,6 +292,24 @@ class LLVMInstrSelectVisitor(Visitor):
         instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
         return instrs
 
+    def visitIntGT(self, n, target):
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_SGT, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
+
+    def visitIntLT(self, n, target):
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, ICMP_SLT, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
+
     def visitIfExpFlat(self, n, target):
         # Setup Values
         testVal =  self.dispatch(n.test)

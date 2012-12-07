@@ -63,6 +63,8 @@ class ListVisitor(Visitor):
     visitLet = Let.list
     visitIntEqual = IntEqual.list
     visitIntNotEqual = IntNotEqual.list
+    visitIntGT = IntGT.list
+    visitIntLT = IntLT.list
     visitIntAdd = IntAdd.list
     visitIntUnarySub = IntUnarySub.list
     visitString = String.list

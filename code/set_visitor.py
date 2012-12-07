@@ -64,6 +64,8 @@ class SetVisitor(Visitor):
     visitLet = Let.find
     visitIntEqual = IntEqual.find
     visitIntNotEqual = IntNotEqual.find
+    visitIntGT = IntGT.find
+    visitIntLT = IntLT.find
     visitIntAdd = IntAdd.find
     visitIntUnarySub = IntUnarySub.find
     visitString = String.find

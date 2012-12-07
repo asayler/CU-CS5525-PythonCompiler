@@ -61,6 +61,8 @@ class CopyVisitor(Visitor):
     visitLet = Let.copy
     visitIntEqual = IntEqual.copy
     visitIntNotEqual = IntNotEqual.copy
+    visitIntGT = IntGT.copy
+    visitIntLT = IntLT.copy
     visitIntAdd = IntAdd.copy
     visitIntUnarySub = IntUnarySub.copy
     visitString = String.copy

@@ -11,5 +11,6 @@ x86:
 * Make string handling nicer (like in LLVM)
 
 HELPER:
-* The helper function sling a lot of ints around. It woudl be ebst to make these
+* The helper function sling a lot of ints around. It woudl be best to make these
   longs for consistency with pyobjs
+* Add GT and LT functions for bigs

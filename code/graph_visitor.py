@@ -67,6 +67,8 @@ class GraphVisitor(Visitor):
     visitLet = Let.graph
     visitIntEqual = IntEqual.graph
     visitIntNotEqual = IntNotEqual.graph
+    visitIntGT = IntGT.graph
+    visitIntLT = IntLT.graph
     visitIntAdd = IntAdd.graph
     visitIntUnarySub = IntUnarySub.graph
     visitString = String.graph

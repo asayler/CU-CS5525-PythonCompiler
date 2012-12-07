@@ -1248,6 +1248,60 @@ class IntNotEqual(PyNode):
         lines += self.dispatch(n.right, myid)
         return lines 
 
+class IntGT(PyNode):
+    def __init__(self, (left, right)):
+        self.left = left
+        self.right = right
+    def __repr__(self):
+        return "IntGT(%s, %s)" % (repr(self.left), repr(self.right))
+    @staticmethod
+    def copy(self, n, *args):
+        return IntGT((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
+    @staticmethod
+    def list(self, n, *args):
+        left, ss1 = self.dispatch(n.left, *args)
+        right, ss2 = self.dispatch(n.right, *args)
+        return (IntGT((left, right)), ss1 + ss2)
+    @staticmethod
+    def find(self, n, *args):
+        return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntGT"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines
+
+class IntLT(PyNode):
+    def __init__(self, (left, right)):
+        self.left = left
+        self.right = right
+    def __repr__(self):
+        return "IntLT(%s, %s)" % (repr(self.left), repr(self.right))
+    @staticmethod
+    def copy(self, n, *args):
+        return IntLT((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
+    @staticmethod
+    def list(self, n, *args):
+        left, ss1 = self.dispatch(n.left, *args)
+        right, ss2 = self.dispatch(n.right, *args)
+        return (IntLT((left, right)), ss1 + ss2)
+    @staticmethod
+    def find(self, n, *args):
+        return binary(self, n, *args)
+    @staticmethod
+    def graph(self, n, p):
+        lines = []
+        myid = Graphvis_dot().uniqueid(n)
+        lines += Graphvis_dot().lineLabel(myid, ("IntLT"))
+        lines += Graphvis_dot().linePair(p, myid)
+        lines += self.dispatch(n.left, myid)
+        lines += self.dispatch(n.right, myid)
+        return lines
+
 class IntAdd(PyNode):
     def __init__(self, (left, right)):
         self.left = left
