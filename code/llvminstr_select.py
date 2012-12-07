@@ -349,47 +349,31 @@ class LLVMInstrSelectVisitor(Visitor):
     def visitCallFunc(self, n, target):
         instrList = []
         args = []
-        # print "target " + str(target)
         for arg in n.args:
             if isinstance(arg, SLambdaLabel):
                 name = generate_name("instrsel_SLamdaLabel")
                 numargs = 0
                 temp = VarLLVM(LocalLLVM(name), DEFAULTTYPE)
-                # print "temp  " + str(temp)
-                # print "SLambdaLabel: "+ str(arg) + "args "+ str(arg.numargs)
                 arg_types = LLVMFuncPtrType(DEFAULTTYPE, DEFAULTTYPE, arg.numargs)
-                #print arg_types
                 value = VarLLVM(GlobalLLVM(arg.name),arg_types)
                 instrList += [ptrtointLLVM(temp, value, DEFAULTTYPE)]
                 args += [temp]
-            #%fptr1  = ptrtoint i64 (i64)* @ftest to i64
             elif isinstance(arg, String):
                 stringArray = LLVMArray(len(arg.string) + 1, I8)
-                # print stringArray
                 actualString = LLVMString(stringArray, arg.string)
-                print actualString
                 tmp = VarLLVM(GlobalLLVM(generate_name("stringName")), stringArray)
-                print "tm" + str(tmp)
                 stringDeclare = declareLLVMString(tmp, actualString)
-                # print stringDeclare
                 self.stringsInstr += [stringDeclare]
                 placeholder = VarLLVM(LocalLLVM(generate_name("cast")), PI8)
-                # print "placeholder" + str(placeholder)
                 cast = getelementptrLLVM(placeholder, tmp, [DEFAULTZERO, DEFAULTZERO])
-                # print cast
                 instrList += [cast]
                 args += [placeholder]
             else:
-                # print "here"
                 args += [self.dispatch(arg)]
-        # print "args" + str(args)
         instrList += [callLLVM(DEFAULTTYPE, GlobalLLVM(n.node.name), args, target)]
-        # print instrList
         return instrList
         
     def visitIndirectCallFunc(self, n, target):
-        #%fptr3  = inttoptr i64 %fptr2 to i64 (i64)*
-        #%res0   = call i64 %fptr3(i64 5)
         args = []
         instrList = []
         for arg in n.args:
