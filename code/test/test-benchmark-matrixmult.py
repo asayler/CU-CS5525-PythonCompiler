@@ -1,3 +1,26 @@
+#!/usr/bin/python
+
+# CU CS5525
+# Fall 2012
+# Python Compiler
+#
+# test-benchmark-matrixmult.py
+# Test Case
+# Subset: benchmark
+# Type: Student
+# Tesing: benchmark
+#
+# Repository:
+#    https://github.com/asayler/CU-CS5525-PythonCompiler
+#
+# By :
+#    Anne Gatchell
+#       http://annegatchell.com/
+#    Andy Sayler
+#       http://www.andysayler.com
+#    Michael (Mike) Vitousek
+#       http://csel.cs.colorado.edu/~mivi2269/
+
 def times(a, b):
     def times_intern(m, n, i):
         if i == n:
