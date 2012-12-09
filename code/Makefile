@@ -27,18 +27,18 @@ ASFLAGS   = -g -x assembler
 LFLAGS    = -m32 -g
 PCFLAGS   = #-v 0 --dot
 
-LLAS      = clang
-LLASFLAGS = -g -x assembler
+LLAS      = gcc
+LLASFLAGS = -g -mfloat-abi=hard -x assembler
 LLI       = lli
 LLIFLAGS  =
 LLC       = llc
-LLCFLAGS  =
+LLCFLAGS  = -float-abi=hard
 LLA       = llvm-as
 LLAFLAGS  =
 LLL       = llvm-link
 LLLFLAGS  = 
 LLCC      = clang
-LLCCFLAGS = -emit-llvm
+LLCCFLAGS = -emit-llvm -mfloat-abi=hard
 
 SUBMISSIONDIR = ./submission/
 HELPERDIR     = ./helper/
@@ -119,13 +119,13 @@ Assemb86: $(TESTCASESASS86)
 
 AssembLL: $(TESTCASESASSLL)
 
-Tests: Tests86 TestsLL
+Tests: TestsLL
 
 Tests86: $(TESTCASESOUT86)
 
 TestsLL: $(TESTCASESOUTLL)
 
-TestsRun: TestsRun86 TestsRunLL
+TestsRun: TestsRunLL
 
 TestsRun86: $(TESTDIFFS86)
 	cat $^
