@@ -235,7 +235,7 @@
 \end{frame}
 
 
-\subsection{SSA}
+\subsection{SSA Conversion}
 
 %---SSA---%
 \begin{frame}{Static Single Assignment Form}
@@ -245,8 +245,6 @@
   \item<3->LLVM has phi node already integrated
   \end{itemize}
 \end{frame}
-
-\subsection{SSA Conversion}
 
 \begin{frame}{\bf Simple conversion}
   \lstinputlisting[
@@ -313,10 +311,28 @@
   To be added...
 \end{frame}
 
+\begin{frame}{Pyobjs to Handle Polymorphism}
+\begin{itemize}
+  \item<1->LLVM is typed
+  \item<2->Pointers to Pyobjs give us freedom
+  \item<3->Except in indirect function calls
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\bf Indirect Function Calls}
+  \lstinputlisting[
+    language=llvm,
+    title={LLVM Assembly - Dealing with Lambdas}
+  ]{include/py/llvm_func_ptr.ll}
+\end{frame}
+
 \subsection{LLVM Build Process}
 
 \begin{frame}{LLVM Build Chain}
-  To be added...
+\begin{itemize}
+  \item<1->fsdaf
+  \item<2->afdasf
+  \end{itemize}
 \end{frame}
 
 \section{Results}
