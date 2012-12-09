@@ -133,7 +133,7 @@ TestsRun86: $(TESTDIFFS86)
 TestsRunLL: $(TESTDIFFSLL)
 	cat $^
 
-BenchmarkTestsRun: BenchmarkTestsRunLL BenchmarkTestsRun86
+BenchmarkTestsRun: BenchmarkTestsRunLL
 	python analyze.py
 
 BenchmarkTestsRunLL: $(BMTESTRTLL)
