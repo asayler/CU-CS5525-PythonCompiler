@@ -326,12 +326,35 @@
   ]{include/py/llvm_func_ptr.ll}
 \end{frame}
 
+\begin{frame}[shrink]{\bf Stings}
+  \begin{itemize}
+  \item<1->Strings defined much like x86
+  \item<2->Type is an array
+  \item<3->Call getelementptr to get the string by accessing array
+  \end{itemize}
+  \pause
+  \lstinputlisting[
+    language=llvm,
+    label=lst:LLVM Assembly - Dealing with Strings,
+  ]{include/py/strings.ll}
+\end{frame}
+
 \subsection{LLVM Build Process}
 
 \begin{frame}{LLVM Build Chain}
 \begin{itemize}
-  \item<1->fsdaf
-  \item<2->afdasf
+  \item<1->LLVM assembler (llvm-as) to bitcode (.bc)
+  \item<2->Use Clang and llvm-as to get bitcode of runtime files
+  \begin{itemize}
+    \item<2->clang -emit-llvm -S helper/runtime.c -o build/runtime.ll
+    \item<2->llvm-as  build/runtime.ll -o build/runtime.bc
+  \end{itemize}
+  \item<3->Link (llvm-link) all files
+  \item<4->LLVM compiler (llc) OR LLVM interpreter (lli)
+  \item<5->Use gcc or clang to compile to code for machine 
+  \begin{itemize}
+    \item<5->eg. clang -g -x assembler build/test-p0-1.lls -lm -o build/test-p0-1.llout
+  \end{itemize}
   \end{itemize}
 \end{frame}
 
