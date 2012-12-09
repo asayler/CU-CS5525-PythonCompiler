@@ -17,7 +17,7 @@
 %       http://csel.cs.colorado.edu/~mivi2269/
 
 \documentclass{beamer}
-\usetheme{AnnArbor}
+\usetheme{Montpellier}
 \usecolortheme{beaver}
 %\setbeamercovered{transparent=25}
 \setbeamertemplate{blocks}[rounded][shadow=false]
@@ -156,9 +156,11 @@
 \begin{frame}{\bf Goals}
   \begin{itemize}
   \item<1-> Create Low Level Virtual Machine (LLVM) p3-compliant compiler
+    \begin{itemize}
+    \item<1-> Make our compiler multi-platform
+    \end{itemize}
   \item<2-> Compare to x86 compiler
   \item<3-> Test on multiple architectures(x86, ARM, etc.)
-  \item<4-> Test with multiple runtime systems (compiled, JIT, etc.)
   \end{itemize}
 \end{frame}
 
@@ -206,20 +208,10 @@
   ]{../code/llvm-examples/hello0.ll}
 \end{frame}
 
-\subsection{SSA}
-
-%---SSA---%
-\begin{frame}{Static Single Assignment Form}
-  \begin{itemize}
-  \item<1->Each variable assigned only once
-  \item<2->If branching involved, use phi nodes
-  \item<3->LLVM has phi node already integrated
-  \end{itemize}
-\end{frame}
 
 \section{Design}
 
-\subsection{Approach}
+\subsection{Design Overview}
 
 \begin{frame}{Approach}
   \begin{itemize}
@@ -240,6 +232,18 @@
   \begin{center}
     \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
   \end{center}
+\end{frame}
+
+
+\subsection{SSA}
+
+%---SSA---%
+\begin{frame}{Static Single Assignment Form}
+  \begin{itemize}
+  \item<1->Each variable assigned only once
+  \item<2->If branching involved, use phi nodes
+  \item<3->LLVM has phi node already integrated
+  \end{itemize}
 \end{frame}
 
 \subsection{SSA Conversion}
