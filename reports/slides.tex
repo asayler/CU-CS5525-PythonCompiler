@@ -196,12 +196,12 @@
   \begin{itemize}
   \item<1->LLVM Intermediate Representation (IR)
     \begin{itemize}
-    \item<2->In-memory data structure
-    \item<3->Human readable ``assembly'' language (.ll)
-    \item<4->File-oriented bitcode (colloqially, bytecode) (.bc)
+    \item<1->In-memory data structure
+    \item<1->Human readable ``assembly'' language (.ll)
+    \item<1->File-oriented bitcode (colloqially, bytecode) (.bc)
     \end{itemize}
-  \item<5->We convert to assembly (.ll) code
-  \item<6->Example...
+  \item<2->We convert to assembly (.ll) code
+  \item<3->Example...
   \end{itemize}
 \end{frame}
 
@@ -228,7 +228,7 @@
   \item<3->Added an SSA Conversion pass after Flatten pass
   \item<4->Added an LLVM Instruction Selection pass to produce LLVM IR
   \item<5->Modified build and test system to handle both x86 and LLVM
-  \item<6->Tested and compared Python, x86, and LLVM execution
+  \item<6->Tested and benchmarked Python, x86, and LLVM execution
   \end{itemize}
 \end{frame}
 
@@ -242,7 +242,6 @@
   \end{center}
 \end{frame}
 
-
 \subsection{SSA Conversion}
 
 %---SSA Overview---%
@@ -250,8 +249,8 @@
 \begin{frame}{Static Single Assignment Form}
   \begin{itemize}
   \item<1->Each variable assigned only once
-  \item<2->If branching involved, use phi nodes
-  \item<3->LLVM has phi node already integrated
+  \item<2->If branching involved, use phi nodes to recombine
+  \item<3->LLVM has phi node already integrated into IR language
   \end{itemize}
 \end{frame}
 
@@ -324,14 +323,55 @@
 %---Instruction Selection Blocks---%
 % Andy
 \begin{frame}{LLVM Blocks}
-  To be added...
+  \uncover<1->{
+    All LLVM code is divided into strict blocks...
+    }
+  \begin{itemize}
+  \item<2-> An LLVM block generally starts with a label
+  \item<3-> An LLVM block must end with a terminating instruction
+    \begin{itemize}
+    \item ret, switch, br, etc
+    \end{itemize}
+  \item<4-> You can not ``fall through'' to the next block
+    \begin{itemize}
+    \item An explicit branch to the next block is required
+    \end{itemize}
+  \end{itemize}
+  \uncover<5->{
+    These rules allow LLVM to build a well defined control-flow graph,
+    but they also mean instruction selection must be ``block-oriented''
+  }
+  \begin{itemize}
+  \item<6-> Requires back-patching labels to chain together blocks
+  \item<7-> Similar algorithm to insertion into a linked-list
+  \end{itemize}
 \end{frame}
 
+%---Instruction Selection Block Example---%
+% Andy
+\begin{frame}[shrink]{LLVM Block Example}
+  \lstinputlisting[
+    language=llvm,y
+    label=lst:LLVM Assembly - Blocks,
+  ]{include/ll/blocks.ll}
+\end{frame}
+
+%---Polymorphism---%
+% Anne
 \begin{frame}{Pyobjs to Handle Polymorphism}
 \begin{itemize}
   \item<1->LLVM is typed
+    \begin{itemize}
+    \item No loose casting as in x86
+    \end{itemize}
   \item<2->Pointers to Pyobjs give us freedom
+    \begin{itemize}
+    \item Treat everything as an ``int'' (i64 or i32)
+    \end{itemize}
   \item<3->Except in indirect function calls
+    \begin{itemize}
+    \item Require explicit casting
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -352,11 +392,12 @@
   \item<2->Type is an array
   \item<3->Call getelementptr to get the string by accessing array
   \end{itemize}
-  \pause
-  \lstinputlisting[
-    language=llvm,
-    label=lst:LLVM Assembly - Dealing with Strings,
-  ]{include/ll/strings.ll}
+  \uncover<4->{
+    \lstinputlisting[
+      language=llvm,
+      label=lst:LLVM Assembly - Dealing with Strings,
+    ]{include/ll/strings.ll}
+  }
 \end{frame}
 
 \subsection{LLVM Build Process}
@@ -364,19 +405,19 @@
 %---Build Process---%
 % Anne
 \begin{frame}{LLVM Build Chain}
-\begin{itemize}
+  \begin{itemize}
   \item<1->LLVM assembler (llvm-as) to bitcode (.bc)
   \item<2->Use Clang and llvm-as to get bitcode of runtime files
-  \begin{itemize}
+    \begin{itemize}
     \item<2->clang -emit-llvm -S helper/runtime.c -o build/runtime.ll
     \item<2->llvm-as  build/runtime.ll -o build/runtime.bc
-  \end{itemize}
+    \end{itemize}
   \item<3->Link (llvm-link) all files
   \item<4->LLVM compiler (llc) OR LLVM interpreter (lli)
   \item<5->Use gcc or clang to compile to code for machine 
-  \begin{itemize}
+    \begin{itemize}
     \item<5->eg. clang -g -x assembler build/test-p0-1.lls -lm -o build/test-p0-1.llout
-  \end{itemize}
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
