@@ -70,41 +70,14 @@ class FlattenVisitor(ListVisitor):
         else:
             return (IntAdd((left, right)), ss1 + ss2)
 
-    def visitIntEqual(self, n, needs_to_be_simple):
+    def visitIntCmp(self, n, needs_to_be_simple):
         (left, ss1) = self.dispatch(n.left, True)
         (right, ss2) = self.dispatch(n.right, True)
         if needs_to_be_simple:
             tmp = generate_name('intequaltmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntEqual((left, right)))])
+            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntCmp(n.op, (left, right)))])
         else:
-            return (IntEqual((left, right)), ss1 + ss2)
-
-    def visitIntNotEqual(self, n, needs_to_be_simple):
-        (left, ss1) = self.dispatch(n.left, True)
-        (right, ss2) = self.dispatch(n.right, True)
-        if needs_to_be_simple:
-            tmp = generate_name('intnotequaltmp')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntNotEqual((left, right)))])
-        else:
-            return (IntNotEqual((left, right)), ss1 + ss2)
-
-    def visitIntGT(self, n, needs_to_be_simple):
-        (left, ss1) = self.dispatch(n.left, True)
-        (right, ss2) = self.dispatch(n.right, True)
-        if needs_to_be_simple:
-            tmp = generate_name('intgt')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntGT((left, right)))])
-        else:
-            return (IntGT((left, right)), ss1 + ss2)
-
-    def visitIntLT(self, n, needs_to_be_simple):
-        (left, ss1) = self.dispatch(n.left, True)
-        (right, ss2) = self.dispatch(n.right, True)
-        if needs_to_be_simple:
-            tmp = generate_name('intlt')
-            return (Name(tmp), ss1 + ss2 + [make_assign(tmp, IntLT((left, right)))])
-        else:
-            return (IntLT((left, right)), ss1 + ss2)
+            return (IntCmp(n.op, (left, right)), ss1 + ss2)
 
     def visitIntUnarySub(self, n, needs_to_be_simple):
         (expr,ss) = self.dispatch(n.expr, True)
