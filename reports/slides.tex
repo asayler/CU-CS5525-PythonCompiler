@@ -153,11 +153,14 @@
 \section{Introduction}
 
 %---Goals Slide---%
+% Anne
 \begin{frame}{\bf Goals}
   \begin{itemize}
   \item<1-> Create Low Level Virtual Machine (LLVM) p3-compliant compiler
     \begin{itemize}
     \item<1-> Make our compiler multi-platform
+    \item<1-> Explore LLVM architecture
+    \item<1-> Learn LLVM standard
     \end{itemize}
   \item<2-> Compare to x86 compiler
   \item<3-> Test on multiple architectures(x86, ARM, etc.)
@@ -169,6 +172,7 @@
 \subsection{LLVM}
 
 %---Background Slide---%
+% Andy
 \begin{frame}{\bf LLVM Basics}
   \begin{itemize}
   \item<1->Open Source
@@ -186,7 +190,8 @@
   \end{itemize}
 \end{frame}
 
-%---LLVM Slide---%
+%---LLVM Background Slide---%
+% Andy
 \begin{frame}{\bf LLVM Concepts}
   \begin{itemize}
   \item<1->LLVM Intermediate Representation(IR)
@@ -201,6 +206,7 @@
 \end{frame}
 
 %---LLVM Hello World Slide---%
+% Andy
 \begin{frame}{\bf LLVM ``Hello World''}
   \lstinputlisting[
     language=llvm,
@@ -208,11 +214,12 @@
   ]{../code/llvm-examples/hello0.ll}
 \end{frame}
 
-
 \section{Design}
 
 \subsection{Design Overview}
 
+%---Project Approach Slide---%
+% Anne
 \begin{frame}{Approach}
   \begin{itemize}
   \item<1->Refactored existing compiler to fix all known issues, add
@@ -228,6 +235,7 @@
 \subsection{Module Flow}
 
 %---Module Flow Slide---%
+% Anne
 \begin{frame}{\bf Module Flow}
   \begin{center}
     \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
@@ -237,7 +245,8 @@
 
 \subsection{SSA Conversion}
 
-%---SSA---%
+%---SSA Overview---%
+% Mike
 \begin{frame}{Static Single Assignment Form}
   \begin{itemize}
   \item<1->Each variable assigned only once
@@ -246,6 +255,8 @@
   \end{itemize}
 \end{frame}
 
+%---Simple SSA Conversion---%
+% Mike
 \begin{frame}{\bf Simple conversion}
   \lstinputlisting[
   language=python,
@@ -258,6 +269,8 @@
 ]{include/py/ssa-step2.py}
 \end{frame}
 
+%---If SSA Conversion---%
+% Mike
 \begin{frame}[shrink]{\bf SSA Conversions of If statements}
   \lstinputlisting[
   language=python,
@@ -270,6 +283,8 @@
 ]{include/py/ssa-if2.py}
 \end{frame}
 
+%---While SSA Conversion---%
+% Mike
 \begin{frame}[shrink]{\bf SSA Conversions of While statements}
   \lstinputlisting[
   language=python,
@@ -284,6 +299,8 @@
 
 \subsection{Instruction Selection}
 
+%---Instruction Selection overview---%
+% Andy
 \begin{frame}{LLVM Features and Restrictions}
   LLVM is higher level than x86. This means...
   \pause
@@ -303,11 +320,10 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{LLVM Blocks}
-  To be added...
-\end{frame}
 
-\begin{frame}{LLVM Instruction Selection}
+%---Instruction Selection Blocks---%
+% Andy
+\begin{frame}{LLVM Blocks}
   To be added...
 \end{frame}
 
@@ -319,6 +335,8 @@
 \end{itemize}
 \end{frame}
 
+%---Indirect Function Calls---%
+% Anne
 \begin{frame}{\bf Indirect Function Calls}
   \lstinputlisting[
     language=llvm,
@@ -326,6 +344,8 @@
   ]{include/py/llvm_func_ptr.ll}
 \end{frame}
 
+%---Strings---%
+% Anne
 \begin{frame}[shrink]{\bf Stings}
   \begin{itemize}
   \item<1->Strings defined much like x86
@@ -341,6 +361,8 @@
 
 \subsection{LLVM Build Process}
 
+%---Build Process---%
+% Anne
 \begin{frame}{LLVM Build Chain}
 \begin{itemize}
   \item<1->LLVM assembler (llvm-as) to bitcode (.bc)
@@ -360,14 +382,18 @@
 
 \section{Results}
 
+%---Benchmark Results---%
+% Mike
 \begin{frame}{Benchmark Results}
   To be added...
 \end{frame}
 
 \section{Demo}
 
-\begin{frame}{Benchmark Results}
-  Live demo. (Maybe on ARM-based Raspberry Pi?)
+%---Live Demo---%
+% Andy
+\begin{frame}{Demo}
+  A Demo...
 \end{frame}
 
 %---Bibliography Slide---%
