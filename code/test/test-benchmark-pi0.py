@@ -4,11 +4,11 @@
 # Fall 2012
 # Python Compiler
 #
-# test-p0-1.py
+# test-benchmark-pi0.py
 # Test Case
-# Subset: p0
+# Subset: benchmark
 # Type: Student
-# Tesing: input, usub, add, print
+# Tesing: benchmark
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -20,7 +20,6 @@
 #       http://www.andysayler.com
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
-
 
 def square(x):
     cnt = x
