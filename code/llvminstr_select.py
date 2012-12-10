@@ -268,29 +268,34 @@ class LLVMInstrSelectVisitor(Visitor):
         left  = self.dispatch(n.left)
         right = self.dispatch(n.right)
         return [addLLVM(target, left, right)]
-        
-    def visitIntEqual(self, n, target):
-        left  = self.dispatch(n.left)
-        right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
-        instrs = []
-        instrs += [icmpLLVM(tmp, ICMP_EQ, left, right)]
-        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
-        return instrs
-
-    def visitIntNotEqual(self, n, target):
-        left  = self.dispatch(n.left)
-        right = self.dispatch(n.right)
-        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
-        instrs = []
-        instrs += [icmpLLVM(tmp, ICMP_NE, left, right)]
-        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
-        return instrs
 
     def visitIntUnarySub(self, n, target):
         left = DEFAULTZERO
         right = self.dispatch(n.expr)
         return [subLLVM(target, left, right)]
+        
+    def visitIntCmp(self, n, target):
+        if(n.op == PY_EQ):
+            op = ICMP_EQ
+        elif(n.op == PY_NE):
+            op = ICMP_NE
+        elif(n.op == PY_GT):
+            op = ICMP_SGT
+        elif(n.op == PY_GE):
+            op = ICMP_SGE
+        elif(n.op == PY_LT):
+            op = ICMP_SLT
+        elif(n.op == PY_LE):
+            op = ICMP_SLE
+        else:
+            raise Exception("Unknown op in IntCmp")
+        left  = self.dispatch(n.left)
+        right = self.dispatch(n.right)
+        tmp = VarLLVM(LocalLLVM(generate_name(ICMPTEMP)), LLVMBOOLTYPE)
+        instrs = []
+        instrs += [icmpLLVM(tmp, op, left, right)]
+        instrs += [zextLLVM(target, tmp, DEFAULTTYPE)]
+        return instrs
 
     def visitIfExpFlat(self, n, target):
         # Setup Values

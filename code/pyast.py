@@ -20,6 +20,14 @@
 
 from graphvis_dot import Graphvis_dot
 
+# ALIASES and MACROS
+PY_EQ = "cmp_eq"
+PY_NE = "cmp_ne"
+PY_GT = "cmp_gt"
+PY_GE = "cmp_ge"
+PY_LT = "cmp_lt"
+PY_LE = "cmp_le"
+
 # UTILITY FUNCTIONS
 
 def fst(plist):
@@ -1194,20 +1202,21 @@ class Let(PyNode):
         lines += self.dispatch(n.body, myid)
         return lines
 
-class IntEqual(PyNode):
-    def __init__(self, (left, right)):
-        self.left = left
+class IntCmp(PyNode):
+    def __init__(self, op, (left, right)):
+        self.op    = op
+        self.left  = left
         self.right = right
     def __repr__(self):
-        return "IntEqual(%s, %s)" % (repr(self.left), repr(self.right))
+        return "IntCmp(%s, %s, %s)" % (self.op, repr(self.left), repr(self.right))
     @staticmethod
     def copy(self, n, *args):
-        return IntEqual((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
+        return IntCmp(n.op, (self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
     @staticmethod
     def list(self, n, *args):
         left, ss1 = self.dispatch(n.left, *args)
         right, ss2 = self.dispatch(n.right, *args)
-        return (IntEqual((left, right)), ss1 + ss2)
+        return (IntCmp(n.op, (left, right)), ss1 + ss2)
     @staticmethod
     def find(self, n, *args):
         return binary(self, n, *args)
@@ -1215,38 +1224,11 @@ class IntEqual(PyNode):
     def graph(self, n, p):
         lines = []
         myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("IntEqual"))
+        lines += Graphvis_dot().lineLabel(myid, ("IntCmp(%s)" % (n.op)))
         lines += Graphvis_dot().linePair(p, myid)
         lines += self.dispatch(n.left, myid)
         lines += self.dispatch(n.right, myid)
-        return lines 
-
-class IntNotEqual(PyNode):
-    def __init__(self, (left, right)):
-        self.left = left
-        self.right = right
-    def __repr__(self):
-        return "IntNotEqual(%s, %s)" % (repr(self.left), repr(self.right))
-    @staticmethod
-    def copy(self, n, *args):
-        return IntNotEqual((self.dispatch(n.left, *args), self.dispatch(n.right, *args)))
-    @staticmethod
-    def list(self, n, *args):
-        left, ss1 = self.dispatch(n.left, *args)
-        right, ss2 = self.dispatch(n.right, *args)
-        return (IntNotEqual((left, right)), ss1 + ss2)
-    @staticmethod
-    def find(self, n, *args):
-        return binary(self, n, *args)
-    @staticmethod
-    def graph(self, n, p):
-        lines = []
-        myid = Graphvis_dot().uniqueid(n)
-        lines += Graphvis_dot().lineLabel(myid, ("IntNotEqual"))
-        lines += Graphvis_dot().linePair(p, myid)
-        lines += self.dispatch(n.left, myid)
-        lines += self.dispatch(n.right, myid)
-        return lines 
+        return lines
 
 class IntAdd(PyNode):
     def __init__(self, (left, right)):

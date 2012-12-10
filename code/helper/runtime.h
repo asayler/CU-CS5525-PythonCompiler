@@ -121,6 +121,8 @@ pyobj get_subscript(pyobj c, pyobj key);
 big_pyobj* add(big_pyobj* a, big_pyobj* b);
 int equal(big_pyobj* a, big_pyobj* b);
 int not_equal(big_pyobj* x, big_pyobj* y);
+int gt(big_pyobj* x, big_pyobj* y);
+int lt(big_pyobj* x, big_pyobj* y);
 
 big_pyobj* create_closure(void* fun_ptr, pyobj free_vars);
 void* get_fun_ptr(pyobj);
@@ -138,5 +140,7 @@ pyobj get_attr(pyobj c, char* attr);
 pyobj set_attr(pyobj obj, char* attr, pyobj val);
 
 pyobj error_pyobj(char* string);
+pyobj error_general();
+pyobj error_binary(pyobj a, pyobj b);
 
 #endif /* RUNTIME_H */

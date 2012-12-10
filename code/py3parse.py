@@ -127,6 +127,14 @@ class ParseConvert(Visitor):
         return 'is'
     def visitNotEq(self, n):
         return '!='
+    def visitGt(self, n):
+        return '>'
+    def visitLt(self, n):
+        return '<'
+    def visitGtE(self, n):
+        return '>='
+    def visitLtE(self, n):
+        return '<='
 
     def visitBinOp(self, n):
         return self.dispatch(n.op)((self.dispatch(n.left), 

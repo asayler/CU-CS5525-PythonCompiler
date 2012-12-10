@@ -59,8 +59,7 @@ class CopyVisitor(Visitor):
     visitInjectFrom = InjectFrom.copy
     visitProjectTo = ProjectTo.copy
     visitLet = Let.copy
-    visitIntEqual = IntEqual.copy
-    visitIntNotEqual = IntNotEqual.copy
+    visitIntCmp = IntCmp.copy
     visitIntAdd = IntAdd.copy
     visitIntUnarySub = IntUnarySub.copy
     visitString = String.copy

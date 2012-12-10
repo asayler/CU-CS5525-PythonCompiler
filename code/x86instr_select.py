@@ -133,22 +133,27 @@ class x86InstrSelectVisitor(Visitor):
         instrs += [Add86(arg_select(n.right), target)]
         return instrs
 
-    def visitIntEqual(self, n, target):
+    def visitIntCmp(self, n, target):
+        if(n.op == PY_EQ):
+            op = X86_EQ
+        elif(n.op == PY_NE):
+            op = X86_NE
+        elif(n.op == PY_GT):
+            op = X86_GT
+        elif(n.op == PY_GE):
+            op = X86_GE
+        elif(n.op == PY_LT):
+            op = X86_LT
+        elif(n.op == PY_LE):
+            op = X86_LE
+        else:
+            raise Exception("Unknown op in IntCmp")
         instrs = []
         instrs += [Move86(arg_select(n.left), target)]
         instrs += [Comp86(arg_select(n.right), target)]
         # prezero register (avoids call to movebzl)
         instrs += [Move86(x86ZERO, target)]
-        instrs += [SetEq86(target)]
-        return instrs
-
-    def visitIntNotEqual(self, n, target):
-        instrs = []
-        instrs += [Move86(arg_select(n.left), target)]
-        instrs += [Comp86(arg_select(n.right), target)]
-        # prezero register (avoids call to movebzl)
-        instrs += [Move86(x86ZERO, target)]
-        instrs += [SetNEq86(target)]
+        instrs += [SetCmp86(op, target)]
         return instrs
 
     def visitIntUnarySub(self, n, target):

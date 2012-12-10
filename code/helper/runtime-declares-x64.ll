@@ -32,7 +32,11 @@ declare i64 @is_true(i64)
 ;int tag(pyobj val)
 declare i64 @tag(i64)
 ;pyobj error_pyobj(char* string)
-declare i64 @error_pyobj()
+declare i64 @error_pyobj(i8*)
+;pyobj error_general()
+declare i64 @error_general()
+;pyobj error_binary(pyobj a, pyobj b)
+declare i64 @error_binary(i64, i64)
 
 ; IS_*
 ;int is_int(pyobj val)

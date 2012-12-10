@@ -37,6 +37,10 @@ FALSENODE  = InjectFrom(BOOL_t, Const(FALSEVALUE))
 COMPEQUAL    = '=='
 COMPNOTEQUAL = '!='
 COMPIS       = 'is'
+COMPGT       = '>'
+COMPGE       = '>='
+COMPLT       = '<'
+COMPLE       = '<='
 
 class ExplicateVisitor(CopyVisitor):
     def __init__(self):
@@ -53,7 +57,8 @@ class ExplicateVisitor(CopyVisitor):
     
     def explicateBinary(self, lhsexpr, rhsexpr,
                         smallFunc, smallType,
-                        bigFunc, bigType, mixedDefault):
+                        bigFunc, bigType,
+                        mixedDefault, op=None):
         lhsname = generate_name('let_binexp_lhs')
         rhsname = generate_name('let_binexp_rhs')
         lhsvar = Name(lhsname)
@@ -67,9 +72,13 @@ class ExplicateVisitor(CopyVisitor):
                                    IsTag(INT_t, lhsvar)]),
                                Or([IsTag(BOOL_t, rhsvar),
                                    IsTag(INT_t, rhsvar)])]),
-                          InjectFrom(smallType,
-                                     smallFunc((self.projectType(lhsvar),
-                                                self.projectType(rhsvar)))),
+                          InjectFrom(smallType,  
+                                     (smallFunc((self.projectType(lhsvar),
+                                                self.projectType(rhsvar))))
+                                     if op==None else 
+                                     (smallFunc(op,
+                                                (self.projectType(lhsvar),
+                                                 self.projectType(rhsvar))))),
                           # Big-Big Case
                           IfExp(And([IsTag(BIG_t, lhsvar),
                                      IsTag(BIG_t, rhsvar)]),
@@ -103,21 +112,39 @@ class ExplicateVisitor(CopyVisitor):
         lhsexpr = n.expr
         op      = n.ops[0][0]
         rhsexpr = n.ops[0][1]
-        # Equal Compare
         if(op == COMPEQUAL):
             t = self.explicateBinary(lhsexpr, rhsexpr,
-                                     IntEqual, BOOL_t,
+                                     IntCmp, BOOL_t,
                                      CallBIGEQ, BOOL_t,
-                                     FALSENODE)
-        # Not Equal Compare
+                                     FALSENODE, PY_EQ)
         elif(op == COMPNOTEQUAL):
             t = self.explicateBinary(lhsexpr, rhsexpr,
-                                     IntNotEqual, BOOL_t,
+                                     IntCmp, BOOL_t,
                                      CallBIGNEQ, BOOL_t,
-                                     TRUENODE)
+                                     TRUENODE, PY_NE)
+        elif(op == COMPGT):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGGT, BOOL_t,
+                                     CallGERROR([]), PY_GT)
+        elif(op == COMPGE):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGGE, BOOL_t,
+                                     CallGERROR([]), PY_GE)
+        elif(op == COMPLT):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGLT, BOOL_t,
+                                     CallGERROR([]), PY_LT)
+        elif(op == COMPLE):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGLE, BOOL_t,
+                                     CallGERROR([]), PY_LE)
         elif(op == COMPIS):
-            t = InjectFrom(BOOL_t, IntEqual((self.dispatch(lhsexpr),
-                                             self.dispatch(rhsexpr))))
+            t = InjectFrom(BOOL_t, IntCmp(PY_EQ, (self.dispatch(lhsexpr),
+                                                  self.dispatch(rhsexpr))))
         # Error case
         else:
             raise Exception("explicate:unrecognized operation %s" % str(op))
@@ -129,7 +156,7 @@ class ExplicateVisitor(CopyVisitor):
         t = self.explicateBinary(lhsexpr, rhsexpr,
                                  IntAdd, INT_t,
                                  CallBIGADD, BIG_t,
-                                 CallTERROR([]))
+                                 CallGERROR([]))
         return t
     
     def visitNot(self, n):
@@ -144,7 +171,7 @@ class ExplicateVisitor(CopyVisitor):
                       InjectFrom(INT_t, IntUnarySub(ProjectTo(INT_t, exprvar))),
                       IfExp(IsTag(BOOL_t, exprvar),
                             InjectFrom(INT_t, IntUnarySub(ProjectTo(BOOL_t, exprvar))),
-                            CallTERROR([]))))
+                            CallGERROR([]))))
         return t
 
     # Explicate P1 Pyobj functions

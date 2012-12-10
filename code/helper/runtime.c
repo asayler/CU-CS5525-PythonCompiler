@@ -667,6 +667,8 @@ int equal(big_pyobj* a, big_pyobj* b) {
 
 int not_equal(big_pyobj* x, big_pyobj* y) { return !equal(x, y); }
 
+
+
 static pyobj subscript_assign(big_pyobj* c, pyobj key, pyobj val)
 {
   switch (c->tag) {
@@ -1055,6 +1057,18 @@ pyobj set_attr(pyobj obj, char* attr, pyobj val)
 }
 
 pyobj error_pyobj(char* string) {
-    printf("%s", string);
-  exit(-1);
+    printf("error_pyobj: %s\n", string);
+    exit(-1);
+}
+
+pyobj error_general() {
+    printf("error_general: Invalid program?\n");
+    exit(-1);
+}
+
+pyobj error_binary(pyobj a, pyobj b){
+    (void) a;
+    (void) b;
+    printf("error_binary: Invalid program?\n");
+    exit(-1);
 }
