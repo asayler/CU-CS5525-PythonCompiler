@@ -127,11 +127,21 @@ class ExplicateVisitor(CopyVisitor):
                                      IntCmp, BOOL_t,
                                      CallBIGGT, BOOL_t,
                                      CallGERROR([]), PY_GT)
+        elif(op == COMPGE):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGGE, BOOL_t,
+                                     CallGERROR([]), PY_GE)
         elif(op == COMPLT):
             t = self.explicateBinary(lhsexpr, rhsexpr,
                                      IntCmp, BOOL_t,
                                      CallBIGLT, BOOL_t,
                                      CallGERROR([]), PY_LT)
+        elif(op == COMPLE):
+            t = self.explicateBinary(lhsexpr, rhsexpr,
+                                     IntCmp, BOOL_t,
+                                     CallBIGLE, BOOL_t,
+                                     CallGERROR([]), PY_LE)
         elif(op == COMPIS):
             t = InjectFrom(BOOL_t, IntCmp(PY_EQ, (self.dispatch(lhsexpr),
                                                   self.dispatch(rhsexpr))))
