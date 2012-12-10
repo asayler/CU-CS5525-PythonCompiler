@@ -32,13 +32,13 @@ for name in llruntimes:
     x86ct = float(x86cmptimes[name].readline().rstrip())
     cratio = -1 if x86ct == 0 else (llct / x86ct)
 
-    print '%s compile time ratio: %fx (%fs / %fs)' % (name, cratio, llct, x86ct)
+    print '%s compile time ratio: %fx (%fs / %fs)' % (name, 1/cratio, llct, x86ct)
 
     llrt = float(llruntimes[name].readline().rstrip())
     x86rt = float(x86runtimes[name].readline().rstrip())
     rratio = -1 if x86rt == 0 else (llrt / x86rt)
     
-    print '%s runtime ratio: %fx (%fs / %fs)' % (name, rratio, llrt, x86rt)
+    print '%s runtime ratio: %fx (%fs / %fs)' % (name, 1/rratio, llrt, x86rt)
 
     total86cmp += x86ct
     totalllcmp += llct
@@ -48,6 +48,6 @@ for name in llruntimes:
 cratio = -1 if total86cmp == 0 else (totalllcmp / total86cmp)
 rratio = -1 if total86run == 0 else (totalllrun / total86run)
 
-print 'Overall compile time ratio: %fx' % cratio
-print 'Overall runtime ratio: %fx' % rratio
+print 'Overall compile time ratio: %fx' % (1/cratio)
+print 'Overall runtime ratio: %fx' % (1/rratio)
 print '(Negative numbers indicate division by zero)'
