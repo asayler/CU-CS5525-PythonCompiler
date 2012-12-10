@@ -131,6 +131,10 @@ class ParseConvert(Visitor):
         return '>'
     def visitLt(self, n):
         return '<'
+    def visitGtE(self, n):
+        return '>='
+    def visitLtE(self, n):
+        return '<='
 
     def visitBinOp(self, n):
         return self.dispatch(n.op)((self.dispatch(n.left), 
