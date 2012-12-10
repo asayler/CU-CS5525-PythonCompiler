@@ -139,7 +139,7 @@ class x86InstrSelectVisitor(Visitor):
         instrs += [Comp86(arg_select(n.right), target)]
         # prezero register (avoids call to movebzl)
         instrs += [Move86(x86ZERO, target)]
-        instrs += [SetEq86(target)]
+        instrs += [SetCmp86(X86_EQ, target)]
         return instrs
 
     def visitIntNotEqual(self, n, target):
@@ -148,7 +148,7 @@ class x86InstrSelectVisitor(Visitor):
         instrs += [Comp86(arg_select(n.right), target)]
         # prezero register (avoids call to movebzl)
         instrs += [Move86(x86ZERO, target)]
-        instrs += [SetNEq86(target)]
+        instrs += [SetCmp86(X86_NE, target)]
         return instrs
 
     def visitIntUnarySub(self, n, target):

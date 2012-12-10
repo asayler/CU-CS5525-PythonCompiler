@@ -18,6 +18,14 @@
 
 # Import
 
+# x86 Constants and Aliases
+X86_EQ = "sete"
+X86_NE = "setne"
+X86_GT = "setg"
+X86_GE = "setge"
+X86_LT = "setl"
+X86_LE = "setle"
+
 import sys
 
 """x86 AST tree nodes"""
@@ -205,17 +213,12 @@ class Comp86(X86Inst):
     def mnemonic(self):
         return ('cmpl %s, %s' % (self.value.mnemonic(), self.target.mnemonic()))
 
-class SetEq86(X86Inst):
-    def __init__(self, target):
+class SetCmp86(X86Inst):
+    def __init__(self, op, target):
+        self.op     = op
         self.target = target
     def mnemonic(self):
-        return ('sete %s' % self.target.mnemonic())
-
-class SetNEq86(X86Inst):
-    def __init__(self, target):
-        self.target = target
-    def mnemonic(self):
-        return ('setne %s' % self.target.mnemonic())
+        return ('%s %s' % (self.op, self.target.mnemonic()))
 
 class Jump86(X86Inst):
     def __init__(self, target):
