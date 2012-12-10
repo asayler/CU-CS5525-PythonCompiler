@@ -1,0 +1,3 @@
+@n_294_stringName = private unnamed_addr constant [9 x i8] c"__init__
+....
+%n_295_cast = getelementptr [9 x i8]* @n_294_stringName, i64 0, i64 0
