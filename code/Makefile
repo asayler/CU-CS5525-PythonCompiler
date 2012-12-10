@@ -96,6 +96,10 @@ P3TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p3-*.py)
 P3TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P3TESTCASESSOURCE))
 P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TESTCASESSOURCE))
 
+PXTESTCASESSOURCE   = $(wildcard $(TESTDIR)test-pX-*.py)
+PXTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(PXTESTCASESSOURCE))
+PXTESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(PXTESTCASESSOURCE))
+
 .PHONY: all clean \
 	Assemb Assemb86 AssembLL \
 	Tests Tests86 TestsLL \
@@ -105,6 +109,7 @@ P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TE
 	P1TestsRun86 P1TestsRunLL \
 	P2TestsRun86 P2TestsRunLL \
 	P3TestsRun86 P3TestsRunLL \
+	PXTestsRun86 PXTestsRunLL \
 	MTests BenchmarkTestsRun \
 	BenchmarkTestsRunLL \
 	BenchmarkTestsRun86
@@ -168,6 +173,12 @@ P3TestsRun86: $(P3TESTDIFFS86)
 	cat $^
 
 P3TestsRunLL: $(P3TESTDIFFSLL)
+	cat $^
+
+PXTestsRun86: $(PXTESTDIFFS86)
+	cat $^
+
+PXTestsRunLL: $(PXTESTDIFFSLL)
 	cat $^
 
 $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in

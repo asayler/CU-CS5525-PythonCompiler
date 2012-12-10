@@ -62,10 +62,7 @@ class SetVisitor(Visitor):
     visitInjectFrom = InjectFrom.find
     visitProjectTo = ProjectTo.find
     visitLet = Let.find
-    visitIntEqual = IntEqual.find
-    visitIntNotEqual = IntNotEqual.find
-    visitIntGT = IntGT.find
-    visitIntLT = IntLT.find
+    visitIntCmp = IntCmp.find
     visitIntAdd = IntAdd.find
     visitIntUnarySub = IntUnarySub.find
     visitString = String.find

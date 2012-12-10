@@ -4,11 +4,11 @@
 # Fall 2012
 # Python Compiler
 #
-# test-benchmark-pi0.py
+# test-p0-1.py
 # Test Case
-# Subset: benchmark
+# Subset: p0
 # Type: Student
-# Tesing: benchmark
+# Tesing: input, usub, add, print
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
@@ -21,6 +21,7 @@
 #    Michael (Mike) Vitousek
 #       http://csel.cs.colorado.edu/~mivi2269/
 
+
 def square(x):
     cnt = x
     val = 0
@@ -29,4 +30,11 @@ def square(x):
         cnt = cnt + -1
     return val
 
-print(square(input()))
+n = input()
+i = 0
+while i != square(n):
+    j = 0
+    while j != n:
+        square(n)
+        j = j + 1
+    i = i + 1

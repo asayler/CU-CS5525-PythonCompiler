@@ -61,10 +61,7 @@ class ListVisitor(Visitor):
     visitInjectFrom = InjectFrom.list
     visitProjectTo = ProjectTo.list
     visitLet = Let.list
-    visitIntEqual = IntEqual.list
-    visitIntNotEqual = IntNotEqual.list
-    visitIntGT = IntGT.list
-    visitIntLT = IntLT.list
+    visitIntCmp = IntCmp.list
     visitIntAdd = IntAdd.list
     visitIntUnarySub = IntUnarySub.list
     visitString = String.list

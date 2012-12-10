@@ -178,7 +178,13 @@ def CallBIGNEQ(args):
 def CallBIGGT(args):
     return CallFunc(BERROR_n, args)
 
+def CallBIGGE(args):
+    return CallFunc(BERROR_n, args)
+
 def CallBIGLT(args):
+    return CallFunc(BERROR_n, args)
+
+def CallBIGLE(args):
     return CallFunc(BERROR_n, args)
 
 # Utility Macros

@@ -65,10 +65,7 @@ class GraphVisitor(Visitor):
     visitInjectFrom = InjectFrom.graph
     visitProjectTo = ProjectTo.graph
     visitLet = Let.graph
-    visitIntEqual = IntEqual.graph
-    visitIntNotEqual = IntNotEqual.graph
-    visitIntGT = IntGT.graph
-    visitIntLT = IntLT.graph
+    visitIntCmp = IntCmp.graph
     visitIntAdd = IntAdd.graph
     visitIntUnarySub = IntUnarySub.graph
     visitString = String.graph
