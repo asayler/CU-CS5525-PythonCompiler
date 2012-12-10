@@ -194,13 +194,13 @@
 % Andy
 \begin{frame}{\bf LLVM Concepts}
   \begin{itemize}
-  \item<1->LLVM Intermediate Representation(IR)
-  \begin{itemize}
-  \item<2->In-memory data structure
-  \item<3->Human readable ``assembly'' language (.ll)
-  \item<4->File-oriented bitcode (colloqially, bytecode) (.bc)
-  \end{itemize}
-  \item<5->We convert to assemble (.ll) code
+  \item<1->LLVM Intermediate Representation (IR)
+    \begin{itemize}
+    \item<2->In-memory data structure
+    \item<3->Human readable ``assembly'' language (.ll)
+    \item<4->File-oriented bitcode (colloqially, bytecode) (.bc)
+    \end{itemize}
+  \item<5->We convert to assembly (.ll) code
   \item<6->Example...
   \end{itemize}
 \end{frame}
@@ -224,7 +224,7 @@
   \begin{itemize}
   \item<1->Refactored existing compiler to fix all known issues, add
     features, etc.
-  \item<2->"Compiled" tests programs by hand to LLVM IR
+  \item<2->"Compiled" tests programs by hand to LLVM IR for reference
   \item<3->Added an SSA Conversion pass after Flatten pass
   \item<4->Added an LLVM Instruction Selection pass to produce LLVM IR
   \item<5->Modified build and test system to handle both x86 and LLVM
