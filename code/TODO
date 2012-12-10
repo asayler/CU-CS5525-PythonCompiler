@@ -13,4 +13,4 @@ x86:
 HELPER:
 * The helper function sling a lot of ints around. It woudl be best to make these
   longs for consistency with pyobjs
-* Add GT and LT functions for bigs
+* Add GT, GE, LT, and LE functions for bigs
