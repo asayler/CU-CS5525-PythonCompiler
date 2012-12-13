@@ -80,6 +80,10 @@ LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
 LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(LLVMTESTCASESSOURCE))
 LLVMTESTDIFFSLL     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(LLVMTESTCASESSOURCE))
 
+PTESTCASESSOURCE    = $(wildcard $(TESTDIR)test-p?-*.py)
+PTESTDIFFS86        = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(PTESTCASESSOURCE))
+PTESTDIFFSLL        = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(PTESTCASESSOURCE))
+
 P0TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p0-*.py)
 P0TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P0TESTCASESSOURCE))
 P0TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P0TESTCASESSOURCE))
@@ -105,6 +109,7 @@ PXTESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(PXTE
 	Tests Tests86 TestsLL \
 	TestsRun TestsRun86 TestsRunLL \
 	LLVMTestsRun86 LLVMTestsRunLL \
+	PTestsRun86 PTestsRunLL \
 	P0TestsRun86 P0TestsRunLL \
 	P1TestsRun86 P1TestsRunLL \
 	P2TestsRun86 P2TestsRunLL \
@@ -149,6 +154,12 @@ LLVMTestsRun86: $(LLVMTESTDIFFS86)
 	cat $^
 
 LLVMTestsRunLL: $(LLVMTESTDIFFSLL)
+	cat $^
+
+PTestsRun86: $(PTESTDIFFS86)
+	cat $^
+
+PTestsRunLL: $(PTESTDIFFSLL)
 	cat $^
 
 P0TestsRun86: $(P0TESTDIFFS86)
