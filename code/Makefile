@@ -14,6 +14,7 @@
 #     This is the Makefile for the compiler test files
 
 TIME 	  = /usr/bin/time
+TIMEFLAGS = --format=%e
 
 CC        = gcc
 AS        = gcc
@@ -200,7 +201,7 @@ $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
 $(BMTESTRT86): $(BUILDDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.86ct > $(BUILDDIR)$*.86ctk
 	mv $(BUILDDIR)$*.86ctk $(BUILDDIR)$*.86ct
-	cat $(TESTDIR)$*.in | $(TIME) --format=%e -o $@ $(BUILDDIR)$*.86out
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.86out
 
 $(TESTDIFFSLL): $(BUILDDIR)%.lldiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.llout > $(BUILDDIR)$*.lloutput
@@ -210,28 +211,28 @@ $(TESTDIFFSLL): $(BUILDDIR)%.lldiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
 $(BMTESTRTLL): $(BUILDDIR)%.llrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
 	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
-	cat $(TESTDIR)$*.in | $(TIME) --format=%e -o $@ $(BUILDDIR)$*.llout
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.llout
 
 $(TESTCASESOUT86): $(BUILDDIR)%.86out: $(BUILDDIR)%.s $(HELPEROBJECT)
-	$(TIME) --format=%e -o $(BUILDDIR)$*.86ct -a $(CC) $(LFLAGS) $^ -lm -o $@
+	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.86ct $(CC) $(LFLAGS) $^ -lm -o $@
 
 $(TESTCASESASS86): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
-	$(TIME) --format=%e -o $(BUILDDIR)$*.86ct $(PC) $(PCFLAGS) $< -o $@
+	$(TIME) $(TIMEFLAGS) -o $(BUILDDIR)$*.86ct $(PC) $(PCFLAGS) $< -o $@
 
 $(TESTCASESOUTLL): $(BUILDDIR)%.llout: $(BUILDDIR)%.lls
-	$(TIME) --format=%e -o $(BUILDDIR)$*.llct -a $(LLAS) $(LLASFLAGS) $< -lm -o $@
+	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLAS) $(LLASFLAGS) $< -lm -o $@
 
 $(TESTCASESASSLL): $(BUILDDIR)%.lls: $(BUILDDIR)%.lbc
-	$(TIME) --format=%e -o $(BUILDDIR)$*.llct -a $(LLC) $(LLCFLAGS) $< -o $@
+	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLC) $(LLCFLAGS) $< -o $@
 
 $(TESTCASESLBC): $(BUILDDIR)%.lbc: $(BUILDDIR)%.bc $(HELPERLLVMBC)
-	$(TIME) --format=%e -o $(BUILDDIR)$*.llct -a $(LLL) $(LLLFLAGS) $^ -o $@
+	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLL) $(LLLFLAGS) $^ -o $@
 
 $(TESTCASESBC): $(BUILDDIR)%.bc: $(BUILDDIR)%.ll
-	$(TIME) --format=%e -o $(BUILDDIR)$*.llct -a $(LLA) $(LLAFLAGS) $< -o $@
+	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLA) $(LLAFLAGS) $< -o $@
 
 $(TESTCASESLL): $(BUILDDIR)%.ll: $(TESTDIR)%.py *.py
-	$(TIME) --format=%e -o $(BUILDDIR)$*.llct $(PC) $(PCFLAGS) $< -o $@
+	$(TIME) $(TIMEFLAGS) -o $(BUILDDIR)$*.llct $(PC) $(PCFLAGS) $< -o $@
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
 	$(LLAS) $(LLASFLAGS) $< -lm -o $@
