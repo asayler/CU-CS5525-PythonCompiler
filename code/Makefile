@@ -70,11 +70,11 @@ TESTCASESASSLL      = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.lls,    $(TEST
 TESTCASESOUTLL      = $(patsubst $(BUILDDIR)%.lls,   $(BUILDDIR)%.llout,  $(TESTCASESASSLL))
 TESTDIFFSLL         = $(patsubst $(BUILDDIR)%.llout, $(BUILDDIR)%.lldiff, $(TESTCASESOUTLL))
 
-BMTESTCASESSOURCE = $(wildcard $(TESTDIR)*benchmark*.py)
-BMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(BMTESTCASESSOURCE))
-BMTESTDIFFSLL     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(BMTESTCASESSOURCE))
-BMTESTRTLL            = $(patsubst $(BUILDDIR)%.lldiff, $(BUILDDIR)%.llrt, $(BMTESTDIFFSLL))
-BMTESTRT86            = $(patsubst $(BUILDDIR)%.86diff, $(BUILDDIR)%.86rt, $(BMTESTDIFFS86))
+BMTESTCASESSOURCE   = $(wildcard $(TESTDIR)*benchmark*.py)
+BMTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,      $(BUILDDIR)%.86diff, $(BMTESTCASESSOURCE))
+BMTESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,      $(BUILDDIR)%.lldiff, $(BMTESTCASESSOURCE))
+BMTESTRTLL          = $(patsubst $(BUILDDIR)%.lldiff, $(BUILDDIR)%.llrt,   $(BMTESTDIFFSLL))
+BMTESTRT86          = $(patsubst $(BUILDDIR)%.86diff, $(BUILDDIR)%.86rt,   $(BMTESTDIFFS86))
 
 LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
 LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(LLVMTESTCASESSOURCE))
