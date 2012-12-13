@@ -64,133 +64,177 @@ TESTCASESASS86      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.s,      $(TEST
 TESTCASESOUT86      = $(patsubst $(BUILDDIR)%.s,     $(BUILDDIR)%.86out,  $(TESTCASESASS86))
 TESTDIFFS86         = $(patsubst $(BUILDDIR)%.86out, $(BUILDDIR)%.86diff, $(TESTCASESOUT86))
 
-TESTCASESLL         = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.ll,     $(TESTCASESSOURCE))
-TESTCASESBC         = $(patsubst $(BUILDDIR)%.ll,    $(BUILDDIR)%.bc,     $(TESTCASESLL))
-TESTCASESLBC        = $(patsubst $(BUILDDIR)%.bc,    $(BUILDDIR)%.lbc,    $(TESTCASESBC))
-TESTCASESASSLL      = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.lls,    $(TESTCASESLBC))
-TESTCASESOUTLL      = $(patsubst $(BUILDDIR)%.lls,   $(BUILDDIR)%.llout,  $(TESTCASESASSLL))
-TESTDIFFSLL         = $(patsubst $(BUILDDIR)%.llout, $(BUILDDIR)%.lldiff, $(TESTCASESOUTLL))
+TESTCASESLL         = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.ll,      $(TESTCASESSOURCE))
+TESTCASESBC         = $(patsubst $(BUILDDIR)%.ll,    $(BUILDDIR)%.bc,      $(TESTCASESLL))
+TESTCASESLBC        = $(patsubst $(BUILDDIR)%.bc,    $(BUILDDIR)%.lbc,     $(TESTCASESBC))
+TESTCASESASSLL      = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.lls,     $(TESTCASESLBC))
+TESTCASESOUTLL      = $(patsubst $(BUILDDIR)%.lls,   $(BUILDDIR)%.llout,   $(TESTCASESASSLL))
+TESTDIFFSLLC        = $(patsubst $(BUILDDIR)%.llout, $(BUILDDIR)%.llcdiff, $(TESTCASESOUTLL))
+TESTDIFFSLLI        = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.llidiff, $(TESTCASESLBC))
 
 BMTESTCASESSOURCE   = $(wildcard $(TESTDIR)*benchmark*.py)
-BMTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,      $(BUILDDIR)%.86diff, $(BMTESTCASESSOURCE))
-BMTESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,      $(BUILDDIR)%.lldiff, $(BMTESTCASESSOURCE))
-BMTESTRTLL          = $(patsubst $(BUILDDIR)%.lldiff, $(BUILDDIR)%.llrt,   $(BMTESTDIFFSLL))
-BMTESTRT86          = $(patsubst $(BUILDDIR)%.86diff, $(BUILDDIR)%.86rt,   $(BMTESTDIFFS86))
+BMTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.86diff,  $(BMTESTCASESSOURCE))
+BMTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.llcdiff, $(BMTESTCASESSOURCE))
+BMTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.llidiff, $(BMTESTCASESSOURCE))
+BMTESTRT86          = $(patsubst $(BUILDDIR)%.86diff,  $(BUILDDIR)%.86rt,    $(BMTESTDIFFS86))
+BMTESTRTLLC         = $(patsubst $(BUILDDIR)%.llcdiff, $(BUILDDIR)%.llcrt,   $(BMTESTDIFFSLLC))
+BMTESTRTLLI         = $(patsubst $(BUILDDIR)%.llidiff, $(BUILDDIR)%.llirt,   $(BMTESTDIFFSLLI))
 
 LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
-LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(LLVMTESTCASESSOURCE))
-LLVMTESTDIFFSLL     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(LLVMTESTCASESSOURCE))
+LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(LLVMTESTCASESSOURCE))
+LLVMTESTDIFFSLLC    = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(LLVMTESTCASESSOURCE))
+LLVMTESTDIFFSLLI    = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(LLVMTESTCASESSOURCE))
 
 PTESTCASESSOURCE    = $(wildcard $(TESTDIR)test-p?-*.py)
-PTESTDIFFS86        = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(PTESTCASESSOURCE))
-PTESTDIFFSLL        = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(PTESTCASESSOURCE))
+PTESTDIFFS86        = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(PTESTCASESSOURCE))
+PTESTDIFFSLLC       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(PTESTCASESSOURCE))
+PTESTDIFFSLLI       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(PTESTCASESSOURCE))
 
 P0TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p0-*.py)
-P0TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P0TESTCASESSOURCE))
-P0TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P0TESTCASESSOURCE))
+P0TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(P0TESTCASESSOURCE))
+P0TESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(P0TESTCASESSOURCE))
+P0TESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(P0TESTCASESSOURCE))
 
 P1TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p1-*.py)
-P1TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P1TESTCASESSOURCE))
-P1TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P1TESTCASESSOURCE))
+P1TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(P1TESTCASESSOURCE))
+P1TESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(P1TESTCASESSOURCE))
+P1TESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(P1TESTCASESSOURCE))
 
 P2TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p2-*.py)
-P2TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P2TESTCASESSOURCE))
-P2TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P2TESTCASESSOURCE))
+P2TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(P2TESTCASESSOURCE))
+P2TESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(P2TESTCASESSOURCE))
+P2TESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(P2TESTCASESSOURCE))
 
 P3TESTCASESSOURCE   = $(wildcard $(TESTDIR)test-p3-*.py)
-P3TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(P3TESTCASESSOURCE))
-P3TESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(P3TESTCASESSOURCE))
+P3TESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(P3TESTCASESSOURCE))
+P3TESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(P3TESTCASESSOURCE))
+P3TESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(P3TESTCASESSOURCE))
 
 PXTESTCASESSOURCE   = $(wildcard $(TESTDIR)test-pX-*.py)
-PXTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff, $(PXTESTCASESSOURCE))
-PXTESTDIFFSLL       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.lldiff, $(PXTESTCASESSOURCE))
+PXTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(PXTESTCASESSOURCE))
+PXTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(PXTESTCASESSOURCE))
+PXTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(PXTESTCASESSOURCE))
 
 .PHONY: all clean \
-	Assemb Assemb86 AssembLL \
-	Tests Tests86 TestsLL \
-	TestsRun TestsRun86 TestsRunLL \
-	LLVMTestsRun86 LLVMTestsRunLL \
-	PTestsRun86 PTestsRunLL \
-	P0TestsRun86 P0TestsRunLL \
-	P1TestsRun86 P1TestsRunLL \
-	P2TestsRun86 P2TestsRunLL \
-	P3TestsRun86 P3TestsRunLL \
-	PXTestsRun86 PXTestsRunLL \
-	MTests BenchmarkTestsRun \
-	BenchmarkTestsRunLL \
-	BenchmarkTestsRun86
+	Tests Tests86 TestsLLC TestsLLI \
+	TestsRun TestsRun86 TestsRunLLC TestsRunLLI \
+	LLVMTestsRun LLVMTestsRun86 LLVMTestsRunLLC LLVMTestsRunLLI \
+	PTestsRun PTestsRun86 PTestsRunLLC PTestsRunLLI \
+	P0TestsRun P0TestsRun86 P0TestsRunLLC P0TestsRunLLI \
+	P1TestsRun P1TestsRun86 P1TestsRunLLC P1TestsRunLLI \
+	P2TestsRun P2TestsRun86 P2TestsRunLLC P2TestsRunLLI \
+	P3TestsRun P3TestsRun86 P3TestsRunLLC P3TestsRunLLI \
+	PXTestsRun PXTestsRun86 PXTestsRunLLC PXTestsRunLLI \
+	BenchmarkTestsRun BenchmarkTestsRun86 BenchmarkTestsRunLLC BenchmarkTestsRunLLI \
+	MTests
 
 all: Tests
 
 MTests: $(MTESTCASES)
 
-Assemb: Assemb86
-
-Assemb86: $(TESTCASESASS86)
-
-AssembLL: $(TESTCASESASSLL)
-
-Tests: Tests86 TestsLL
+Tests: Tests86 TestsLLC TestsLLI
 
 Tests86: $(TESTCASESOUT86)
 
-TestsLL: $(TESTCASESOUTLL)
+TestsLLC: $(TESTCASESOUTLL)
 
-TestsRun: TestsRun86 TestsRunLL
+TestsLLI: $(TESTCASESLBC)
+
+TestsRun: TestsRun86 TestsRunLLC TestsRunLLI
 
 TestsRun86: $(TESTDIFFS86)
 	cat $^
 
-TestsRunLL: $(TESTDIFFSLL)
+TestsRunLLC: $(TESTDIFFSLLC)
 	cat $^
 
-BenchmarkTestsRun: BenchmarkTestsRunLL BenchmarkTestsRun86
+TestsRunLLI: $(TESTDIFFSLLI)
+	cat $^
+
+BenchmarkTestsRun: BenchmarkTestsRun86 BenchmarkTestsRunLLC BenchmarkTestsRunLLI
 	python analyze.py
 
-BenchmarkTestsRunLL: $(BMTESTRTLL)
-
 BenchmarkTestsRun86: $(BMTESTRT86)
+
+BenchmarkTestsRunLLC: $(BMTESTRTLLC)
+
+BenchmarkTestsRunLLI: $(BMTESTRTLLI)
+
+LLVMTestsRun: LLVMTestsRun86 LLVMTestsRunLLC LLVMTestsRunLLI
 
 LLVMTestsRun86: $(LLVMTESTDIFFS86)
 	cat $^
 
-LLVMTestsRunLL: $(LLVMTESTDIFFSLL)
+LLVMTestsRunLLC: $(LLVMTESTDIFFSLLC)
 	cat $^
+
+LLVMTestsRunLLI: $(LLVMTESTDIFFSLLI)
+	cat $^
+
+PTestsRun: PTestsRun86 PTestsRunLLC PTestsRunLLI
 
 PTestsRun86: $(PTESTDIFFS86)
 	cat $^
 
-PTestsRunLL: $(PTESTDIFFSLL)
+PTestsRunLLC: $(PTESTDIFFSLLC)
 	cat $^
+
+PTestsRunLLI: $(PTESTDIFFSLLI)
+	cat $^
+
+P0TestsRun: P0TestsRun86 P0TestsRunLLC P0TestsRunLLI
 
 P0TestsRun86: $(P0TESTDIFFS86)
 	cat $^
 
-P0TestsRunLL: $(P0TESTDIFFSLL)
+P0TestsRunLLC: $(P0TESTDIFFSLLC)
 	cat $^
+
+P0TestsRunLLI: $(P0TESTDIFFSLLI)
+	cat $^
+
+P1TestsRun: P1TestsRun86 P1TestsRunLLC P1TestsRunLLI
 
 P1TestsRun86: $(P1TESTDIFFS86)
 	cat $^
 
-P1TestsRunLL: $(P1TESTDIFFSLL)
+P1TestsRunLLC: $(P1TESTDIFFSLLC)
 	cat $^
+
+P1TestsRunLLI: $(P1TESTDIFFSLLI)
+	cat $^
+
+P2TestsRun: P2TestsRun86 P2TestsRunLLC P2TestsRunLLI
 
 P2TestsRun86: $(P2TESTDIFFS86)
 	cat $^
 
-P2TestsRunLL: $(P2TESTDIFFSLL)
+P2TestsRunLLC: $(P2TESTDIFFSLLC)
 	cat $^
+
+P2TestsRunLLI: $(P2TESTDIFFSLLI)
+	cat $^
+
+P3TestsRun: P3TestsRun86 P3TestsRunLLC P3TestsRunLLI
 
 P3TestsRun86: $(P3TESTDIFFS86)
 	cat $^
 
-P3TestsRunLL: $(P3TESTDIFFSLL)
+P3TestsRunLLC: $(P3TESTDIFFSLLC)
 	cat $^
+
+P3TestsRunLLI: $(P3TESTDIFFSLLI)
+	cat $^
+
+PXTestsRun: PXTestsRun86 PXTestsRunLLC PXTestsRunLLI
 
 PXTestsRun86: $(PXTESTDIFFS86)
 	cat $^
 
-PXTestsRunLL: $(PXTESTDIFFSLL)
+PXTestsRunLLC: $(PXTESTDIFFSLLC)
+	cat $^
+
+PXTestsRunLLI: $(PXTESTDIFFSLLI)
 	cat $^
 
 $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
@@ -203,15 +247,25 @@ $(BMTESTRT86): $(BUILDDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	mv $(BUILDDIR)$*.86ctk $(BUILDDIR)$*.86ct
 	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.86out
 
-$(TESTDIFFSLL): $(BUILDDIR)%.lldiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
-	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.llout > $(BUILDDIR)$*.lloutput
+$(TESTDIFFSLLC): $(BUILDDIR)%.llcdiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.llout > $(BUILDDIR)$*.llcoutput
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
-	diff -B -s -q $(BUILDDIR)$*.lloutput $(BUILDDIR)$*.correct > $@
+	diff -B -s -q $(BUILDDIR)$*.llcoutput $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRTLL): $(BUILDDIR)%.llrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
+$(TESTDIFFSLLI): $(BUILDDIR)%.llidiff: $(BUILDDIR)%.lbc $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(LLI) $(BUILDDIR)$*.lbc > $(BUILDDIR)$*.llioutput
+	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
+	diff -B -s -q $(BUILDDIR)$*.llioutput $(BUILDDIR)$*.correct > $@
+
+$(BMTESTRTLLC): $(BUILDDIR)%.llcrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
 	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
 	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.llout
+
+$(BMTESTRTLLI): $(BUILDDIR)%.llirt: $(BUILDDIR)%.lbc $(TESTDIR)%.in
+	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
+	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(LLI) $(BUILDDIR)$*.lbc
 
 $(TESTCASESOUT86): $(BUILDDIR)%.86out: $(BUILDDIR)%.s $(HELPEROBJECT)
 	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.86ct $(CC) $(LFLAGS) $^ -lm -o $@
