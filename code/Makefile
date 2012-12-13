@@ -16,6 +16,8 @@
 TIME 	  = /usr/bin/time
 TIMEFLAGS = --format=%e
 
+MAKE      = make
+
 CC        = gcc
 AS        = gcc
 PC        = ./compile.py
@@ -44,7 +46,9 @@ LLCCFLAGS = -emit-llvm
 SUBMISSIONDIR = ./submission/
 HELPERDIR     = ./helper/
 BUILDDIR      = ./build/
+BENCHDIR      = ./bench/
 TESTDIR       = ./test/
+NULL          = /dev/null
 
 HELPERSOURCE        = $(wildcard $(HELPERDIR)*.c)
 HELPEROBJECT        = $(patsubst $(HELPERDIR)%.c, $(BUILDDIR)%.o,  $(HELPERSOURCE))
@@ -73,12 +77,15 @@ TESTDIFFSLLC        = $(patsubst $(BUILDDIR)%.llout, $(BUILDDIR)%.llcdiff, $(TES
 TESTDIFFSLLI        = $(patsubst $(BUILDDIR)%.lbc,   $(BUILDDIR)%.llidiff, $(TESTCASESLBC))
 
 BMTESTCASESSOURCE   = $(wildcard $(TESTDIR)*benchmark*.py)
-BMTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.86diff,  $(BMTESTCASESSOURCE))
-BMTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.llcdiff, $(BMTESTCASESSOURCE))
-BMTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,       $(BUILDDIR)%.llidiff, $(BMTESTCASESSOURCE))
-BMTESTRT86          = $(patsubst $(BUILDDIR)%.86diff,  $(BUILDDIR)%.86rt,    $(BMTESTDIFFS86))
-BMTESTRTLLC         = $(patsubst $(BUILDDIR)%.llcdiff, $(BUILDDIR)%.llcrt,   $(BMTESTDIFFSLLC))
-BMTESTRTLLI         = $(patsubst $(BUILDDIR)%.llidiff, $(BUILDDIR)%.llirt,   $(BMTESTDIFFSLLI))
+BMTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(BMTESTCASESSOURCE))
+BMTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(BMTESTCASESSOURCE))
+BMTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(BMTESTCASESSOURCE))
+BMTESTCT86          = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.86ct,    $(BMTESTCASESSOURCE))
+BMTESTRT86          = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.86rt,    $(BMTESTCASESSOURCE))
+BMTESTCTLLC         = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.llcct,   $(BMTESTCASESSOURCE))
+BMTESTRTLLC         = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.llcrt,   $(BMTESTCASESSOURCE))
+BMTESTCTLLI         = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.llict,   $(BMTESTCASESSOURCE))
+BMTESTRTLLI         = $(patsubst $(TESTDIR)%.py,     $(BENCHDIR)%.llirt,   $(BMTESTCASESSOURCE))
 
 LLVMTESTCASESSOURCE = $(wildcard $(TESTDIR)*llvm*.py)
 LLVMTESTDIFFS86     = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(LLVMTESTCASESSOURCE))
@@ -115,7 +122,7 @@ PXTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(PXT
 PXTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(PXTESTCASESSOURCE))
 PXTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(PXTESTCASESSOURCE))
 
-.PHONY: all clean \
+.PHONY: all clean buildclean\
 	Tests Tests86 TestsLLC TestsLLI \
 	TestsRun TestsRun86 TestsRunLLC TestsRunLLI \
 	LLVMTestsRun LLVMTestsRun86 LLVMTestsRunLLC LLVMTestsRunLLI \
@@ -151,14 +158,14 @@ TestsRunLLC: $(TESTDIFFSLLC)
 TestsRunLLI: $(TESTDIFFSLLI)
 	cat $^
 
-BenchmarkTestsRun: BenchmarkTestsRun86 BenchmarkTestsRunLLC BenchmarkTestsRunLLI
+BenchmarkTestsRun: BenchmarkTestsRun86 BenchmarkTestsRunLLI BenchmarkTestsRunLLC
 	python analyze.py
 
-BenchmarkTestsRun86: $(BMTESTRT86)
+BenchmarkTestsRun86: $(BMTESTRT86) $(BMTESTCT86)
 
-BenchmarkTestsRunLLC: $(BMTESTRTLLC)
+BenchmarkTestsRunLLC: $(BMTESTRTLLC) $(BMTESTCTLLC)
 
-BenchmarkTestsRunLLI: $(BMTESTRTLLI)
+BenchmarkTestsRunLLI: $(BMTESTRTLLI) $(BMTESTCTLLI)
 
 LLVMTestsRun: LLVMTestsRun86 LLVMTestsRunLLC LLVMTestsRunLLI
 
@@ -242,51 +249,54 @@ $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.86output $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRT86): $(BUILDDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
-	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.86ct > $(BUILDDIR)$*.86ctk
-	mv $(BUILDDIR)$*.86ctk $(BUILDDIR)$*.86ct
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.86out
+$(BMTESTRT86): $(BENCHDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $< > $(NULL)
+
+$(BMTESTCT86): $(BENCHDIR)%.86ct: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.86out
 
 $(TESTDIFFSLLC): $(BUILDDIR)%.llcdiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.llout > $(BUILDDIR)$*.llcoutput
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.llcoutput $(BUILDDIR)$*.correct > $@
 
+$(BMTESTRTLLC): $(BENCHDIR)%.llcrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $< > $(NULL)
+
+$(BMTESTCTLLC): $(BENCHDIR)%.llcct: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.llout
+
 $(TESTDIFFSLLI): $(BUILDDIR)%.llidiff: $(BUILDDIR)%.lbc $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(LLI) $(BUILDDIR)$*.lbc > $(BUILDDIR)$*.llioutput
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.llioutput $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRTLLC): $(BUILDDIR)%.llcrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
-	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
-	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.llout
+$(BMTESTRTLLI): $(BENCHDIR)%.llirt: $(BUILDDIR)%.lbc $(TESTDIR)%.in
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(LLI) $< > $(NULL)
 
-$(BMTESTRTLLI): $(BUILDDIR)%.llirt: $(BUILDDIR)%.lbc $(TESTDIR)%.in
-	awk '{a+=$$0}END{print a}' $(BUILDDIR)$*.llct > $(BUILDDIR)$*.llctk
-	mv $(BUILDDIR)$*.llctk $(BUILDDIR)$*.llct
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(LLI) $(BUILDDIR)$*.lbc
+$(BMTESTCTLLI): $(BENCHDIR)%.llict: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.lbc
 
 $(TESTCASESOUT86): $(BUILDDIR)%.86out: $(BUILDDIR)%.s $(HELPEROBJECT)
-	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.86ct $(CC) $(LFLAGS) $^ -lm -o $@
+	$(CC) $(LFLAGS) $^ -lm -o $@
 
 $(TESTCASESASS86): $(BUILDDIR)%.s: $(TESTDIR)%.py *.py
-	$(TIME) $(TIMEFLAGS) -o $(BUILDDIR)$*.86ct $(PC) $(PCFLAGS) $< -o $@
+	$(PC) $(PCFLAGS) $< -o $@
 
 $(TESTCASESOUTLL): $(BUILDDIR)%.llout: $(BUILDDIR)%.lls
-	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLAS) $(LLASFLAGS) $< -lm -o $@
+	$(LLAS) $(LLASFLAGS) $< -lm -o $@
 
 $(TESTCASESASSLL): $(BUILDDIR)%.lls: $(BUILDDIR)%.lbc
-	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLC) $(LLCFLAGS) $< -o $@
+	$(LLC) $(LLCFLAGS) $< -o $@
 
 $(TESTCASESLBC): $(BUILDDIR)%.lbc: $(BUILDDIR)%.bc $(HELPERLLVMBC)
-	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLL) $(LLLFLAGS) $^ -o $@
+	$(LLL) $(LLLFLAGS) $^ -o $@
 
 $(TESTCASESBC): $(BUILDDIR)%.bc: $(BUILDDIR)%.ll
-	$(TIME) $(TIMEFLAGS) -a -o $(BUILDDIR)$*.llct $(LLA) $(LLAFLAGS) $< -o $@
+	$(LLA) $(LLAFLAGS) $< -o $@
 
 $(TESTCASESLL): $(BUILDDIR)%.ll: $(TESTDIR)%.py *.py
-	$(TIME) $(TIMEFLAGS) -o $(BUILDDIR)$*.llct $(PC) $(PCFLAGS) $< -o $@
+	$(PC) $(PCFLAGS) $< -o $@
 
 $(MTESTCASES): $(BUILDDIR)%.mout: $(BUILDDIR)%.ms
 	$(LLAS) $(LLASFLAGS) $< -lm -o $@
@@ -318,12 +328,11 @@ submission:
 	$(CD) $(SUBMISSIONDIR); zip -r ../submit.zip *
 	$(RM) -r $(SUBMISSIONDIR)
 
-clean:
-	$(RM) $(TESTCASES)
+clean: buildclean
 	$(RM) *~
-	$(RM) $(BUILDDIR)*
 	$(RM) $(TESTDIR)*~
 	$(RM) $(HELPERDIR)*~
+	$(RM) $(BENCHDIR)*
 	$(RM) \#*\#
 	$(RM) *.s
 	$(RM) *.pyc
@@ -333,3 +342,6 @@ clean:
 	$(RM) *.jpg
 	$(RM) submit.zip
 	$(RM) -r $(SUBMISSIONDIR)
+
+buildclean:
+	$(RM) $(BUILDDIR)*

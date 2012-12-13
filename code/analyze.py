@@ -3,7 +3,7 @@ import os
 def basename(f):
     return f[:f.rfind('.')]
 
-testdir = 'build'
+testdir = 'bench'
 llcruntimes = {}
 lliruntimes = {}
 llcmptimes = {}
