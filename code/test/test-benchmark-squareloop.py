@@ -4,11 +4,11 @@
 # Fall 2012
 # Python Compiler
 #
-# test-p0-1.py
+# test-benchmark-squareloop.py
 # Test Case
-# Subset: p0
+# Subset: Benchmark
 # Type: Student
-# Tesing: input, usub, add, print
+# Testing: Benchmark
 #
 # Repository:
 #    https://github.com/asayler/CU-CS5525-PythonCompiler
