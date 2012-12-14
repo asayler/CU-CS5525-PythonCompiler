@@ -726,8 +726,11 @@ using LLVM, our compiler does not dominate the rest of the LLVM
 tool-chain in terms of compilation time.
 
 \section{Discussion}
+-placement of SSA pass
+-
 
-...To be added when complete...
+The p3 compiler design that we started with lent itself well to conversion to LLVM. It was fortunate that we used Pyobjs out of necessity to deal with Python's polymorphism, because this lent itself well to dealing with the typing of LLVM. In terms of SSA conversion, we decided to place the SSA pass after the flatten pass, and by doing so did not include it in the x86 compile chain. Since an SSA structure would not harm the compilation process of the x86 code, it would ahve been possible to place it in the main compile chain, making the branch to x86 and LLVM Intruction Selection occer after that. Or, we could ahve comverted all code to SSA form closer to the beginning of the compile chain. Doing it after flatten ensures that the entire tree is indeed in SSA for when it most needs to be: during LLVM Instruciton Selection. If it is done earlier, this forces other passes to ensure that they are comforming to SSA rules, which is not their job.
+
 
 \section{Conclusion}
 
