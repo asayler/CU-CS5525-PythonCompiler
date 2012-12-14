@@ -379,22 +379,22 @@ below.
 \end{packed_desc}
 
 We have also created a new initial compiler pass that converts the AST
-nodes from whatever format a given parser uses to a uniform set of
+nodes from whatever format a given parser outputs to a uniform set of
 internal AST nodes used throughout the rest of the compiler. This
 allows us to switch parsing infrastructures without needing to change
 the core compiler code. We have leveraged this capability to move away
-from the deprecated Python compiler package used for the course
+from the deprecated Python ``compiler'' package used for the course
 assignments thus far in favor of the built-in AST and parsing
 infrastructure inherent in Python 2.7+.
 
 \subsubsection{SSA}
 \label{sec:stage-SSA}
 
-LLVM also requires Static Single Assignment form, meaning that each
+LLVM requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
 form during compilation (only when compiled to SSA --- our x86
 compiler does not utilize the SSA conversion module), a process which
-occurs after flattening and immediately before LLVM instruction
+occurs after flattening and before LLVM instruction
 selection (as shown in Figure \ref{fig:CompilerFlow}).  This
 conversion process takes a single pass over the program, and converts
 it as follows:
@@ -442,7 +442,40 @@ moved to an earlier point in the compilation.
 \subsubsection{Propagate}
 \label{sec:stage-Propagate}
 
-To Do...
+The propagate stage eliminates direct assignments from the code (which
+are not legal in LLVM) in favor of propagating the right-hand-side of
+such assignments all the way to the point at which they are used in an
+operation. 
+
+For example, the code shown in Listing \ref{lst:direct_assignment.ll}
+is not legal LLVM IR code. The correct, ``propagated'' version is
+shown in Listing \ref{lst:direct_assignment_fixed.ll}.
+
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  label=lst:direct_assignment.ll,
+  caption={A Direct Assignment Operation (Not Legal LLVM IR)}
+]{./include/ll/direct_assignment.ll}
+
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  label=lst:direct_assignment_fixed.ll,
+  caption={The ``propagated'' version of Listing
+    \ref{lst:direct_assignment.ll} (Legal LLVM IR)}
+]{./include/ll/direct_assignment_fixed.ll}
+
+The propagate pass is designed to operate on a Python AST in SSA
+form. Thus, it immediately succeeds the SSA stage. Since the code is
+already in SSA form, the propagate stage can perform a simple
+``find-and-replace'' algorithm on all variable names in the AST. The
+algorithm is implemented as a set of visitors corresponding to Python
+AST nodes. The basic logic is:
+
+\begin{packed_enum}
+\item To Do...
+\end{packed_enum}
 
 \subsubsection{LLVM Instruction Selection}
 \label{sec:stage-LLVMInstructionSelection}
