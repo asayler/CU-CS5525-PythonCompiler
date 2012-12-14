@@ -529,6 +529,15 @@ possible due to the cross-platform nature of LLVM, and necessitated
 only minor changes to our toolchain, and none at all to our compiler
 itself.
 
+In order to compare the behavior of our compiler to that of our x86
+implementation, we developed a benchmarking suite and recorded both
+compilation times and runtimes. Graphs for both of these metrics are
+shown in Figure \ref{fig:timing}. Both graphs display a speedup
+factor, with the runtime/compile time of the x86 implementation
+normalized to $1$. We also display the running and compile time of an
+interpreted version of the test cases --- in addition to compiling to
+a binary, LLVM is also capable of interpreting bitcode files using a JIT.
+
 
 ...To be added when complete...
 
