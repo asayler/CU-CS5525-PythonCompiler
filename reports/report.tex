@@ -519,6 +519,17 @@ process for compiling is shown in Listing \ref{lst:compiling.sh}.
 
 The full source code for our compiler is available at \cite{github-repo}.
 
+Our implementation met the full standards for P3-Python, and we also
+added support for the greater-than and less-than operatiors, in order
+to expand the space of test cases and benchmarks that we could
+create. In addition to compiling to the x86 architecture (in both 32
+and 64 bit forms), we were able to compile to the ARM architecture and
+run our compiler on an ARM-based computer (the Raspberry Pi). This was
+possible due to the cross-platform nature of LLVM, and necessitated
+only minor changes to our toolchain, and none at all to our compiler
+itself.
+
+
 ...To be added when complete...
 
 \section{Discussion}
