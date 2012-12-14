@@ -74,4 +74,33 @@ class PropagateVisitor(CopyVisitor):
                             body,
                             self.dispatch(n.else_) if n.else_ else None)
 
-    # TODO: Handle Branching/Phi Update
+    def visitIfPhi(self, n):
+        # Tests
+        newtests = []
+        for test in n.tests:
+            (test, tbody, phiD) = test
+            newtest  = self.dispatch(test)
+            newtbody = self.dispatch(tbody)
+            newphiD = {}
+            for key in phiD.keys():
+                name = phiD[key]
+                if name in self.names:
+                    newname = self.names[name]
+                else:
+                    newname = name
+                newphiD[key] = newname
+            newtests += [(newtest, newtbody, newphiD)]
+        # Else
+        (ebody, phiD) = n.else_
+        newebody   =  self.dispatch(ebody)
+        newphiD = {}
+        for key in phiD.keys():
+            name = phiD[key]
+            if name in self.names:
+                newname = self.names[name]
+            else:
+                newname = name
+            newphiD[key] = newname
+        newelse = (newebody, newphiD)
+        # Return
+        return IfPhi(newtests, newelse)

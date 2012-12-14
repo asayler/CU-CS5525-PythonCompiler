@@ -224,18 +224,16 @@ class If(PyNode):
         return lines
 
 class IfPhi(PyNode):
-    def __init__(self, tests, else_, phi):
+    def __init__(self, tests, else_):
         self.tests = tests
         self.else_ = else_
-        self.phi = phi
     def __repr__(self):
-        return 'IfPhi(%s,%s,%s)' % (self.tests, self.else_, self.phi)
+        return 'IfPhi(%s,%s)' % (self.tests, self.else_)
     @staticmethod
     def copy(self, n, *args):
         return IfPhi(map(lambda (x, y, z): (self.dispatch(x, *args),
                                             self.dispatch(y, *args), z), n.tests),
-                     (self.dispatch(n.else_[0], *args), n.else_[1]),
-                     n.phi)
+                     (self.dispatch(n.else_[0], *args), n.else_[1]))
     @staticmethod
     def list(self, n, *args):
         plist = map(lambda (x, y, z): (self.dispatch(x, *args),
@@ -246,7 +244,7 @@ class IfPhi(PyNode):
         for ((test, ssn), body) in plist:
             ss += ssn
             tests += [(test, body)]
-        return ss + [If(tests, else_, n.phi)]
+        return ss + [If(tests, else_)]
     @staticmethod
     def find(self, n, *args):
         return self.dispatch(n.else_[0], *args) | \
