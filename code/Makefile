@@ -32,14 +32,14 @@ PCFLAGS   = #-v 0 --dot
 
 LLAS      = gcc
 LLASFLAGS = -g -mfloat-abi=hard -x assembler
-LLI       = lli
-LLIFLAGS  =
-LLC       = llc
+LLI       = lli-3.1
+LLIFLAGS  = -float-abi=hard
+LLC       = llc-3.1
 LLCFLAGS  = -float-abi=hard
-LLA       = llvm-as
-LLAFLAGS  =
-LLL       = llvm-link
-LLLFLAGS  = 
+LLA       = llvm-as-3.1
+LLAFLAGS  = #-float-abi=hard
+LLL       = llvm-link-3.1
+LLLFLAGS  = #-float-abi=hard
 LLCC      = clang
 LLCCFLAGS = -emit-llvm -mfloat-abi=hard
 
@@ -139,7 +139,7 @@ all: Tests
 
 MTests: $(MTESTCASES)
 
-Tests: TestsLLC TestsLLI
+Tests: TestsLLC
 
 Tests86: $(TESTCASESOUT86)
 
@@ -147,7 +147,7 @@ TestsLLC: $(TESTCASESOUTLL)
 
 TestsLLI: $(TESTCASESLBC)
 
-TestsRun: TestsRunLLC TestsRunLLI
+TestsRun: TestsRunLLC
 
 TestsRun86: $(TESTDIFFS86)
 	cat $^
@@ -158,7 +158,7 @@ TestsRunLLC: $(TESTDIFFSLLC)
 TestsRunLLI: $(TESTDIFFSLLI)
 	cat $^
 
-BenchmarkTestsRun: BenchmarkTestsRunLLI BenchmarkTestsRunLLC
+BenchmarkTestsRun: BenchmarkTestsRunLLC
 	python analyze.py
 
 BenchmarkTestsRun86: $(BMTESTRT86) $(BMTESTCT86)
@@ -167,7 +167,7 @@ BenchmarkTestsRunLLC: $(BMTESTRTLLC) $(BMTESTCTLLC)
 
 BenchmarkTestsRunLLI: $(BMTESTRTLLI) $(BMTESTCTLLI)
 
-LLVMTestsRun: LLVMTestsRunLLC LLVMTestsRunLLI
+LLVMTestsRun: LLVMTestsRunLLC
 
 LLVMTestsRun86: $(LLVMTESTDIFFS86)
 	cat $^
@@ -178,7 +178,7 @@ LLVMTestsRunLLC: $(LLVMTESTDIFFSLLC)
 LLVMTestsRunLLI: $(LLVMTESTDIFFSLLI)
 	cat $^
 
-PTestsRun: PTestsRunLLC PTestsRunLLI
+PTestsRun: PTestsRunLLC
 
 PTestsRun86: $(PTESTDIFFS86)
 	cat $^
@@ -189,7 +189,7 @@ PTestsRunLLC: $(PTESTDIFFSLLC)
 PTestsRunLLI: $(PTESTDIFFSLLI)
 	cat $^
 
-P0TestsRun: P0TestsRunLLC P0TestsRunLLI
+P0TestsRun: P0TestsRunLLC
 
 P0TestsRun86: $(P0TESTDIFFS86)
 	cat $^
@@ -200,7 +200,7 @@ P0TestsRunLLC: $(P0TESTDIFFSLLC)
 P0TestsRunLLI: $(P0TESTDIFFSLLI)
 	cat $^
 
-P1TestsRun: P1TestsRunLLC P1TestsRunLLI
+P1TestsRun: P1TestsRunLLC
 
 P1TestsRun86: $(P1TESTDIFFS86)
 	cat $^
@@ -211,7 +211,7 @@ P1TestsRunLLC: $(P1TESTDIFFSLLC)
 P1TestsRunLLI: $(P1TESTDIFFSLLI)
 	cat $^
 
-P2TestsRun: P2TestsRunLLC P2TestsRunLLI
+P2TestsRun: P2TestsRunLLC
 
 P2TestsRun86: $(P2TESTDIFFS86)
 	cat $^
@@ -222,7 +222,7 @@ P2TestsRunLLC: $(P2TESTDIFFSLLC)
 P2TestsRunLLI: $(P2TESTDIFFSLLI)
 	cat $^
 
-P3TestsRun: P3TestsRunLLC P3TestsRunLLI
+P3TestsRun: P3TestsRunLLC
 
 P3TestsRun86: $(P3TESTDIFFS86)
 	cat $^
@@ -233,7 +233,7 @@ P3TestsRunLLC: $(P3TESTDIFFSLLC)
 P3TestsRunLLI: $(P3TESTDIFFSLLI)
 	cat $^
 
-PXTestsRun: PXTestsRunLLC PXTestsRunLLI
+PXTestsRun: PXTestsRunLLC
 
 PXTestsRun86: $(PXTESTDIFFS86)
 	cat $^
