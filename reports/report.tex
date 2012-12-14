@@ -726,6 +726,13 @@ we are capable of running in the LLVM interpreter or fully compiling
 to an executable using the LLVM compiler. The basic control flow for
 our build chain is shown in Listing \ref{lst:compiling.sh}.
 
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  label=lst:compiling.sh,
+  caption={Pseudo-script describing the LLVM build process}
+]{./include/txt/compiling.sh}
+
 In reality, this build process is handled intelligently by a GNU
 Makefile. This system allows us to atomically build and run all
 regression tests for either LLVM or x86, to automatically benchmark
@@ -733,13 +740,6 @@ runs, to automatically create the ``submission.zip'' file required for
 uploading code to the course testing website, and to perform a variety
 of other build and test related actions. This Makefile is available in
 the source code at \cite{github-repo}.
-
-\lstinputlisting[
-  float=*htb,
-  language=sh,
-  label=lst:compiling.sh,
-  caption={Pseudo-script describing the LLVM build process}
-]{./include/txt/compiling.sh}
 
 \section{Results}
 
@@ -811,30 +811,54 @@ using LLVM, our compiler does not dominate the rest of the LLVM
 tool-chain in terms of compilation time.
 
 \section{Discussion}
--placement of SSA pass
--
 
-The p3 compiler design that we started with lent itself well to
-conversion to LLVM. It was fortunate that we used Pyobjs out of
-necessity to deal with Python's polymorphism, because this lent itself
-well to dealing with the typing of LLVM.
+Were we to build an LLVM compiler from the ground up, as opposed to
+modifying an x86 compiler, we would have made a few different
+decisions. First, we could do more to leverage the typed nature of
+LLVM. There are additional optimizations that can be practiced had we
+tracked more typing info through our compiler, and had we been working
+with LLVM from the start, we likely would have kept some form of typing
+information to leverage these optimizations.
 
-In terms of SSA conversion, we decided to place the SSA pass after the
-flatten pass, and by doing so did not include it in the x86 compile
-chain. Since an SSA structure would not harm the compilation process
-of the x86 code, it would have been possible to place it in the main
-compile chain, making the branch to x86 and LLVM Instruction Selection
-occur after that. Or, we could have converted all code to SSA form
-closer to the beginning of the compile chain. Doing it after flatten
-ensures that the entire tree is indeed in SSA for when it most needs
-to be: during LLVM Instruction Selection. If it is done earlier, this
-forces other passes to ensure that they are conforming to SSA rules,
-which is not their job.
+Given that we were compiling to both types and un-typed languages, the
+p3 compiler design that we started with lent itself well to conversion
+to LLVM. It was fortunate that we used Pyobjs out of necessity to deal
+with Python's polymorphism, because this lent itself well to dealing
+with the typing of LLVM.
 
+Where we building from scratch, it's also possible that we would have
+moved the SSA pass earl er in the compile chain. This would have
+allowed us to leverage the SSA assumption in subsequent passes and to
+perform additional SSA-centric optimizations.
+
+Given that we were building a multi-target compiler, we decided to
+place the SSA pass after the flatten pass, and by doing so did not
+include it in the x86 compile chain. This minimized the number of
+stages that needed to be SSA aware, and avoided us having to resolve
+Phi nodes to x86 instructions (unlike LLVM, x86 has no built-in Phi
+instruction). But were we do build an native LLVM compiler, placing
+the SSA pass earlier in the compile process could have benefits.
 
 \section{Conclusion}
 
-...To be added when complete...
+We were able to successfully compile all valid Python-subset P3 test
+cases to LLVM using our LLVM Python compiler. When compiling the
+resulting LLVM IR to local assembly code, we say a significant runtime
+performance gain over our direct-to-x86 code. We also saw significant
+compile time gains using LLVM, likely due to the well optimized nature
+of the LLVM build tools.
+
+In general, LLVM feels like a well though out Intermediate Language and
+build environment. We believe it provides a strong argument for only
+building compilers to LLVM, and then using the LLVM tools to compile
+down to the local assembly language. This approach maximizes
+multi-platform capability, and avoids duplicating common effort (like
+register allocation) across many compilers. Instead, the modular nature
+of LLVM lets each compiler focus on processing its associated
+language, and leave low level, architecture specific details to the
+LLVM programming team. This separation of labor allows everyone to
+focus on specific tasks and gain expertise in specific areas, likely
+leading to the production of higher quality software overall.
 
 \nocite{*}
 \printbibliography
