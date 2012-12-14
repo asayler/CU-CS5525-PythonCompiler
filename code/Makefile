@@ -122,7 +122,7 @@ PXTESTDIFFS86       = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.86diff,  $(PXT
 PXTESTDIFFSLLC      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llcdiff, $(PXTESTCASESSOURCE))
 PXTESTDIFFSLLI      = $(patsubst $(TESTDIR)%.py,     $(BUILDDIR)%.llidiff, $(PXTESTCASESSOURCE))
 
-.PHONY: all clean buildclean\
+.PHONY: all clean buildclean pycclean\
 	Tests Tests86 TestsLLC TestsLLI \
 	TestsRun TestsRun86 TestsRunLLC TestsRunLLI \
 	LLVMTestsRun LLVMTestsRun86 LLVMTestsRunLLC LLVMTestsRunLLI \
@@ -249,33 +249,54 @@ $(TESTDIFFS86): $(BUILDDIR)%.86diff: $(BUILDDIR)%.86out $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.86output $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRT86): $(BENCHDIR)%.86rt: $(BUILDDIR)%.86out $(TESTDIR)%.in
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $< > $(NULL)
+$(BMTESTRT86): $(BENCHDIR)%.86rt: $(TESTDIR)%.py $(TESTDIR)%.in *.py
+	$(MAKE) $(BUILDDIR)$*.86out
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.86out > $(NULL)
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
-$(BMTESTCT86): $(BENCHDIR)%.86ct: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+$(BMTESTCT86): $(BENCHDIR)%.86ct: $(TESTDIR)%.py *.py
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.86out
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
 $(TESTDIFFSLLC): $(BUILDDIR)%.llcdiff: $(BUILDDIR)%.llout $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(BUILDDIR)$*.llout > $(BUILDDIR)$*.llcoutput
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.llcoutput $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRTLLC): $(BENCHDIR)%.llcrt: $(BUILDDIR)%.llout $(TESTDIR)%.in
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $< > $(NULL)
+$(BMTESTRTLLC): $(BENCHDIR)%.llcrt: $(TESTDIR)%.py $(TESTDIR)%.in *.py
+	$(MAKE) $(BUILDDIR)$*.llout
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(BUILDDIR)$*.llout > $(NULL)
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
-$(BMTESTCTLLC): $(BENCHDIR)%.llcct: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+$(BMTESTCTLLC): $(BENCHDIR)%.llcct: $(TESTDIR)%.py *.py
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.llout
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
 $(TESTDIFFSLLI): $(BUILDDIR)%.llidiff: $(BUILDDIR)%.lbc $(TESTDIR)%.in
 	cat $(TESTDIR)$*.in | $(LLI) $(BUILDDIR)$*.lbc > $(BUILDDIR)$*.llioutput
 	cat $(TESTDIR)$*.in | $(TESTDIR)$*.py > $(BUILDDIR)$*.correct
 	diff -B -s -q $(BUILDDIR)$*.llioutput $(BUILDDIR)$*.correct > $@
 
-$(BMTESTRTLLI): $(BENCHDIR)%.llirt: $(BUILDDIR)%.lbc $(TESTDIR)%.in
-	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(LLI) $< > $(NULL)
+$(BMTESTRTLLI): $(BENCHDIR)%.llirt: $(TESTDIR)%.py $(TESTDIR)%.in *.py
+	$(MAKE) $(BUILDDIR)$*.lbc
+	cat $(TESTDIR)$*.in | $(TIME) $(TIMEFLAGS) -o $@ $(LLI) $(BUILDDIR)$*.lbc > $(NULL)
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
-$(BMTESTCTLLI): $(BENCHDIR)%.llict: $(TESTDIR)%.py *.py $(HELPEROBJECT)
+$(BMTESTCTLLI): $(BENCHDIR)%.llict: $(TESTDIR)%.py *.py
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 	$(TIME) $(TIMEFLAGS) -o $@ $(MAKE) $(BUILDDIR)$*.lbc
+	$(MAKE) buildclean
+	$(MAKE) pycclean
 
 $(TESTCASESOUT86): $(BUILDDIR)%.86out: $(BUILDDIR)%.s $(HELPEROBJECT)
 	$(CC) $(LFLAGS) $^ -lm -o $@
@@ -328,20 +349,22 @@ submission:
 	$(CD) $(SUBMISSIONDIR); zip -r ../submit.zip *
 	$(RM) -r $(SUBMISSIONDIR)
 
-clean: buildclean
+clean: buildclean pycclean
 	$(RM) *~
 	$(RM) $(TESTDIR)*~
 	$(RM) $(HELPERDIR)*~
 	$(RM) $(BENCHDIR)*
 	$(RM) \#*\#
 	$(RM) *.s
-	$(RM) *.pyc
 	$(RM) *.out
 	$(RM) *.dot
 	$(RM) *.svg
 	$(RM) *.jpg
 	$(RM) submit.zip
 	$(RM) -r $(SUBMISSIONDIR)
+
+pycclean:
+	$(RM) *.pyc
 
 buildclean:
 	$(RM) $(BUILDDIR)*

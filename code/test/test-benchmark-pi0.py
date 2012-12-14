@@ -22,11 +22,21 @@
 #       http://csel.cs.colorado.edu/~mivi2269/
 
 def square(x):
+    return mul(x, x)
+
+def mul(x, y):
     cnt = x
     val = 0
     while(cnt != 0):
-        val = val + x
+        val = val + y
         cnt = cnt + -1
     return val
 
-print(square(input()))
+cnto = input()
+cnti = input()
+y = input()
+while(cnto != 0):
+    while(cnti != 0):
+        print(square(y))
+        cnti = cnti + -1
+    cnto = cnto + -1
