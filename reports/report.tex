@@ -689,7 +689,31 @@ difficult, although not insurmountable, challenge.
 
 % Discuss LLVM AST Operation Mapping Approach
 
-To Do...
+Beyond the nuances discussed thus far, the remainder of the LLVM
+Instruction Selection pass is largely similar to the x86 Instruction
+Selection pass, with the appropriate LLVM instructions substituted for
+the alternate x86 ones. In many ways, that actual ``instruction
+selection'' part of the LLVM Instruction Selection pass is simpler
+than its x86 counterpart. LLVM instruction tend to be higher level
+than x86, and thus present a more direct mapping from Python AST nodes
+to LLVM. For example, in x86 all function call stack setup and cleanup
+must be handled with explicit calls to \texttt{push}, \texttt{pop},
+etc. In LLVM, these are handled automatically.
+
+One final item worth noting is that our code makes explicit use of
+registers for variable storage and manipulation. LLVM provides access
+to stack/heap allocate, load, and store instructions (which provide a
+way to bypass the register SSA requirement), but we do not use these
+directly. Instead, we keep all variables in LLVM registers (of which
+there are an unlimited number). We note that the runtime code that we
+compile to LLVM using an off-the-shelf LLVM C compiler and link in does
+include direct heap/stack calls, as mandated by its use of dynamic
+data structures, but for the parts of Python that we deal with outside
+of the runtime functions, we were able to keep everything in pure SSA
+and register-only form. This should allow the optimal mapping from
+LLVM registers to actual machine registers (and stack spill where
+necessary) when our LLVM code is finally compiled to local machine
+code.
 
 \subsection{LLVM Build Process}
 
