@@ -593,7 +593,7 @@ situations where these alternate types arise are well isolated in the
 LLVM IR code, and always result from the mapping of a single Python
 AST node to sever LLVM IR nodes. These alternate types are also able
 to be cast back and forth to 64 or 32 bit integers, matching the
-single type sued throughout the rest of the code. Thus, we can simply
+single type used throughout the rest of the code. Thus, we can simply
 insert the necessary casting operations to convert these types to or
 from the default type when we generate the code that requires these
 special types. 
