@@ -574,6 +574,8 @@ into a format that meets the rather strict LLVM requirements. We must
 also substitute one or more LLVM AST nodes for each Python AST node
 while maintaining the semantics of the program.
 
+% Discuss Typing Approach
+
 The first challenge that must be dealt with in instruction selection
 is dealing with the LLVM IR's strict typing requirements. Fortunately,
 our use of pyobj pointers will make this process fairly simple. In
@@ -599,21 +601,51 @@ insert the necessary casting operations to convert these types to or
 from the default type when we generate the code that requires these
 special types. 
 
-We must also deal with the fact that 
+% Discuss Function Prototype Declaration Approach
 
- have  that are defined in
-external files must be declared at the beginning of any .ll (LLVM
-Intermediate Representation) file that our compiler generates. This
-necessitates our writing a preamble to place at the beginning of every
-.ll file which contains the declarations for our runtime helper
-functions.
+We must also deal with the fact that all LLVM IR files must include a
+list of prototype definitions for any external library functions we wish
+to call. In the case of our compiler, these external function or
+limited to the list of runtime helper functions specified in
+\texttt{runtime.h}. To deal with this requirement, we created an LLVM
+IR file that contains the necessary LLVM declarations for each
+\texttt{runtime.h} function
+\footnote{Technically, we have two version
+  of this file: one which contains the \texttt{runtime.h} LLVM
+  function declarations using 64-bit integers as the single generic
+  type (for use on 64-bit systems), and one which contains the
+  \texttt{runtime.h} LLVM function declarations using 32-bit integers
+  (for use on 32-bit systems). Our compiler detects the bit-width of
+  the system on which it is running and dynamically selects the correct
+  file at compile time}.
+The contents of this file is then
+pre-pended to the LLVM IR output our program generates as part of
+the process involved in writing the compiled LLVM AST to a file. A
+small snippet of this file is shown in Listing
+\ref{lst:runtime-declares-x64.ll}.
 
-...To be continued...
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  firstline=1,
+  lastline=11,
+  label=lst:runtime-declares-x64.ll,
+  caption={The opening snippet of the LLVM \texttt{runtime.h} function
+  declaration file}
+]{../code/helper/runtime-declares-x64.ll}
+
+% Discuss ``Blocking'' Approach
+
+To Do...
+
+% Discuss LLVM AST Operation Mapping Approach
+
+To Do...
 
 \subsection{LLVM Build Process}
 
 We have also implemented a method for compiling the C run-time helper
-functions to LLVM bitcode using an LLVM front end C compiler, clang
+functions to LLVM bitcode using the LLVM front end C compiler, clang
 \cite{clang.llvm.org}. We then link the helper function generated
 bitcode to the bitcode generated from the .ll output from our
 compiler. This gives us a bitcode file that we are capable of running
