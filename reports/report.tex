@@ -196,7 +196,9 @@ was initially intended to provide support for a Static Single
 Assignment (SSA) compiler that is capable of statically or dynamically
 compiling any programming language \cite{llvm.org}.
 
-Listing \ref{lst:llvm-example_hello0.ll} shows
+The LLVM project specifies a standardized Intermediate Representation,
+essentially a platform-agnostic assembly language, in which programs
+can be written. Listing \ref{lst:llvm-example_hello0.ll} shows
 a simple LLVM hello world program as an example of
 what LLVM IR Assembly language looks like.
 
@@ -212,13 +214,53 @@ as an in-memory data structure, as a human readable ``assembly''
 language, and as an file-oriented bitcode (.bc) \cite{lattner-llvmlangref}.
 Converting between these three forms is handled via the various tools
 in the LLVM tool chain. Listing \ref{lst:llvm-example_hello0.ll} is an
-example of the human-readable form most commonly presented in this
-paper.
+example of the human-readable form presented in the examples in this paper.
 
-LLVM requires SSA form. Prior to converting to LLVM IR, we must first
-convert to SSA. SSA form is discussed in the next section.
+While LLVM IR is more
+flexible in terms of multi-platform support, its
+general syntax is more stringent than lower level assembly languages
+like Intel x86. For example, unlike x86, LLVM IR is a typed language.
+Each instruction must list the types of all arguments involved. When
+data must be converted from one type to another, explicit casting
+operations must be used. No loose or implicit casting is allowed.
+
+Another requirement of LLVM IR, and a corollary of the typed nature of
+LLVM IR, is that all functions used in a LLVM IR file must provide
+explicit prototype definitions in the file. This included calls to
+external functions that will be linked into the program during
+compilation. This requires that every LLVM IR file have access to a
+complete list of function prototypes for any library or other external
+functions it wishes to use. This list is necessary so that the LLVM
+build-chain can enforce the LLVM types at every stage in the build
+process.
+
+LLVM requires Static Single Assignment (SSA) form. This means that
+each variable/register in an LLVM IR program can only be
+written/assigned to once. SSA form is discussed detail in the Section
+\ref{sec:SSAForm}.
+
+Related to the SSA requirement, LLVM IR does not allow direct
+assignments. Registers may only be used on the RHS of a statement if
+they are arguments to a specific operation. For example, the statement:
+\begin{verbatim}
+x = input()
+y = x
+print(y)
+\end{verbatim} 
+is not allowed. Instead, the \texttt{y = x} assignment must be
+eliminated and the \texttt{x} register propagated forward to a point
+where it is read as an argument to an operation. Since LLVM IR must be
+in SSA form, eliminated direct assignments becomes a simple
+``find+replace'' issue. Thus, the previous example needs to be
+converted to:
+\begin{verbatim}
+x = input()
+print(x)
+\end{verbatim}
+before it can be compiled to valid LLVM IR.
 
 \subsection{Static Single Assignment Form}
+\label{sec:SSAForm}
 
 A program is in SSA form when its variables are assigned exactly once
 in the program \cite{gcc-gnu.org}. Most programs are not written in an
@@ -505,54 +547,21 @@ AST nodes. The basic logic is:
 \subsubsection{LLVM Instruction Selection}
 \label{sec:stage-LLVMInstructionSelection}
 
-The LLVM instruction selection requires several more features to be
-supported than were supported in the x86 pass. While LLVM is more
-flexible in terms of compilation on multiple operating systems, its
-intermediate representation is more stringent than x86. In order to
-learn the nuances of the LLVM Intermediate Representation that we must
-address in our compiler, we began converting our test programs
-to LLVM IR by hand and compiling them. This revealed several new issues
-that we addressed in our LLVM instruction selection.
+Rewrite with details of implementation...
 
-For example, each instruction must keep track of the types of all
-registers involved. Fortunately, our pyobj pointer system will make
+Fortunately, our pyobj pointer system will make
 keeping track of type much more straightforward, as all objects are of
 one type: pointers to pyobj structures. The LLVM code can merely treat
 this as generic pointers, leaving the C helper function to handle any
 functionality that requires knowledge about what type of object to
 which these pointers point.
 
-Another issue is that all called functions that are defined in
+ have  that are defined in
 external files must be declared at the beginning of any .ll (LLVM
 Intermediate Representation) file that our compiler generates. This
 necessitates our writing a preamble to place at the beginning of every
 .ll file which contains the declarations for our runtime helper
 functions.
-
-One nuance is that expressions such as
-\begin{verbatim}
-%x = 5
-\end{verbatim} 
-are not allowed. Presumably, this is because LLVM is an SSA
-representation, and one is essentially wasting an entire register on a
-constant \cite{llvm-discussions}. The options available are to perform
-constant propagation, or to declare each constant as an internal
-constant, like so:
-\begin{verbatim}
-@V1 = constant i32 5
-\end{verbatim}
-Then, when the constant needs to be loaded from memory. This is
-because @V1 is a pointer to the constant, not the constant itself
-\cite{Regni}:
-\begin{verbatim}
-%x = load i32* @V1
-\end{verbatim}
-
-In our implementation, we intend to use the later approach, as we are
-not focusing on constant propagation in this project. Although, the
-fact that this is an SSA implementation would mean that all instances
-of \%x could be replaced with the constant 5 using a simple
-find-replace. We consider this option as a future optimization.
 
 ...To be continued...
 
