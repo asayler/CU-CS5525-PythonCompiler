@@ -720,10 +720,19 @@ code.
 We have also implemented a method for compiling the C run-time helper
 functions to LLVM bitcode using the LLVM front end C compiler, clang
 \cite{clang.llvm.org}. We then link the helper function generated
-bitcode to the bitcode generated from the .ll output from our
-compiler. This gives us a bitcode file that we are capable of running
-in the LLVM interpreter or fully compiling to an executable.  The
-process for compiling is shown in Listing \ref{lst:compiling.sh}.
+bitcode to the bitcode generated from the .ll output from our compiler
+using the standard LLVM linker. This gives us a LLVM bitcode file that
+we are capable of running in the LLVM interpreter or fully compiling
+to an executable using the LLVM compiler. The basic control flow for
+our build chain is shown in Listing \ref{lst:compiling.sh}.
+
+In reality, this build process is handled intelligently by a GNU
+Makefile. This system allows us to atomically build and run all
+regression tests for either LLVM or x86, to automatically benchmark
+runs, to automatically create the ``submission.zip'' file required for
+uploading code to the course testing website, and to perform a variety
+of other build and test related actions. This Makefile is available in
+the source code at \cite{github-repo}.
 
 \lstinputlisting[
   float=*htb,
