@@ -3,7 +3,8 @@ General:
 
 LLVM:
 * Detect void function types and use void call style and type
-* Remove node-wide "phi" member from IfPhi AST class. It was not needed.
+* Cleanup code to generate node-wide "phi" member from IfPhi AST class.
+  The node-wide "phi" member was not needed and has been removed.
 * Make WhileFlatPhi nodes match format of IfPhi nodes
 * Generalize llvmCall nodes to take function pointers instead of names
 
