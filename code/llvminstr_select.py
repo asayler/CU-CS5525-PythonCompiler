@@ -247,7 +247,7 @@ class LLVMInstrSelectVisitor(Visitor):
         for key in phis.keys():
             phiT =  VarLLVM(LocalLLVM(key), DEFAULTTYPE)
             endI += [phiLLVM(phiT, phis[key])]
-        endI    += [switchLLVM(DEFAULTZERO, DUMMYL, [])]
+        endI    +=  [switchLLVM(DEFAULTZERO, DUMMYL, [])]
         blocks  +=  [blockLLVM(endL, endI)]
         return blocks
     
