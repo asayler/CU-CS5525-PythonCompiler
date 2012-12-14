@@ -474,7 +474,32 @@ algorithm is implemented as a set of visitors corresponding to Python
 AST nodes. The basic logic is:
 
 \begin{packed_enum}
-\item To Do...
+\item Create an empty global dictionary for mapping LHS variable names
+  to RHS variable names
+\item Traverse the AST
+\item When a variable assignment node is found, check to see if the
+  RHS is a pure variable (i.e. not larger expression node)
+  \begin{packed_enum}
+  \item If it is:
+    \begin{packed_enum}
+    \item Check to see if the LHS variable is a key in the
+      global dictionary. If it is, replace the LHS variable with the
+      value associated with the key in the global dictionary
+    \item Add the RHS:LHS variable mapping to the global dictionary
+    \item Remove the node from the tree
+    \end{packed_enum}
+  \item If it is not:
+    \begin{packed_enum}
+      \item Do nothing
+    \end{packed_enum}
+  \end{packed_enum}
+\item When a variable name is encountered, check to see if the name is
+  a key in the global dictionary. If so, replace the name with the
+  value associated with this key.
+\item When a branching statement node (If, While, etc) is encountered,
+  search the associated Phi list for any variables that are keys in
+  the global dictionary, and replace them with the corresponding
+  values as necessary.
 \end{packed_enum}
 
 \subsubsection{LLVM Instruction Selection}
