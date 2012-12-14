@@ -265,7 +265,7 @@ this label can be emitted from the first block in a function) and end
 with one of a small set of ``terminator'' instructions such as
 \texttt{ret}, \texttt{br}, or \texttt{switch}. In LLVM IR, unlike in
 x86, you can not ``fall through'' one block to the next without using
-an explicit terminator instruction specifying a branch to the next
+an explicit terminator instruction specifying a jump to the next
 blocks label. This strictly-defined block-based organization
 requirement allows the LLVM tool chain to construct a well defined
 flow graph through the LLVM code. Listing \ref{lst:blocks.ll} shows an
@@ -379,8 +379,7 @@ Our compiler design begins with the basic compiler design presented in
 \cite{siek-chang} for the Python ``P3'' language subset.  We then
 proceeded to re-factor this design to better exploit code reuse,
 remove deprecated interfaces, support multiple target types, and
-automatically catch a range of implementation errors. We plan on
-keeping the re-factored design common for all compilation targets
+automatically catch a range of implementation errors. We kept the re-factored design common for all compilation targets
 through the end of the flatten pass.
 
 The major changes happen after flatten in the instruction selection
