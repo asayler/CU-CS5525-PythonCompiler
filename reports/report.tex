@@ -568,14 +568,38 @@ AST nodes. The basic logic is:
 \subsubsection{LLVM Instruction Selection}
 \label{sec:stage-LLVMInstructionSelection}
 
-Rewrite with details of implementation...
+The LLVM Instruction Selection stage converts the Python AST to an LLVM
+AST. The primary challenge in this stage is messaging our Python AST
+into a format that meets the rather strict LLVM requirements. We must
+also substitute one or more LLVM AST nodes for each Python AST node
+while maintaining the semantics of the program.
 
-Fortunately, our pyobj pointer system will make
-keeping track of type much more straightforward, as all objects are of
-one type: pointers to pyobj structures. The LLVM code can merely treat
-this as generic pointers, leaving the C helper function to handle any
-functionality that requires knowledge about what type of object to
-which these pointers point.
+The first challenge that must be dealt with in instruction selection
+is dealing with the LLVM IR's strict typing requirements. Fortunately,
+our use of pyobj pointers will make this process fairly simple. In
+effect, the only variables used in our program are pyobj pointers,
+ints, bools, and bigpyobjs. Do to the design of the helper functions,
+all of these types can be treated as either 32-bit ints (on a 32-bit
+system) or 64-bit ints (on a 64-bit system). This allows us to
+effectively deal with a single type throughout our entire LLVM IR
+program. Thus we can assume that all of are function arguments,
+variables, etc are of this single type and avoid needing to track
+variable and function types explicitly.
+
+There are a few points where this single type assumption breaks down,
+namely when using the LLVM compare operator (which only returns
+bool-like 1-bit integers) and when making indirect function calls
+(where explicit function pointer types are required). Fortunately, the
+situations where these alternate types arise are well isolated in the
+LLVM IR code, and always result from the mapping of a single Python
+AST node to sever LLVM IR nodes. These alternate types are also able
+to be cast back and forth to 64 or 32 bit integers, matching the
+single type sued throughout the rest of the code. Thus, we can simply
+insert the necessary casting operations to convert these types to or
+from the default type when we generate the code that requires these
+special types. 
+
+We must also deal with the fact that 
 
  have  that are defined in
 external files must be declared at the beginning of any .ll (LLVM
@@ -608,13 +632,13 @@ process for compiling is shown in Listing \ref{lst:compiling.sh}.
 The full source code for our compiler is available at \cite{github-repo}.
 
 Our implementation met the full standards for P3-Python, and we also
-added support for the greater-than and less-than operatiors, in order
+added support for the greater-than and less-than operators, in order
 to expand the space of test cases and benchmarks that we could
 create. In addition to compiling to the x86 architecture (in both 32
 and 64 bit forms), we were able to compile to the ARM architecture and
 run our compiler on an ARM-based computer (the Raspberry Pi). This was
 possible due to the cross-platform nature of LLVM, and necessitated
-only minor changes to our toolchain, and none at all to our compiler
+only minor changes to our tool-chain, and none at all to our compiler
 itself.
 
 In order to compare the behavior of our compiler to that of our x86
@@ -633,7 +657,7 @@ consistently faster than our previous x86 implementation at runtime,
 although the degree of speedup varies. The LLVM implementation is
 significantly faster on benchmarks that primarily use simple function
 calls, loops, and math, approaching a $1.6x$ speedup. On the other
-hand, the degree of improvement is much reduced when perfoming method
+hand, the degree of improvement is much reduced when performing method
 calls and attribute lookups. The native Python interpreter still
 outperforms our LLVM interpreter on most test cases, except that it is
 approximately equal to our compiler on a benchmark involving many
@@ -644,9 +668,9 @@ or the compiled LLVM.
 
 In terms of compile times, we see that the LLVM compiler is far faster
 than the x86 compiler on all benchmarks. Our benchmarking setup
-includes the time taken by elements of the toolchain besides just our
+includes the time taken by elements of the tool-chain besides just our
 own compiler, so the timings seen here are able to be compared. We
-suspect that the primary reason for the outperformance of the x86
+suspect that the primary reason for the out-performance of the x86
 compiler by the LLVM compiler is that LLVM performs register
 allocation internally, and presumably it is much more efficient at
 this process than our un-optimized register allocator. Note also that
@@ -655,7 +679,7 @@ does to compile to binaries using LLVM; however, both the interpreter
 compilation and the binary compilation process use the exact same code
 paths through our compiler. This indicates that, at least in
 compilation to binaries using LLVM, our compiler does not dominate the
-rest of the LLVM toolchain in terms of compilation time.
+rest of the LLVM tool-chain in terms of compilation time.
 
 \section{Discussion}
 
