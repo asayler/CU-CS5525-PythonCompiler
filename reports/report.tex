@@ -422,7 +422,7 @@ below.
   This process is discussed further in Section \ref{sec:stage-SSA}.
 \item[Propagate Stage] \hfill \\
   The propagate stage is essentially a
-  lightweight constant propagation stage. It's goal is to eliminate
+  lightweight constant propagation stage. Its goal is to eliminate
   all direct assignments (i.e. \texttt{|x = y|}) in favor of propagating
   the right hand side of such assignments into the actual operation in
   which they are used (i.e. \texttt{|x = y; print(x)|} $\rightarrow$
