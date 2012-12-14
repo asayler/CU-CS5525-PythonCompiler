@@ -259,6 +259,27 @@ print(x)
 \end{verbatim}
 before it can be compiled to valid LLVM IR.
 
+Finally, all LLVM IR statements must be organized into strictly
+defined control ``blocks''. Each block starts with a label (although
+this label can be emitted from the first block in a function) and end
+with one of a small set of ``terminator'' instructions such as
+\texttt{ret}, \texttt{br}, or \texttt{switch}. In LLVM IR, unlike in
+x86, you can not ``fall through'' one block to the next without using
+an explicit terminator instruction specifying a branch to the next
+blocks label. This strictly-defined block-based organization
+requirement allows the LLVM tool chain to construct a well defined
+flow graph through the LLVM code. Listing \ref{lst:blocks.ll} shows an
+example of a short LLVM IR program containing a series of blocks with
+labels at the start of each block and explicit branching at the end of
+each block.
+
+\lstinputlisting[
+  float=*htb,
+  language=llvm,
+  label=lst:blocks.ll,
+  caption={LLVM Assembly - ``Block'' Example}
+]{./include/ll/blocks.ll}
+
 \subsection{Static Single Assignment Form}
 \label{sec:SSAForm}
 
