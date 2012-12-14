@@ -115,6 +115,13 @@
   \setlength{\parsep}{0pt}
 }{\end{itemize}}
 
+\newenvironment{packed_desc}{
+\begin{description}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{description}}
+
 \begin{document}
 
 \title{
@@ -303,6 +310,7 @@ compiler via the following development steps:
 \end{packed_enum}
 
 \section{Design}
+\label{sec:design}
 
 Our compiler design begins with the basic compiler design presented in
 \cite{siek-chang} for the Python ``P3'' language subset.  We then
@@ -323,6 +331,7 @@ version of the instruction selection pass has also been added in
 support of to the LLVM Assembly format.
 
 \subsection{Module Flow}
+\label{sec:ModuleFlow}
 
 \begin{figure*}[htb]
    \centering
@@ -332,11 +341,42 @@ support of to the LLVM Assembly format.
 \end{figure*}
 
 Our compiler employs a modular design to maximize code reuse between
-various target languages.  Our compiler passes up through flatten are
-designed to be target-agnostic. It is only the post-flatten passes
+various target languages.  Our compiler stages up through flatten are
+designed to be target-agnostic. It is only the post-flatten stages
 that differ based on the compilation target (x86 or LLVM). Figure
 \ref{fig:CompilerFlow} shows our modular flow through our compiler and
 the various data structures present between each stage.
+
+The new compiler stages necessary for LLVM targeted compilations are
+the ``SSA'' stage, the ``Propagate'' stage, and the ``LLVM Instruction
+Selection'' stage. The purpose of each stage is briefly discussed
+below.
+
+\begin{packed_desc}
+\item[SSA Stage] \hfill \\
+  The Static Single Assignment (SSA) stage converts
+  the multi-assignment Python AST into a Static Single Assignment
+  Python AST. It replaces variable assignments to ensure each variable
+  is only ever written once, and also sets up the necessary Phi operations
+  associated with branching nodes (if, while, etc).
+  This process is discussed further in Section \ref{sec:stage-SSA}.
+\item[Propagate Stage] \hfill \\
+  The propagate stage is essentially a
+  lightweight constant propagation stage. It's goal is to eliminate
+  all direct assignments (i.e. \texttt{|x = y|}) in favor of propagating
+  the right hand side of such assignments into the actual operation in
+  which they are used (i.e. \texttt{|x = y; print(x)|} $\rightarrow$
+  \texttt{|print(y)|}). Since the code is already in SSA form, this
+  process involves a rather simple search and substitution algorithm
+  This process is discussed further in Section \ref{sec:stage-Propagate}.
+\item[LLVM Instruction Selection] \hfill \\
+  The LLVM Instruction Selection stage
+  converts the Python AST into an LLVM IR (assembly) AST. The biggest
+  challenge in this stage is converting the multi-branches Python AST
+  into the linear list of code ``blocks'' that LLVM IR requires. This
+  process is discussed further in Section
+  \ref{sec:stage-LLVMInstructionSelection}.
+\end{packed_desc}
 
 We have also created a new initial compiler pass that converts the AST
 nodes from whatever format a given parser uses to a uniform set of
@@ -347,7 +387,8 @@ from the deprecated Python compiler package used for the course
 assignments thus far in favor of the built-in AST and parsing
 infrastructure inherent in Python 2.7+.
 
-\subsection{SSA Conversion}
+\subsubsection{SSA}
+\label{sec:stage-SSA}
 
 LLVM also requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
@@ -398,7 +439,13 @@ M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
 optimizations in the future, especially if the conversion pass is
 moved to an earlier point in the compilation.
 
-\subsection{LLVM Instructions}
+\subsubsection{Propagate}
+\label{sec:stage-Propagate}
+
+To Do...
+
+\subsubsection{LLVM Instruction Selection}
+\label{sec:stage-LLVMInstructionSelection}
 
 The LLVM instruction selection requires several more features to be
 supported than were supported in the x86 pass. While LLVM is more
