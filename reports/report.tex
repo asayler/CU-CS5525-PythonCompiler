@@ -388,9 +388,7 @@ compiler and our LLVM compiler is that the LLVM compiler requires the
 AST to be in SSA form. In addition, LLVM uses variable names, not
 pre-defined registers, in its instructions. As such, the LLVM
 compilation requires an additional pass to convert to SSA form, but
-can forgo the pass that performs register allocation.  An alternate
-version of the instruction selection pass has also been added in
-support of to the LLVM Assembly format.
+can forgo the pass that performs register allocation, since the LLVM compiler performs register allocation during its compilation of the bitcode. An alternate version of the instruction selection pass has also been added in support of to the LLVM Assembly format.
 
 \subsection{Module Flow}
 \label{sec:ModuleFlow}
