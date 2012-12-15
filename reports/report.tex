@@ -227,22 +227,25 @@ operations must be used. No loose or implicit casting is allowed.
 
 Another requirement of LLVM IR, and a corollary of the typed nature of
 LLVM IR, is that all functions used in a LLVM IR file must provide
-explicit prototype definitions in the file. This included calls to
+explicit prototype definitions in the file. This includes calls to
 external functions that will be linked into the program during
-compilation. This requires that every LLVM IR file have access to a
+compilation. This requires that every LLVM IR file contain a
 complete list of function prototypes for any library or other external
 functions it wishes to use. This list is necessary so that the LLVM
 build-chain can enforce the LLVM types at every stage in the build
 process.
 
 LLVM requires Static Single Assignment (SSA) form. This means that
-each variable/register in an LLVM IR program can only be
-written/assigned to once. SSA form is discussed detail in the Section
+each register in an LLVM IR program can only be
+written/assigned to once. The registers referred to in the discussion of
+LLVM are similar to variable, in that they can have any name conforming to 
+the naming rules, and they are unlimited in number. SSA form is discussed
+in detail in Section
 \ref{sec:SSAForm}.
 
 Related to the SSA requirement, LLVM IR does not allow direct
 assignments. Registers may only be used on the RHS of a statement if
-they are arguments to a specific operation. For example, the statement:
+they are arguments to a specific operation. For example, the statement sequence
 \begin{verbatim}
 x = input()
 y = x
@@ -251,7 +254,7 @@ print(y)
 is not allowed. Instead, the \texttt{y = x} assignment must be
 eliminated and the \texttt{x} register propagated forward to a point
 where it is read as an argument to an operation. Since LLVM IR must be
-in SSA form, eliminated direct assignments becomes a simple
+in SSA form, eliminating direct assignments becomes a simple
 ``find+replace'' issue. Thus, the previous example needs to be
 converted to:
 \begin{verbatim}
@@ -262,10 +265,10 @@ before it can be compiled to valid LLVM IR.
 
 Finally, all LLVM IR statements must be organized into strictly
 defined control ``blocks''. Each block starts with a label (although
-this label can be emitted from the first block in a function) and end
+this label can be emitted from the first block in a function) and ends
 with one of a small set of ``terminator'' instructions such as
-\texttt{ret}, \texttt{br}, or \texttt{switch}. In LLVM IR, unlike in
-x86, you can not ``fall through'' one block to the next without using
+\texttt{ret}, \texttt{br}, or \texttt{switch}. Unlike in x86, in the LLVM
+IR you can not ``fall through'' from one block to the next without using
 an explicit terminator instruction specifying a jump to the next
 blocks label. This strictly-defined block-based organization
 requirement allows the LLVM tool chain to construct a well defined
