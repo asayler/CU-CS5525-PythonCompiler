@@ -115,6 +115,13 @@
   \setlength{\parsep}{0pt}
 }{\end{itemize}}
 
+\newenvironment{packed_desc}{
+\begin{description}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{description}}
+
 \begin{document}
 
 \title{
@@ -133,65 +140,70 @@
 
 \begin{abstract}
 
-We discuss the expansion of our P3 compiler to target LLVM intermediate
-language assembly code. This involves the converting our intermediate
-AST to SSA form as well as replacing the instruction selection
-components of the existing compiler. We compare the performance and
-flexibility of directly targeted x86 code vs targeting LLVM IR code.
+We discuss the expansion of our P3 compiler to target LLVM
+intermediate language (IR) assembly code. This involves converting our
+intermediate AST to SSA form as well as replacing the instruction
+selection components of the existing x86 compiler. We compare the
+performance and flexibility of directly targeted x86 code versus
+targeting LLVM Intermediate Representation code.
 
 \end{abstract}
 
 \section{Problem Statement}
 
-While the existing HW6, p3-compliant compiler supports 32-bit, x86
-code generation, it does not support generating code for the variety
-of non-x86 architectures and assembly languages common today (x64,
-ARM, etc). While we could remedy this deficiency by adding additional
-native code generation for non-x86 architectures directly to our
-compiler, this approach would duplicate a wide range of existing
-effort and would require continued maintenance to support new
-architectures and assembly languages as they arise. From a software
-engineering perspective, such an attempt would also increase the
-likelihood bugs and errors due to the expanded code base and much
-larger required breadth of expertise in a variety of assembly
-languages.
+While the Homework 6, P3-compliant compiler supported 32-bit, Intel
+x86 code generation, it did not support generating code for the
+variety of non-x86 architectures and assembly languages common today
+(x64, ARM, etc). While we could have remedied this deficiency by
+adding additional native code generation for non-x86 architectures
+directly to our compiler, this approach would have duplicated a wide
+range of existing effort and would have required continued maintenance
+to support new architectures and assembly languages as they
+arose. From a software engineering perspective, such an attempt would
+also increase the likelihood of bugs and errors due to the expanded
+code base and much larger required breadth of expertise in a variety
+of assembly languages.
 
-Instead, we aim to leverage the existing work done by the LLVM project
-\cite{llvm.org} to convert our HW6 compiler from an x86-targeted
-compiler to an LLVM-targeted compiler. This will not only be efficient
-from a maintenance standpoint, but it will also be a useful
-introduction to a modern, commonly used compiler intermediate
-language. We will maintain the current x86 targeting and add LLVM IR
-Assembly \cite{lattner-llvmlangref} as an additional targeting
-option. In this way, we will be able to compare our natively generated
-x86 code with the LLVM-assembler generated x86 code. We will also be
-able to experiment with compiling our LLVM byte-code files to assembly
-languages other than x86 such as x64 and ARM.
+Instead, we aimed to leverage the existing work done by the LLVM
+project \cite{llvm.org} to convert our Homework 6 compiler from an
+x86-targeted compiler to one targeted towards the LLVM intermediate
+representation. This choice was not only efficient from a maintenance
+standpoint, but it is also a useful introduction to a modern, commonly
+used compiler intermediate language. We maintained the current x86
+targeting and added LLVM IR Assembly \cite{lattner-llvmlangref} as an
+additional targeting option. In this way, we were able to compare our
+natively generated x86 code with the LLVM-assembler generated x86
+code. We were also able to experiment with compiling our LLVM
+byte-code files to assembly languages other than x86, such as x64 and
+ARM.
 
-LLVM is quickly becoming the de facto standard target for most modern
+LLVM is quickly becoming the \textit{de facto} standard target for most modern
 compilers for high level languages.  It provides multi-platform
-support, multi-runtype support (compiled, interpreted, JIT compiled,
+support, multi-runtype support (compiled, interpreted, JITing,
 etc), and access to a range of existing optimization tools and
-techniques. Through this project, we hope to become familiar with the
+techniques. Through this project, we hoped to become familiar with the
 LLVM Assembly Language and LLVM system architecture while gaining
 insight into the benefits of building an LLVM-targeted compiler.
 
 \section{Background}
 
-The primary change to our existing compiler code base is the addition
+The primary change to our existing compiler code base was the addition
 of an LLVM output target option. We discuss LLVM and its prerequisites
 in this section.
 
 \subsection{LLVM}
+\label{sec:LLVM}
 
 The Low Level Virtual Machine (LLVM) is an open source project that
 was initially intended to provide support for a Static Single
 Assignment (SSA) compiler that is capable of statically or dynamically
 compiling any programming language \cite{llvm.org}.
 
-Listing \ref{lst:llvm-example_hello0.ll} shows
-a simple LLVM hello world program as an example of
-what LLVM IR Assembly language looks like.
+The LLVM project specifies a standardized Intermediate Representation
+with which to write programs, which is, essentially, a platform-agnostic
+assembly language. Listing \ref{lst:llvm-example_hello0.ll} shows a
+simple LLVM hello world program as an example of the syntax and
+structure of a LLVM IR Assembly language program.
 
 \lstinputlisting[
   float=*htb,
@@ -205,16 +217,84 @@ as an in-memory data structure, as a human readable ``assembly''
 language, and as an file-oriented bitcode (.bc) \cite{lattner-llvmlangref}.
 Converting between these three forms is handled via the various tools
 in the LLVM tool chain. Listing \ref{lst:llvm-example_hello0.ll} is an
-example of the human-readable form most commonly presented in this
-paper.
+example of the human-readable form presented in the examples in this paper.
 
-LLVM requires SSA form. Prior to converting to LLVM IR, we must first
-convert to SSA. SSA form is discussed in the next section.
+While LLVM IR is more
+flexible in terms of multi-platform support, its
+general syntax is more stringent than lower level assembly languages
+like Intel x86. For example, unlike x86, LLVM IR is a typed language.
+Each instruction must list the types of all arguments involved. When
+data must be converted from one type to another, explicit casting
+operations must be used. No loose or implicit casting is allowed.
+
+Another requirement of LLVM IR, and a corollary of the typed nature of
+LLVM IR, is that all functions used in a LLVM IR file must provide
+explicit prototype definitions in the file in which they are
+used. This includes calls to external functions that will be linked
+into the program during compilation. This requires that every LLVM IR
+file contain a complete list of function prototypes for any library or
+other external functions it wishes to use. This list is necessary so
+that the LLVM build-chain can enforce the LLVM types at every stage in
+the build process.
+
+
+Unlike most assembly languages, LLVM provide the user with an unlimited
+number of ``registers''. These LLVM registers are similar to
+variables, in that they can have any name conforming to the naming
+rules, and they are unlimited in number. LLVM does, however, require
+that any use of LLVM registers adheres to Static Single Assignment
+(SSA) form. This means that each register in an LLVM IR program can
+only be written/assigned to once. SSA form is discussed in detail in
+Section \ref{sec:SSAForm}.
+
+Related to the SSA requirement, LLVM IR does not allow direct
+assignments. Registers may only be used on the RHS of a statement if
+they are arguments to a specific operation. For example, the statement
+sequence
+\begin{verbatim}
+x = input()
+y = x
+print(y)
+\end{verbatim} 
+is not allowed. Instead, the \texttt{y = x} assignment must be
+eliminated and the \texttt{x} register propagated forward to a point
+where it is read as an argument to an operation. Since LLVM IR must be
+in SSA form, eliminating direct assignments becomes a simple
+``find+replace'' issue. Thus, the previous example needs to be
+converted to:
+\begin{verbatim}
+x = input()
+print(x)
+\end{verbatim}
+before it can be compiled to valid LLVM IR.
+
+Finally, all LLVM IR statements must be organized into strictly
+defined control ``blocks''. Each block starts with a label (although
+this label can be emitted from the first block in a function) and ends
+with one of a small set of ``terminator'' instructions such as
+\texttt{ret}, \texttt{br}, or \texttt{switch}. Unlike in x86, in the
+LLVM IR control flow does not ``fall through'' from one block to the
+next without using an explicit terminator instruction specifying a
+jump to the next block's label. This strictly-defined block-based
+organization requirement allows the LLVM tool chain to construct a
+well defined flow graph through the LLVM code. Listing
+\ref{lst:blocks.ll} shows an example of a short LLVM IR program
+containing a series of blocks with labels at the start of each block
+and explicit branching (or return statements) at the end of each
+block.
+
+\lstinputlisting[
+  float=*htb,
+  language=llvm,
+  label=lst:blocks.ll,
+  caption={LLVM Assembly - ``Block'' Example}
+]{./include/ll/blocks.ll}
 
 \subsection{Static Single Assignment Form}
+\label{sec:SSAForm}
 
 A program is in SSA form when its variables are assigned exactly once
-in the program \cite{gcc-gnu.org}. Most programs are not written in an
+in the program \cite{gcc-gnu.org}. Most programs are not written in
 SSA form, but can be converted to SSA form by giving a variable a new
 name every time it is assigned to, and replacing all uses of the
 variable in right-hand side expressions with the most recent version
@@ -234,8 +314,8 @@ print x
 This piece of code contains branching, so x is being assigned to
 multiple times. In addition, x could be an integer or a floating point
 number. To convert to SSA in this situation, compilers can add a
-\emph{phi} ($\phi$) node to select the proper version of x to use as
-the current version. See below:
+$\phi$ (\textit{phi}) node to select the proper version of x to use as
+the current version:
 
 \begin{verbatim}
 if input():
@@ -249,23 +329,18 @@ print x_2
 The $\phi$ function (node) serves to pick the branch that was used at
 runtime, and return that version of x.
 
-Fortunately, LLVM provides a \emph{phi} node in its assembly language
+Fortunately, LLVM provides a $\phi$ node in its assembly language
 specification \cite{lattner-llvmlangref}. It addresses the multiple
-assignment problems that result from control flow. The syntax is
+assignment problems that result from control flow structures. The
+syntax is
 
 \begin{verbatim}
 <result> = phi <ty> [<val0>, <label0>]...
 \end{verbatim} 
 
 where the ``ty'' field is the incoming type of the data to be chosen
-from. However, this indicates that the $\phi$ node can not handle
-explicit polymorphism. Fortunately, we have already packaged all of
-our data types into one unique type: a pyobj. All values passed to the
-block must be first class values, so a pointer to a pyobj will be the
-only option available to handle polymorphism. The type field is
-followed by a list of pairs, one for each predecessor block of code in
-the current block, and the $\phi$ function will use the value
-corresponding to the block actually executed.
+from. It is important to note that this indicates that the $\phi$ node can not 
+handle explicit polymorphism.
 
 \section{Approach}
 
@@ -274,20 +349,21 @@ manually experimenting with LLVM Assembly. This included manually
 ``compiling'' several of our test programs to LLVM assembly, and then
 compiling and running the LLVM Assembly we produced, in order to
 verify our understanding of the language. This process both increased
-our understanding of the LLVM language, and allowed us to prove out the
-updated build and test infrastructure for LLVM files.
+our understanding of the LLVM IR language, and allowed us to create
+the updated build and test infrastructure used for LLVM IR files.
 
 After familiarizing ourselves with LLVM, we proceeded to modify our
 compiler via the following development steps:
 
 \begin{packed_enum}
 \item Fixed bugs in existing compiler until we passed all valid student
-  and instructor provided p3 test cases.
+  and instructor provided P3 test cases.
 \item Re-factored existing compiler to better handle common visitor
   functions, support a modular parser-interface, and reduce code
   complexity.
 \item Added an additional compilation pass that translates the flattened
   AST into SSA form.
+\item Added a ``propagate'' pass that removes direct assignments.
 \item Added an alternate instruction selection pass that generates LLVM
   assembly instead of x86 assembly.
 \item Added the necessary top-level compiler control handling to switch
@@ -300,29 +376,34 @@ compiler via the following development steps:
   native Python interpreter, as well as that of the x86 generated
   code.
 \item Identified and fixed bugs as necessary.
+\item Benchmarked our results.
 \end{packed_enum}
 
 \section{Design}
+\label{sec:design}
 
 Our compiler design begins with the basic compiler design presented in
-\cite{siek-chang} for the Python ``P3'' language subset.  We then
+\cite{siek-chang} for the Python P3 language subset.  We then
 proceeded to re-factor this design to better exploit code reuse,
 remove deprecated interfaces, support multiple target types, and
-automatically catch a range of implementation errors. We plan on
-keeping the re-factored design common for all compilation targets
-through the end of the flatten pass.
+automatically catch a range of implementation errors. We kept the re-factored 
+design, through the end of the flatten pass, common for all compilation 
+targets.
 
-The major changes happen after flatten in the instruction selection
-and related passes. A significant difference between our current x86
-compiler and our LLVM compiler is that the LLVM compiler requires the
-AST to be in SSA form. In addition, LLVM uses variable names, not
+The major divergence for LLVM compilation occurs after flatten, in the
+instruction selection and related passes. A significant difference
+between our x86 compiler and our LLVM compiler is that the LLVM
+compiler requires the AST to be in SSA form. In addition, LLVM uses
+and infinite number of variable register names, rather than
 pre-defined registers, in its instructions. As such, the LLVM
 compilation requires an additional pass to convert to SSA form, but
-can forgo the pass that performs register allocation.  An alternate
-version of the instruction selection pass has also been added in
-support of to the LLVM Assembly format.
+can forgo the pass that performs register allocation. The LLVM
+compiler performs register allocation during its compilation of the
+bitcode.  An alternate version of the instruction selection pass was
+also added in support of to the LLVM Assembly format.
 
 \subsection{Module Flow}
+\label{sec:ModuleFlow}
 
 \begin{figure*}[htb]
    \centering
@@ -332,33 +413,64 @@ support of to the LLVM Assembly format.
 \end{figure*}
 
 Our compiler employs a modular design to maximize code reuse between
-various target languages.  Our compiler passes up through flatten are
-designed to be target-agnostic. It is only the post-flatten passes
+various target languages.  Our compiler stages up through flatten are
+designed to be target-agnostic. It is only the post-flatten stages
 that differ based on the compilation target (x86 or LLVM). Figure
 \ref{fig:CompilerFlow} shows our modular flow through our compiler and
 the various data structures present between each stage.
 
+The new compiler stages necessary for LLVM targeted compilations are
+the ``SSA'' stage, the ``Propagate'' stage, and the ``LLVM Instruction
+Selection'' stage. The purpose of each stage is briefly discussed
+below.
+
+\begin{packed_desc}
+\item[SSA Stage] \hfill \\
+  The Static Single Assignment (SSA) stage converts
+  the multi-assignment Python AST into a Static Single Assignment
+  Python AST. It replaces variable assignments to ensure each variable
+  is only ever written once, and also sets up the necessary $\phi$ operations
+  associated with branching nodes (if, while, etc).
+  This process is discussed further in Section \ref{sec:stage-SSA}.
+\item[Propagate Stage] \hfill \\
+  The propagate stage is essentially a
+  lightweight constant propagation stage. Its goal is to eliminate
+  all direct assignments (i.e. \texttt{|x = y|}) in favor of propagating
+  the right hand side of such assignments into the actual operation in
+  which they are used (i.e. \texttt{|x = y; print(x)|} $\rightarrow$
+  \texttt{|print(y)|}). Since the code is already in SSA form, this
+  stage involves a rather simple search and substitution algorithm
+  This process is discussed further in Section \ref{sec:stage-Propagate}.
+\item[LLVM Instruction Selection] \hfill \\
+  The LLVM Instruction Selection stage
+  converts the Python AST into an LLVM IR (assembly) AST. The biggest
+  challenge in this stage is converting the multi-branches Python AST
+  into the linear list of code ``blocks'' that LLVM IR requires. This
+  process is discussed further in Section
+  \ref{sec:stage-LLVMInstructionSelection}.
+\end{packed_desc}
+
 We have also created a new initial compiler pass that converts the AST
-nodes from whatever format a given parser uses to a uniform set of
+nodes from whatever format a given parser outputs to a uniform set of
 internal AST nodes used throughout the rest of the compiler. This
 allows us to switch parsing infrastructures without needing to change
 the core compiler code. We have leveraged this capability to move away
-from the deprecated Python compiler package used for the course
+from the deprecated Python ``compiler'' package used for the course
 assignments thus far in favor of the built-in AST and parsing
 infrastructure inherent in Python 2.7+.
 
-\subsection{SSA Conversion}
+\subsubsection{SSA}
+\label{sec:stage-SSA}
 
-LLVM also requires Static Single Assignment form, meaning that each
+LLVM requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
-form during compilation (only when compiled to SSA --- our x86
-compiler does not utilize the SSA conversion module), a process which
-occurs after flattening and immediately before LLVM instruction
+form during compilation, a process which
+occurs after flattening and before LLVM instruction
 selection (as shown in Figure \ref{fig:CompilerFlow}).  This
 conversion process takes a single pass over the program, and converts
 it as follows:
 
-\begin{itemize}
+\begin{packed_enum}
 \item When an assignment statement (to a variable) is encountered, the
   converter increments the ``version number'' of the variable (or
   initializes it to $0$ if the variable has not been previously
@@ -369,97 +481,261 @@ it as follows:
   recent version of the variable.
 \item When an If statement is encountered, the true and false branches
   are scanned for their assigned variables, and a new attribute is
-  added to the end of the statement, containing Phi nodes for the
+  added to the end of the statement, containing $\phi$ nodes for the
   variables assigned within the If as follows:
-  \begin{itemize}
-  \item If a variable is assigned to in both branches, the Phi node
+  \begin{packed_enum}
+  \item If a variable is assigned to in both branches, the $\phi$ node
     contains the version from each branch.
   \item If a variable is assigned to in one branch but not the other,
     \textit{and} the variable was also assigned to before the If
-    statement was entered, then the Phi node contains the new version
+    statement was entered, then the $\phi$ node contains the new version
     in the branch it appeared in, and the old version in the other
     branch.
   \item If a variable is assigned to in one branch but not the other,
     \textit{and} the variable did not exist before the If
-    statement was entered, no Phi node is created for it.
-  \end{itemize}
+    statement was entered, no $\phi$ node is created for it.
+  \end{packed_enum}
 \item When a While loop is encountered, its body is scanned for
   assigned variables. A new attribute is then added to the beginning
-  of the statement, containing Phi nodes for each variable that is
+  of the statement, containing $\phi$ nodes for each variable that is
   assigned to in the body and that also existed before the loop was
   entered.
-\end{itemize}
+\end{packed_enum}
 
 This process ensures that each variable is assigned to only once while
-maintaining the semantics of the program. At the moment, we do not use
-any of the optimizations, such as those based on computing the
-dominator tree of the program as described by Brandis and
-M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
-optimizations in the future, especially if the conversion pass is
-moved to an earlier point in the compilation.
+maintaining the semantics of the program. It also makes use of pyobj
+pointers to handle Python's explicit polymorphism. We do not use any
+optimizations, such as those based on computing the dominator tree of
+the program as described by Brandis and M\"{o}ssenb\"{ock}
+\cite{brandis-mossenbock}, in order to reduce the number of $\phi$ nodes,
+though we may implement such optimizations in the future, especially
+if the SSA conversion pass is moved to an earlier point in the
+compilation.
 
-\subsection{LLVM Instructions}
+\subsubsection{Propagate}
+\label{sec:stage-Propagate}
 
-The LLVM instruction selection requires several more features to be
-supported than were supported in the x86 pass. While LLVM is more
-flexible in terms of compilation on multiple operating systems, its
-intermediate representation is more stringent than x86. In order to
-learn the nuances of the LLVM Intermediate Representation that we must
-address in our compiler, we began converting our test programs
-to LLVM IR by hand and compiling them. This revealed several new issues
-that we addressed in our LLVM instruction selection.
+The propagate stage eliminates direct assignments from the code (which
+are not legal in LLVM) in favor of propagating the right-hand-side of
+such assignments all the way to the point at which they are used in an
+operation. 
 
-For example, each instruction must keep track of the types of all
-registers involved. Fortunately, our pyobj pointer system will make
-keeping track of type much more straightforward, as all objects are of
-one type: pointers to pyobj structures. The LLVM code can merely treat
-this as generic pointers, leaving the C helper function to handle any
-functionality that requires knowledge about what type of object to
-which these pointers point.
+For example, the code shown in Listing \ref{lst:direct_assignment.ll}
+is not legal LLVM IR code. The correct, ``propagated'' version is
+shown in Listing \ref{lst:direct_assignment_fixed.ll}.
 
-Another issue is that all called functions that are defined in
-external files must be declared at the beginning of any .ll (LLVM
-Intermediate Representation) file that our compiler generates. This
-necessitates our writing a preamble to place at the beginning of every
-.ll file which contains the declarations for our runtime helper
-functions.
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  label=lst:direct_assignment.ll,
+  caption={A Direct Assignment Operation (Not Legal LLVM IR)}
+]{./include/ll/direct_assignment.ll}
 
-One nuance is that expressions such as
-\begin{verbatim}
-%x = 5
-\end{verbatim} 
-are not allowed. Presumably, this is because LLVM is an SSA
-representation, and one is essentially wasting an entire register on a
-constant \cite{llvm-discussions}. The options available are to perform
-constant propagation, or to declare each constant as an internal
-constant, like so:
-\begin{verbatim}
-@V1 = constant i32 5
-\end{verbatim}
-Then, when the constant needs to be loaded from memory. This is
-because @V1 is a pointer to the constant, not the constant itself
-\cite{Regni}:
-\begin{verbatim}
-%x = load i32* @V1
-\end{verbatim}
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  label=lst:direct_assignment_fixed.ll,
+  caption={The ``propagated'' version of Listing
+    \ref{lst:direct_assignment.ll} (Legal LLVM IR)}
+]{./include/ll/direct_assignment_fixed.ll}
 
-In our implementation, we intend to use the later approach, as we are
-not focusing on constant propagation in this project. Although, the
-fact that this is an SSA implementation would mean that all instances
-of \%x could be replaced with the constant 5 using a simple
-find-replace. We consider this option as a future optimization.
+The propagate pass is designed to operate on a Python AST in SSA
+form. Thus, it immediately succeeds the SSA stage. Since the code is
+already in SSA form, the propagate stage can perform a simple
+``find-and-replace'' algorithm on all variable names in the AST. The
+algorithm is implemented as a set of visitors corresponding to Python
+AST nodes. The basic logic is:
 
-...To be continued...
+\begin{packed_enum}
+\item Create an empty global dictionary for mapping LHS variable names
+  to RHS variable names
+\item Traverse the AST
+\item When a variable assignment node is found, check to see if the
+  RHS is a pure variable (i.e. not larger expression node)
+  \begin{packed_enum}
+  \item If it is:
+    \begin{packed_enum}
+    \item Check to see if the RHS variable name is a key in the
+      global dictionary. If it is, replace the RHS variable name with the
+      value associated with the key in the global dictionary
+    \item Add the LHS:RHS variable name mapping to the global dictionary
+    \item Remove the node from the tree
+    \end{packed_enum}
+  \item If it is not:
+    \begin{packed_enum}
+      \item Do nothing
+    \end{packed_enum}
+  \end{packed_enum}
+\item When a variable name is encountered, check to see if the name is
+  a key in the global dictionary. If so, replace the name with the
+  value associated with this key.
+\item When a branching statement node (If, While, etc) is encountered,
+  search the associated $\phi$ list for any variables that are keys in
+  the global dictionary, and replace them with the corresponding
+  values as necessary.
+\end{packed_enum}
+
+\subsubsection{LLVM Instruction Selection}
+\label{sec:stage-LLVMInstructionSelection}
+
+The LLVM Instruction Selection stage converts the Python AST to an LLVM
+AST. The primary challenge in this stage is messaging our Python AST
+into a format that meets the rather strict LLVM requirements. We must
+also substitute one or more LLVM AST nodes for each Python AST node
+while maintaining the semantics of the program.
+
+% Discuss Typing Approach
+
+The first challenge that must be dealt with in instruction selection
+is dealing with the LLVM IR's strict typing requirements. Fortunately,
+our use of pyobj pointers will make this process fairly simple. In
+effect, the only variables used in our program are pyobj pointers,
+ints, bools, and bigpyobjs. Due to the design of the helper functions,
+all of these types can be treated as either 32-bit ints (on a 32-bit
+system) or 64-bit ints (on a 64-bit system). This allows us to
+effectively deal with a single ``default'' type throughout our entire
+LLVM IR program. Thus we can assume that all of our function
+arguments, variables, etc are of this single type and avoid needing to
+track variable and function types explicitly.
+
+There are a few points where this single type assumption breaks down,
+namely when using the LLVM compare operator (which only returns
+bool-like 1-bit integers) and when making indirect function calls
+(where explicit function pointer types are required). Fortunately, the
+situations where these alternate types arise are well isolated in the
+LLVM IR code, and always result from the mapping of a single Python
+AST node to several LLVM IR nodes. These alternate types are also able
+to be cast back and forth to 64 or 32 bit integers, matching the
+single type used throughout the rest of the code. Thus, we can simply
+insert the necessary casting operations to convert these types to or
+from the default type when we generate the code that requires these
+special types. 
+
+% Discuss Function Prototype Declaration Approach
+
+We must also handle the fact that all LLVM IR files must include a
+list of prototype definitions for any external library functions we
+wish to call. In the case of our compiler, these external functions
+are limited to the list of runtime helper functions specified in
+\texttt{runtime.h}. We created an LLVM IR file that contains the
+necessary LLVM declarations for each \texttt{runtime.h} function.
+\footnote{Technically, we have two version
+  of this file: one which contains the \texttt{runtime.h} LLVM
+  function declarations using 64-bit integers as the single generic
+  type (for use on 64-bit systems), and one which contains the
+  \texttt{runtime.h} LLVM function declarations using 32-bit integers
+  (for use on 32-bit systems). Our compiler detects the bit-width of
+  the system on which it is running and dynamically selects the correct
+  file at compile time.}
+The contents of this file are then
+pre-pended to the LLVM IR output our program generates as part of
+the process involved in writing the compiled LLVM AST to a file. A
+small snippet of this file is shown in Listing
+\ref{lst:runtime-declares-x64.ll}.
+
+\lstinputlisting[
+  float=*htb,
+  language=sh,
+  firstline=1,
+  lastline=11,
+  label=lst:runtime-declares-x64.ll,
+  caption={The opening snippet of the LLVM \texttt{runtime.h} function
+  declaration file}
+]{../code/helper/runtime-declares-x64.ll}
+
+% Discuss ``Blocking'' Approach
+
+As discussed in Section \ref{sec:LLVM}, LLVM IR requires all code to
+fit into well defined, non-nesting, blocks, starting with a label and
+ending with a ``terminator'' instruction. Prior to instruction
+selection, our Python AST is organized into a tree, and so we must
+convert it into a flat list of blocks during instruction selection. A
+naive way to do this would be to wrap every LLVM statement or group
+of LLVM statements generated by a single Python AST node in its own
+block. This approach, however, would add far more blocks then
+necessary, and would introduce extra overhead due to the instructions
+required to jump between blocks.
+
+Instead, we wish to group code into the largest possible blocks. Thus,
+we employ a greedy batching algorithm that gathers up LLVM
+instructions as they are generated and groups them into a single block
+until an instruction is encountered that forces the creation of a new
+block. These new blocks must only be created when control-flow
+branching occurs, or when a 'return' statement is called. Thus, we
+batch LLVM instructions into blocks until we are forced to create a
+new block, and then start batching subsequent LLVM instructions into
+the new block.
+
+The final trick in this ``blocking'' system is to ensure that all
+non-terminal (i.e. ``return'') blocks are correctly chained together
+via control flow instructions. In many ways, our list of blocks
+resembles a linked-list-like data structure. Since some types of
+control flow (If statements, etc) generate multiple blocks, we often
+have need to insert one or more blocks into our list at intermediate
+locations. Thus, like a linked-list insert operation, we must
+``patch-up'' the control flow instructions anytime we insert a block
+into an intermediate location in our list to ensure that the control
+flow correctly propagates to the new intermediate blocks and, once
+these have run, continues to the rest of the list. This patching
+operation involves reading into the label of the first block in an
+inserted list and/or the final terminator instruction of the last
+block in an inserted list order to rewrite the jump location of the
+terminator instruction or to rewrite the label of the first block.
+
+The code involved in ``blocking'' is primarily located in the visitor
+function that processes our top level list of Python statements. This
+is where the greedy statement-to-block batching occurs, as well as the
+majority of the patching code. Branching instructions (If, While,
+IfExp) are also block-aware in order to generate and patch labels and
+terminator instructions as necessary. These nodes return a list of
+blocks that must then be linked into the running block list (or the
+block list of a parent branching statement in the case of nested If
+statements, etc). A notable caveat in all of this was the fact that
+Python IfExp nodes are the only expression-level node that needs to
+generate and handle blocks. All other block-aware nodes occurs at the
+Python statement level, higher in the AST, and are thus somewhat
+easier to deal with. Dealing with the IfExp node, which requires block
+generation at very low level points in the Python AST proved to be a
+difficult, although not insurmountable, challenge.
+
+% Discuss LLVM AST Operation Mapping Approach
+
+Beyond the nuances discussed thus far, the remainder of the LLVM
+Instruction Selection pass is largely similar to the x86 Instruction
+Selection pass, with the appropriate LLVM instructions substituted for
+the alternate x86 ones. In many ways, that actual ``instruction
+selection'' part of the LLVM Instruction Selection pass is simpler
+than its x86 counterpart. LLVM instructions tend to be higher level
+than x86, and thus present a more direct mapping from Python AST nodes
+to LLVM. For example, in x86 all function call stack setup and cleanup
+must be handled with explicit calls to \texttt{push}, \texttt{pop},
+etc. In LLVM, these are handled automatically.
+
+One final item worth noting is that our code makes explicit use of
+registers for variable storage and manipulation. LLVM provides access
+to stack/heap allocate, load, and store instructions (which provide a
+way to bypass the register SSA requirement), but we do not use these
+directly. Instead, we keep all variables in LLVM registers (of which
+there are an unlimited number). We note that the runtime code that we
+compile (using an off-the-shelf LLVM C compiler) and link in does
+include direct heap/stack calls, as mandated by its use of dynamic
+data structures, but for the parts of Python that we deal with outside
+of the runtime functions, we were able to keep everything in pure SSA
+and register-only form. This should allow the optimal mapping from
+LLVM registers to actual machine registers (and stack spill where
+necessary) when our LLVM code is finally compiled to local machine
+code.
 
 \subsection{LLVM Build Process}
 
 We have also implemented a method for compiling the C run-time helper
-functions to LLVM bitcode using an LLVM front end C compiler, clang
+functions to LLVM bitcode using the LLVM front end C compiler, clang
 \cite{clang.llvm.org}. We then link the helper function generated
-bitcode to the bitcode generated from the .ll output from our
-compiler. This gives us a bitcode file that we are capable of running
-in the LLVM interpreter or fully compiling to an executable.  The
-process for compiling is shown in Listing \ref{lst:compiling.sh}.
+bitcode to the bitcode generated from the .ll output from our compiler
+using the standard LLVM linker. This gives us a LLVM bitcode file that
+we are capable of running in the LLVM interpreter or fully compiling
+to an executable using the LLVM compiler. The basic control flow for
+our build chain is shown in Listing \ref{lst:compiling.sh}.
 
 \lstinputlisting[
   float=*htb,
@@ -468,17 +744,134 @@ process for compiling is shown in Listing \ref{lst:compiling.sh}.
   caption={Pseudo-script describing the LLVM build process}
 ]{./include/txt/compiling.sh}
 
+In reality, this build process is handled intelligently by a GNU
+Makefile. This system allows us to atomically build and run all
+regression tests for either LLVM or x86, to automatically benchmark
+runs, to automatically create the ``submission.zip'' file required for
+uploading code to the course testing website, and to perform a variety
+of other build and test related actions. This Makefile is available in
+the source code at \cite{github-repo}.
+
 \section{Results}
 
-...To be added when complete...
+The full source code for our compiler is available at \cite{github-repo}.
+
+Our implementation met the full standards for P3-Python, and we also
+added support for the greater-than and less-than operators, in order
+to expand the space of test cases and benchmarks that we could
+create. In addition to compiling to the x86 architecture (in both 32
+and 64 bit forms), we were able to compile to the ARM architecture and
+run our compiler on an ARM-based computer (the Raspberry
+Pi\cite{raspberrypi.org}). This was possible due to the cross-platform
+nature of LLVM, and necessitated only minor changes to our tool-chain,
+and none at all to our compiler itself.
+
+In order to compare the behavior of our compiler to that of our x86
+implementation, we developed a benchmarking suite and recorded both
+compilation times and runtimes. Graphs for both of these metrics are
+shown in Figures \ref{fig:ct} and \ref{fig:rt}. Both graphs display a
+speedup factor, with the runtime/compile time of the x86
+implementation normalized to $1$. We also display the running and
+compile time of an interpreted version of the test cases --- in
+addition to compiling to a binary, LLVM is also capable of
+interpreting bitcode files using a JIT. Finally, we also compare our
+results to a native Python implementation's runtime.
+
+\begin{figure*}[htb]
+  \centering
+  \includegraphics[scale=.9]{include/pdf/runtime.pdf}
+  \caption{Runtime Benchmarks}
+  \label{fig:rt}
+\end{figure*}
+
+We find that when using LLVM to fully compile our benchmarks we are
+consistently faster than our previous x86 implementation at runtime,
+although the degree of speedup varies, as shown in Figure
+\ref{fig:rt}. The LLVM implementation is significantly faster on
+benchmarks that primarily use simple function calls, loops, and math,
+approaching a $1.6\times$ speedup. On the other hand, the degree of
+improvement is much reduced when performing method calls and attribute
+lookups. The native Python interpreter still outperforms our LLVM
+interpreter on most test cases, except that it is approximately equal
+to our compiler on a benchmark involving many simple function calls; 
+this is possibly a domain highly suited to the structure of LLVM's IR
+and bitcode. Meanwhile, interpreted LLVM bitcode is consistently much
+slower than either the x86 implementation or the compiled LLVM.
+
+\begin{figure*}[htb]
+  \centering
+  \includegraphics[scale=.9]{include/pdf/compiletime.pdf}
+  \caption{Compile-time Benchmarks}
+  \label{fig:ct}
+\end{figure*}
+
+In terms of compile times, the LLVM compiler is far faster
+than the x86 compiler on all benchmarks, as shown in Figure
+\ref{fig:ct}. Our benchmarking setup includes the time taken by
+elements of the tool-chain besides just our own compiler, so the
+timings seen here are comparable. We suspect that the primary
+reason for the out-performance of the x86 compiler by the LLVM compiler
+is that LLVM performs register allocation internally, and presumably
+it is much more efficient at this process than our un-optimized
+register allocator. Note also that it takes approximately half as long
+to compile to LLVM bitcode as it does to compile to binaries using
+LLVM; however, both the interpreter compilation and the binary
+compilation process use the exact same code paths through our
+compiler. This indicates that, at least in compilation to binaries
+using LLVM, our compiler does not dominate the rest of the LLVM
+tool-chain in terms of compilation time.
 
 \section{Discussion}
 
-...To be added when complete...
+Were we to build an LLVM compiler from the ground up, as opposed to
+modifying an x86 compiler, we would have made a few different
+decisions. First, we could do more to leverage the typed nature of
+LLVM. There are additional optimizations that can be practiced had we
+tracked more typing information through our compiler, and had we been working
+with LLVM from the start, we likely would have kept some form of typing
+information to leverage these optimizations.
+
+Given that we were compiling to both typed and un-typed languages, the
+P3 compiler design that we started with lent itself well to conversion
+to LLVM. It was fortunate that we used pyobjs out of necessity to deal
+with Python's polymorphism, because this was helpful and probably
+necessary for dealing with the typing of LLVM without tracking every
+type directly.
+
+Where we building from scratch, it is also possible that we would have
+moved the SSA pass earlier in the compile chain. This would have
+allowed us to leverage the SSA assumption in subsequent passes and to
+perform additional SSA-centric optimizations.
+
+Given that we were building a multi-target compiler, we decided to
+place the SSA pass after the flatten pass, and by doing so did not
+include it in the x86 compile chain. This minimized the number of
+stages that needed to be SSA aware, and avoided us having to resolve
+$\phi$ nodes to x86 instructions (unlike LLVM, x86 has no built-in $\phi$
+instruction). However, if we were strictly building native LLVM compiler,
+placing the SSA pass earlier in the compile process could have benefits.
 
 \section{Conclusion}
 
-...To be added when complete...
+We were able to successfully compile all valid Python-subset P3 test
+cases to LLVM using our LLVM Python compiler. When compiling the
+resulting LLVM IR to local assembly code, we saw a significant runtime
+performance gain over our direct-to-x86 code. We also saw significant
+compile time gains using LLVM, likely due to the well optimized nature
+of the LLVM build tools in areas such as register allocation.
+
+In general, LLVM feels like a well-thought-out Intermediate Language
+and build environment. We believe it provides a strong argument for
+building compilers that target the LLVM IR, and then using the LLVM
+tools to compile down to the local assembly language. This approach
+maximizes multi-platform capability, and avoids duplicating common
+effort, like register allocation, across many compilers. Instead, the
+modular nature of LLVM lets each compiler focus on processing its
+associated language, and leaves low level, architecture-specific
+details to the LLVM implementation team. This separation of labor
+allows everyone to focus on specific tasks and gain expertise in
+specific areas, likely leading to the production of higher quality
+software overall.
 
 \nocite{*}
 \printbibliography

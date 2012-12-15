@@ -17,7 +17,7 @@
 %       http://csel.cs.colorado.edu/~mivi2269/
 
 \documentclass{beamer}
-\usetheme{AnnArbor}
+\usetheme{Montpellier}
 \usecolortheme{beaver}
 %\setbeamercovered{transparent=25}
 \setbeamertemplate{blocks}[rounded][shadow=false]
@@ -145,20 +145,20 @@
   \titlepage
 \end{frame}
 
-%---TOC Slide---%
-\begin{frame}{Outline}
-  \tableofcontents
-\end{frame}
-
 \section{Introduction}
 
 %---Goals Slide---%
+% Anne
 \begin{frame}{\bf Goals}
   \begin{itemize}
   \item<1-> Create Low Level Virtual Machine (LLVM) p3-compliant compiler
+    \begin{itemize}
+    \item<1-> Make our compiler multi-platform
+    \item<1-> Explore LLVM architecture
+    \item<1-> Learn LLVM standard
+    \end{itemize}
   \item<2-> Compare to x86 compiler
   \item<3-> Test on multiple architectures(x86, ARM, etc.)
-  \item<4-> Test with multiple runtime systems (compiled, JIT, etc.)
   \end{itemize}
 \end{frame}
 
@@ -167,10 +167,11 @@
 \subsection{LLVM}
 
 %---Background Slide---%
+% Andy
 \begin{frame}{\bf LLVM Basics}
   \begin{itemize}
   \item<1->Open Source
-  \item<2->Static Single Assembly (SSA)
+  \item<2->Static Single Assignment (SSA)
   \item<3->Multi-platform support (x32, x64, ARM, etc)
   \item<4->Multi-runtime support (compiled, interpreted, JIT, etc.)
   \item<5->Becoming a very popular compiler infrastructure and IR
@@ -184,21 +185,23 @@
   \end{itemize}
 \end{frame}
 
-%---LLVM Slide---%
+%---LLVM Background Slide---%
+% Andy
 \begin{frame}{\bf LLVM Concepts}
   \begin{itemize}
-  \item<1->LLVM Intermediate Representation(IR)
-  \begin{itemize}
-  \item<2->In-memory data structure
-  \item<3->Human readable ``assembly'' language (.ll)
-  \item<4->File-oriented bitcode (colloqially, bytecode) (.bc)
-  \end{itemize}
-  \item<5->We convert to assemble (.ll) code
-  \item<6->Example...
+  \item<1->LLVM Intermediate Representation (IR)
+    \begin{itemize}
+    \item<1->In-memory data structure
+    \item<1->Human readable ``assembly'' language (.ll)
+    \item<1->File-oriented bitcode (colloqially, bytecode) (.bc)
+    \end{itemize}
+  \item<2->We convert to assembly (.ll) code
+  \item<3->Example...
   \end{itemize}
 \end{frame}
 
 %---LLVM Hello World Slide---%
+% Andy
 \begin{frame}{\bf LLVM ``Hello World''}
   \lstinputlisting[
     language=llvm,
@@ -206,36 +209,28 @@
   ]{../code/llvm-examples/hello0.ll}
 \end{frame}
 
-\subsection{SSA}
-
-%---SSA---%
-\begin{frame}{Static Single Assignment Form}
-  \begin{itemize}
-  \item<1->Each variable assigned only once
-  \item<2->If branching involved, use phi nodes
-  \item<3->LLVM has phi node already integrated
-  \end{itemize}
-\end{frame}
-
 \section{Design}
 
-\subsection{Approach}
+\subsection{Design Overview}
 
+%---Project Approach Slide---%
+% Anne
 \begin{frame}{Approach}
   \begin{itemize}
   \item<1->Refactored existing compiler to fix all known issues, add
     features, etc.
-  \item<2->"Compiled" tests programs by hand to LLVM IR
+  \item<2->"Compiled" tests programs by hand to LLVM IR for reference
   \item<3->Added an SSA Conversion pass after Flatten pass
   \item<4->Added an LLVM Instruction Selection pass to produce LLVM IR
   \item<5->Modified build and test system to handle both x86 and LLVM
-  \item<6->Tested and compared Python, x86, and LLVM execution
+  \item<6->Tested and benchmarked x86 vs LLVM execution
   \end{itemize}
 \end{frame}
 
 \subsection{Module Flow}
 
 %---Module Flow Slide---%
+% Anne
 \begin{frame}{\bf Module Flow}
   \begin{center}
     \includegraphics[height=.75\paperheight]{./include/CompilerFlow.pdf}
@@ -244,6 +239,18 @@
 
 \subsection{SSA Conversion}
 
+%---SSA Overview---%
+% Mike
+\begin{frame}{Static Single Assignment Form}
+  \begin{itemize}
+  \item<1->Each variable assigned only once
+  \item<2->If branching involved, use phi nodes to recombine
+  \item<3->LLVM has phi node already integrated into IR language
+  \end{itemize}
+\end{frame}
+
+%---Simple SSA Conversion---%
+% Mike
 \begin{frame}{\bf Simple conversion}
   \lstinputlisting[
   language=python,
@@ -256,6 +263,8 @@
 ]{include/py/ssa-step2.py}
 \end{frame}
 
+%---If SSA Conversion---%
+% Mike
 \begin{frame}[shrink]{\bf SSA Conversions of If statements}
   \lstinputlisting[
   language=python,
@@ -268,6 +277,8 @@
 ]{include/py/ssa-if2.py}
 \end{frame}
 
+%---While SSA Conversion---%
+% Mike
 \begin{frame}[shrink]{\bf SSA Conversions of While statements}
   \lstinputlisting[
   language=python,
@@ -282,6 +293,8 @@
 
 \subsection{Instruction Selection}
 
+%---Instruction Selection overview---%
+% Andy
 \begin{frame}{LLVM Features and Restrictions}
   LLVM is higher level than x86. This means...
   \pause
@@ -301,30 +314,137 @@
   \end{itemize}
 \end{frame}
 
+
+%---Instruction Selection Blocks---%
+% Andy
 \begin{frame}{LLVM Blocks}
-  To be added...
+  \uncover<1->{
+    All LLVM code is divided into strict blocks...
+    }
+  \begin{itemize}
+  \item<2-> An LLVM block generally starts with a label
+  \item<3-> An LLVM block must end with a terminating instruction
+    \begin{itemize}
+    \item ret, switch, br, etc
+    \end{itemize}
+  \item<4-> You can not ``fall through'' to the next block
+    \begin{itemize}
+    \item An explicit branch to the next block is required
+    \end{itemize}
+  \end{itemize}
+  \uncover<5->{
+    These rules allow LLVM to build a well defined control-flow graph,
+    but they also mean instruction selection must be ``block-oriented''
+  }
+  \begin{itemize}
+  \item<6-> Requires back-patching labels to chain together blocks
+  \item<7-> Similar algorithm to insertion into a linked-list
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{LLVM Instruction Selection}
-  To be added...
+%---Instruction Selection Block Example---%
+% Andy
+\begin{frame}[shrink]{LLVM Block Example}
+  \lstinputlisting[
+    language=llvm,y
+    label=lst:LLVM Assembly - Blocks,
+  ]{include/ll/blocks.ll}
+\end{frame}
+
+%---Polymorphism---%
+% Anne
+\begin{frame}{Pyobjs to Handle Polymorphism}
+\begin{itemize}
+  \item<1->LLVM is typed
+    \begin{itemize}
+    \item No loose casting as in x86
+    \end{itemize}
+  \item<2->Pointers to Pyobjs give us freedom
+    \begin{itemize}
+    \item Treat everything as an ``int'' (i64 or i32)
+    \end{itemize}
+  \item<3->Except in indirect function calls
+    \begin{itemize}
+    \item Require explicit casting
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%---Indirect Function Calls---%
+% Anne
+\begin{frame}{\bf Indirect Function Calls}
+  \lstinputlisting[
+    language=llvm,
+    title={LLVM Assembly - Dealing with Lambdas}
+  ]{include/ll/llvm_func_ptr.ll}
+\end{frame}
+
+%---Strings---%
+% Anne
+% Maybe eliminate this slide if time is tight?
+\begin{frame}[shrink]{\bf Strings}
+  \begin{itemize}
+  \item<1->Strings defined much like x86
+  \item<2->Type is an array
+  \item<3->Call getelementptr to get the string by accessing array
+  \end{itemize}
+  \uncover<4->{
+    \lstinputlisting[
+      language=llvm,
+      label=lst:LLVM Assembly - Dealing with Strings,
+    ]{include/ll/strings.ll}
+  }
 \end{frame}
 
 \subsection{LLVM Build Process}
 
+%---Build Process---%
+% Anne
 \begin{frame}{LLVM Build Chain}
-  To be added...
+  \begin{itemize}
+  \item<1->LLVM assembler (llvm-as) to bitcode (.bc)
+  \item<2->Use Clang and llvm-as to get bitcode of runtime files
+    \begin{itemize}
+    \item<2->clang -emit-llvm -S helper/runtime.c -o build/runtime.ll
+    \item<2->llvm-as  build/runtime.ll -o build/runtime.bc
+    \end{itemize}
+  \item<3->Link (llvm-link) all files
+  \item<4->LLVM compiler (llc) OR LLVM interpreter (lli)
+  \item<5->Use gcc or clang to compile to code for machine 
+    \begin{itemize}
+    \item<5->eg. clang -g -x assembler build/test-p0-1.lls -lm -o build/test-p0-1.llout
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \section{Results}
 
+%---Benchmark Results---%
+% Mike
 \begin{frame}{Benchmark Results}
-  To be added...
+  \begin{center}
+    \includegraphics[scale=.63]{./include/pdf/runtime.pdf}
+  \end{center}
+  \begin{itemize}
+  \item $8\%$ to $60\%$ speedup at runtime
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Benchmark Results}
+  \begin{center}
+    \includegraphics[scale=.63]{./include/pdf/compiletime.pdf}
+  \end{center}
+  \begin{itemize}
+  \item $2$x to $8$x compile time speedup\pause: due to register allocation
+  \end{itemize}
 \end{frame}
 
 \section{Demo}
 
-\begin{frame}{Benchmark Results}
-  Live demo. (Maybe on ARM-based Raspberry Pi?)
+%---Live Demo---%
+% Andy
+\begin{frame}{Demo}
+  A Demo...
 \end{frame}
 
 %---Bibliography Slide---%

@@ -1,6 +1,10 @@
 x@0 = input()
-x@2 = PHI(x@0, x@1)
-while x@2 != 0:
+loop:
+    x@2 = PHI(x@0, x@1)
+    if x@2 != 0 goto start else goto end
+start:
     print x@2
     x@1 = x@2 - 1
-print x@2
+    goto loop
+end:
+    print x@2

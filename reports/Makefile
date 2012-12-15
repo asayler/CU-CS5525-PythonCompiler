@@ -43,7 +43,7 @@ clean:
 	$(RM) *.xml
 
 cleanall: clean
-	$(RM) proposal.pdf report.pdf
+	$(RM) proposal.pdf report.pdf slides.pdf
 
 .PHONY: proposal report slides
 
