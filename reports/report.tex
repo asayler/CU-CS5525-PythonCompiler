@@ -466,8 +466,7 @@ corresponding to the block actually executed.
 
 LLVM requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
-form during compilation (only when compiled to SSA --- our x86
-compiler does not utilize the SSA conversion module), a process which
+form during compilation, a process which
 occurs after flattening and before LLVM instruction
 selection (as shown in Figure \ref{fig:CompilerFlow}).  This
 conversion process takes a single pass over the program, and converts
