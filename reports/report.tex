@@ -582,11 +582,11 @@ The first challenge that must be dealt with in instruction selection
 is dealing with the LLVM IR's strict typing requirements. Fortunately,
 our use of pyobj pointers will make this process fairly simple. In
 effect, the only variables used in our program are pyobj pointers,
-ints, bools, and bigpyobjs. Do to the design of the helper functions,
+ints, bools, and bigpyobjs. Due to the design of the helper functions,
 all of these types can be treated as either 32-bit ints (on a 32-bit
 system) or 64-bit ints (on a 64-bit system). This allows us to
 effectively deal with a single type throughout our entire LLVM IR
-program. Thus we can assume that all of are function arguments,
+program. Thus we can assume that all of our function arguments,
 variables, etc are of this single type and avoid needing to track
 variable and function types explicitly.
 
@@ -596,7 +596,7 @@ bool-like 1-bit integers) and when making indirect function calls
 (where explicit function pointer types are required). Fortunately, the
 situations where these alternate types arise are well isolated in the
 LLVM IR code, and always result from the mapping of a single Python
-AST node to sever LLVM IR nodes. These alternate types are also able
+AST node to several LLVM IR nodes. These alternate types are also able
 to be cast back and forth to 64 or 32 bit integers, matching the
 single type used throughout the rest of the code. Thus, we can simply
 insert the necessary casting operations to convert these types to or
@@ -605,11 +605,11 @@ special types.
 
 % Discuss Function Prototype Declaration Approach
 
-We must also deal with the fact that all LLVM IR files must include a
+We must also handle the fact that all LLVM IR files must include a
 list of prototype definitions for any external library functions we wish
-to call. In the case of our compiler, these external function or
+to call. In the case of our compiler, these external functions are
 limited to the list of runtime helper functions specified in
-\texttt{runtime.h}. To deal with this requirement, we created an LLVM
+\texttt{runtime.h}. We created an LLVM
 IR file that contains the necessary LLVM declarations for each
 \texttt{runtime.h} function
 \footnote{Technically, we have two version
@@ -620,7 +620,7 @@ IR file that contains the necessary LLVM declarations for each
   (for use on 32-bit systems). Our compiler detects the bit-width of
   the system on which it is running and dynamically selects the correct
   file at compile time}.
-The contents of this file is then
+The contents of this file are then
 pre-pended to the LLVM IR output our program generates as part of
 the process involved in writing the compiled LLVM AST to a file. A
 small snippet of this file is shown in Listing
@@ -698,7 +698,7 @@ Instruction Selection pass is largely similar to the x86 Instruction
 Selection pass, with the appropriate LLVM instructions substituted for
 the alternate x86 ones. In many ways, that actual ``instruction
 selection'' part of the LLVM Instruction Selection pass is simpler
-than its x86 counterpart. LLVM instruction tend to be higher level
+than its x86 counterpart. LLVM instructions tend to be higher level
 than x86, and thus present a more direct mapping from Python AST nodes
 to LLVM. For example, in x86 all function call stack setup and cleanup
 must be handled with explicit calls to \texttt{push}, \texttt{pop},
