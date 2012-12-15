@@ -820,18 +820,18 @@ Were we to build an LLVM compiler from the ground up, as opposed to
 modifying an x86 compiler, we would have made a few different
 decisions. First, we could do more to leverage the typed nature of
 LLVM. There are additional optimizations that can be practiced had we
-tracked more typing info through our compiler, and had we been working
+tracked more typing information through our compiler, and had we been working
 with LLVM from the start, we likely would have kept some form of typing
 information to leverage these optimizations.
 
-Given that we were compiling to both types and un-typed languages, the
+Given that we were compiling to both typed and un-typed languages, the
 p3 compiler design that we started with lent itself well to conversion
 to LLVM. It was fortunate that we used Pyobjs out of necessity to deal
-with Python's polymorphism, because this lent itself well to dealing
-with the typing of LLVM.
+with Python's polymorphism, because this was helpful and probably necessary
+for dealing with the typing of LLVM.
 
-Where we building from scratch, it's also possible that we would have
-moved the SSA pass earl er in the compile chain. This would have
+Where we building from scratch, it is also possible that we would have
+moved the SSA pass earlier in the compile chain. This would have
 allowed us to leverage the SSA assumption in subsequent passes and to
 perform additional SSA-centric optimizations.
 
@@ -840,8 +840,8 @@ place the SSA pass after the flatten pass, and by doing so did not
 include it in the x86 compile chain. This minimized the number of
 stages that needed to be SSA aware, and avoided us having to resolve
 Phi nodes to x86 instructions (unlike LLVM, x86 has no built-in Phi
-instruction). But were we do build an native LLVM compiler, placing
-the SSA pass earlier in the compile process could have benefits.
+instruction). However, if we were strictly building native LLVM compiler,
+placing the SSA pass earlier in the compile process could have benefits.
 
 \section{Conclusion}
 
