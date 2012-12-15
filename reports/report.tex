@@ -144,36 +144,37 @@ We discuss the expansion of our P3 compiler to target LLVM intermediate
 language assembly code. This involves converting our intermediate
 AST to SSA form as well as replacing the instruction selection
 components of the existing compiler. We compare the performance and
-flexibility of directly targeted x86 code vs targeting LLVM IR code.
+flexibility of directly targeted x86 code versus targeting LLVM 
+Intermediate representation (IR) code.
 
 \end{abstract}
 
 \section{Problem Statement}
 
-While the existing HW6, p3-compliant compiler supports 32-bit, x86
-code generation, it does not support generating code for the variety
+While the Homework 6, p3-compliant compiler supported 32-bit, x86
+code generation, it did not support generating code for the variety
 of non-x86 architectures and assembly languages common today (x64,
-ARM, etc). While we could remedy this deficiency by adding additional
-native code generation for non-x86 architectures directly to our
-compiler, this approach would duplicate a wide range of existing
-effort and would require continued maintenance to support new
-architectures and assembly languages as they arise. From a software
+ARM, etc). While we could have remedied this deficiency by adding 
+additional native code generation for non-x86 architectures directly 
+to our compiler, this approach would have duplicated a wide range of existing
+effort and would have required continued maintenance to support new
+architectures and assembly languages as they arose. From a software
 engineering perspective, such an attempt would also increase the
 likelihood of bugs and errors due to the expanded code base and much
 larger required breadth of expertise in a variety of assembly
 languages.
 
-Instead, we aim to leverage the existing work done by the LLVM project
-\cite{llvm.org} to convert our HW6 compiler from an x86-targeted
-compiler to an LLVM-targeted compiler. This will not only be efficient
-from a maintenance standpoint, but it will also be a useful
+Instead, we aimed to leverage the existing work done by the LLVM project
+\cite{llvm.org} to convert our Homework 6 compiler from an x86-targeted
+compiler to an LLVM-targeted compiler. This choice was not only efficient
+from a maintenance standpoint, but it was also a useful
 introduction to a modern, commonly used compiler intermediate
-language. We will maintain the current x86 targeting and add LLVM IR
+language. We maintained the current x86 targeting and added LLVM IR
 Assembly \cite{lattner-llvmlangref} as an additional targeting
-option. In this way, we will be able to compare our natively generated
-x86 code with the LLVM-assembler generated x86 code. We will also be
+option. In this way, we were able to compare our natively generated
+x86 code with the LLVM-assembler generated x86 code. We were also
 able to experiment with compiling our LLVM byte-code files to assembly
-languages other than x86 such as x64 and ARM.
+languages other than x86, such as x64 and ARM.
 
 LLVM is quickly becoming the de facto standard target for most modern
 compilers for high level languages.  It provides multi-platform
