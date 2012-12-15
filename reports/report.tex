@@ -180,13 +180,13 @@ LLVM is quickly becoming the de facto standard target for most modern
 compilers for high level languages.  It provides multi-platform
 support, multi-runtype support (compiled, interpreted, JIT compiled,
 etc), and access to a range of existing optimization tools and
-techniques. Through this project, we hope to become familiar with the
+techniques. Through this project, we hoped to become familiar with the
 LLVM Assembly Language and LLVM system architecture while gaining
 insight into the benefits of building an LLVM-targeted compiler.
 
 \section{Background}
 
-The primary change to our existing compiler code base is the addition
+The primary change to our existing compiler code base wss the addition
 of an LLVM output target option. We discuss LLVM and its prerequisites
 in this section.
 
@@ -198,11 +198,10 @@ was initially intended to provide support for a Static Single
 Assignment (SSA) compiler that is capable of statically or dynamically
 compiling any programming language \cite{llvm.org}.
 
-The LLVM project specifies a standardized Intermediate Representation,
-essentially a platform-agnostic assembly language, in which programs
-can be written. Listing \ref{lst:llvm-example_hello0.ll} shows
+The LLVM project specifies a standardized Intermediate Representation with 
+which to write programs; it is, essentially, a platform-agnostic assembly language. Listing \ref{lst:llvm-example_hello0.ll} shows
 a simple LLVM hello world program as an example of
-what LLVM IR Assembly language looks like.
+the syntax and structure of a LLVM IR Assembly language program.
 
 \lstinputlisting[
   float=*htb,
