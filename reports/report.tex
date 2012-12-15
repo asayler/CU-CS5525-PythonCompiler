@@ -151,7 +151,7 @@ targeting LLVM Intermediate Representation code.
 
 \section{Problem Statement}
 
-While the Homework 6, p3-compliant compiler supported 32-bit, Intel
+While the Homework 6, P3-compliant compiler supported 32-bit, Intel
 x86 code generation, it did not support generating code for the
 variety of non-x86 architectures and assembly languages common today
 (x64, ARM, etc). While we could have remedied this deficiency by
@@ -164,21 +164,22 @@ also increase the likelihood of bugs and errors due to the expanded
 code base and much larger required breadth of expertise in a variety
 of assembly languages.
 
-Instead, we aimed to leverage the existing work done by the LLVM project
-\cite{llvm.org} to convert our Homework 6 compiler from an x86-targeted
-compiler to an LLVM IR-targeted compiler. This choice was not only efficient
-from a maintenance standpoint, but it is also a useful
-introduction to a modern, commonly used compiler intermediate
-language. We maintained the current x86 targeting and added LLVM IR
-Assembly \cite{lattner-llvmlangref} as an additional targeting
-option. In this way, we were able to compare our natively generated
-x86 code with the LLVM-assembler generated x86 code. We were also
-able to experiment with compiling our LLVM byte-code files to assembly
-languages other than x86, such as x64 and ARM.
+Instead, we aimed to leverage the existing work done by the LLVM
+project \cite{llvm.org} to convert our Homework 6 compiler from an
+x86-targeted compiler to one targeted towards the LLVM intermediate
+representation. This choice was not only efficient from a maintenance
+standpoint, but it is also a useful introduction to a modern, commonly
+used compiler intermediate language. We maintained the current x86
+targeting and added LLVM IR Assembly \cite{lattner-llvmlangref} as an
+additional targeting option. In this way, we were able to compare our
+natively generated x86 code with the LLVM-assembler generated x86
+code. We were also able to experiment with compiling our LLVM
+byte-code files to assembly languages other than x86, such as x64 and
+ARM.
 
-LLVM is quickly becoming the de facto standard target for most modern
+LLVM is quickly becoming the \textit{de facto} standard target for most modern
 compilers for high level languages.  It provides multi-platform
-support, multi-runtype support (compiled, interpreted, JIT compiled,
+support, multi-runtype support (compiled, interpreted, JITing,
 etc), and access to a range of existing optimization tools and
 techniques. Through this project, we hoped to become familiar with the
 LLVM Assembly Language and LLVM system architecture while gaining
@@ -239,8 +240,8 @@ the build process.
 
 Unlike most assembly languages, LLVM provide the user with an unlimited
 number of ``registers''. These LLVM registers are similar to
-variable, in that they can have any name conforming to the naming
-rules, and they are unlimited in number. LLVM does, however, requires
+variables, in that they can have any name conforming to the naming
+rules, and they are unlimited in number. LLVM does, however, require
 that any use of LLVM registers adheres to Static Single Assignment
 (SSA) form. This means that each register in an LLVM IR program can
 only be written/assigned to once. SSA form is discussed in detail in
@@ -272,14 +273,15 @@ defined control ``blocks''. Each block starts with a label (although
 this label can be emitted from the first block in a function) and ends
 with one of a small set of ``terminator'' instructions such as
 \texttt{ret}, \texttt{br}, or \texttt{switch}. Unlike in x86, in the
-LLVM IR you can not ``fall through'' from one block to the next
-without using an explicit terminator instruction specifying a jump to
-the next block's label. This strictly-defined block-based organization
-requirement allows the LLVM tool chain to construct a well defined
-flow graph through the LLVM code. Listing \ref{lst:blocks.ll} shows an
-example of a short LLVM IR program containing a series of blocks with
-labels at the start of each block and explicit branching (or return
-statements) at the end of each block.
+LLVM IR control flow does not ``fall through'' from one block to the
+next without using an explicit terminator instruction specifying a
+jump to the next block's label. This strictly-defined block-based
+organization requirement allows the LLVM tool chain to construct a
+well defined flow graph through the LLVM code. Listing
+\ref{lst:blocks.ll} shows an example of a short LLVM IR program
+containing a series of blocks with labels at the start of each block
+and explicit branching (or return statements) at the end of each
+block.
 
 \lstinputlisting[
   float=*htb,
@@ -312,7 +314,7 @@ print x
 This piece of code contains branching, so x is being assigned to
 multiple times. In addition, x could be an integer or a floating point
 number. To convert to SSA in this situation, compilers can add a
-\emph{phi} ($\phi$) node to select the proper version of x to use as
+$\phi$ (\textit{phi}) node to select the proper version of x to use as
 the current version:
 
 \begin{verbatim}
@@ -327,7 +329,7 @@ print x_2
 The $\phi$ function (node) serves to pick the branch that was used at
 runtime, and return that version of x.
 
-Fortunately, LLVM provides a \emph{phi} node in its assembly language
+Fortunately, LLVM provides a $\phi$ node in its assembly language
 specification \cite{lattner-llvmlangref}. It addresses the multiple
 assignment problems that result from control flow structures. The
 syntax is
@@ -355,7 +357,7 @@ compiler via the following development steps:
 
 \begin{packed_enum}
 \item Fixed bugs in existing compiler until we passed all valid student
-  and instructor provided p3 test cases.
+  and instructor provided P3 test cases.
 \item Re-factored existing compiler to better handle common visitor
   functions, support a modular parser-interface, and reduce code
   complexity.
@@ -381,7 +383,7 @@ compiler via the following development steps:
 \label{sec:design}
 
 Our compiler design begins with the basic compiler design presented in
-\cite{siek-chang} for the Python ``P3'' language subset.  We then
+\cite{siek-chang} for the Python P3 language subset.  We then
 proceeded to re-factor this design to better exploit code reuse,
 remove deprecated interfaces, support multiple target types, and
 automatically catch a range of implementation errors. We kept the re-factored 
@@ -427,7 +429,7 @@ below.
   The Static Single Assignment (SSA) stage converts
   the multi-assignment Python AST into a Static Single Assignment
   Python AST. It replaces variable assignments to ensure each variable
-  is only ever written once, and also sets up the necessary Phi operations
+  is only ever written once, and also sets up the necessary $\phi$ operations
   associated with branching nodes (if, while, etc).
   This process is discussed further in Section \ref{sec:stage-SSA}.
 \item[Propagate Stage] \hfill \\
@@ -479,35 +481,36 @@ it as follows:
   recent version of the variable.
 \item When an If statement is encountered, the true and false branches
   are scanned for their assigned variables, and a new attribute is
-  added to the end of the statement, containing Phi nodes for the
+  added to the end of the statement, containing $\phi$ nodes for the
   variables assigned within the If as follows:
   \begin{packed_enum}
-  \item If a variable is assigned to in both branches, the Phi node
+  \item If a variable is assigned to in both branches, the $\phi$ node
     contains the version from each branch.
   \item If a variable is assigned to in one branch but not the other,
     \textit{and} the variable was also assigned to before the If
-    statement was entered, then the Phi node contains the new version
+    statement was entered, then the $\phi$ node contains the new version
     in the branch it appeared in, and the old version in the other
     branch.
   \item If a variable is assigned to in one branch but not the other,
     \textit{and} the variable did not exist before the If
-    statement was entered, no Phi node is created for it.
+    statement was entered, no $\phi$ node is created for it.
   \end{packed_enum}
 \item When a While loop is encountered, its body is scanned for
   assigned variables. A new attribute is then added to the beginning
-  of the statement, containing Phi nodes for each variable that is
+  of the statement, containing $\phi$ nodes for each variable that is
   assigned to in the body and that also existed before the loop was
   entered.
 \end{packed_enum}
 
 This process ensures that each variable is assigned to only once while
 maintaining the semantics of the program. It also makes use of pyobj
-pointers to handle Python's explicit polymorphism. At the moment, we do not use
-any of the optimizations, such as those based on computing the
-dominator tree of the program as described by Brandis and
-M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
-optimizations in the future, especially if the SSA conversion pass is
-moved to an earlier point in the compilation.
+pointers to handle Python's explicit polymorphism. We do not use any
+optimizations, such as those based on computing the dominator tree of
+the program as described by Brandis and M\"{o}ssenb\"{ock}
+\cite{brandis-mossenbock}, in order to reduce the number of $\phi$ nodes,
+though we may implement such optimizations in the future, especially
+if the SSA conversion pass is moved to an earlier point in the
+compilation.
 
 \subsubsection{Propagate}
 \label{sec:stage-Propagate}
@@ -567,7 +570,7 @@ AST nodes. The basic logic is:
   a key in the global dictionary. If so, replace the name with the
   value associated with this key.
 \item When a branching statement node (If, While, etc) is encountered,
-  search the associated Phi list for any variables that are keys in
+  search the associated $\phi$ list for any variables that are keys in
   the global dictionary, and replace them with the corresponding
   values as necessary.
 \end{packed_enum}
@@ -615,7 +618,7 @@ list of prototype definitions for any external library functions we
 wish to call. In the case of our compiler, these external functions
 are limited to the list of runtime helper functions specified in
 \texttt{runtime.h}. We created an LLVM IR file that contains the
-necessary LLVM declarations for each \texttt{runtime.h} function
+necessary LLVM declarations for each \texttt{runtime.h} function.
 \footnote{Technically, we have two version
   of this file: one which contains the \texttt{runtime.h} LLVM
   function declarations using 64-bit integers as the single generic
@@ -623,7 +626,7 @@ necessary LLVM declarations for each \texttt{runtime.h} function
   \texttt{runtime.h} LLVM function declarations using 32-bit integers
   (for use on 32-bit systems). Our compiler detects the bit-width of
   the system on which it is running and dynamically selects the correct
-  file at compile time.}.
+  file at compile time.}
 The contents of this file are then
 pre-pended to the LLVM IR output our program generates as part of
 the process involved in writing the compiled LLVM AST to a file. A
@@ -829,7 +832,7 @@ with LLVM from the start, we likely would have kept some form of typing
 information to leverage these optimizations.
 
 Given that we were compiling to both typed and un-typed languages, the
-p3 compiler design that we started with lent itself well to conversion
+P3 compiler design that we started with lent itself well to conversion
 to LLVM. It was fortunate that we used pyobjs out of necessity to deal
 with Python's polymorphism, because this was helpful and probably
 necessary for dealing with the typing of LLVM without tracking every
@@ -844,7 +847,7 @@ Given that we were building a multi-target compiler, we decided to
 place the SSA pass after the flatten pass, and by doing so did not
 include it in the x86 compile chain. This minimized the number of
 stages that needed to be SSA aware, and avoided us having to resolve
-Phi nodes to x86 instructions (unlike LLVM, x86 has no built-in Phi
+$\phi$ nodes to x86 instructions (unlike LLVM, x86 has no built-in $\phi$
 instruction). However, if we were strictly building native LLVM compiler,
 placing the SSA pass earlier in the compile process could have benefits.
 
@@ -857,7 +860,7 @@ performance gain over our direct-to-x86 code. We also saw significant
 compile time gains using LLVM, likely due to the well optimized nature
 of the LLVM build tools in areas such as register allocation.
 
-In general, LLVM feels like a well though out Intermediate Language
+In general, LLVM feels like a well-thought-out Intermediate Language
 and build environment. We believe it provides a strong argument for
 building compilers that target the LLVM IR, and then using the LLVM
 tools to compile down to the local assembly language. This approach
