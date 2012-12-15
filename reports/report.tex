@@ -850,14 +850,15 @@ cases to LLVM using our LLVM Python compiler. When compiling the
 resulting LLVM IR to local assembly code, we say a significant runtime
 performance gain over our direct-to-x86 code. We also saw significant
 compile time gains using LLVM, likely due to the well optimized nature
-of the LLVM build tools.
+of the LLVM build tools in areas such as register allocation.
 
 In general, LLVM feels like a well though out Intermediate Language and
-build environment. We believe it provides a strong argument for only
-building compilers to LLVM, and then using the LLVM tools to compile
+build environment. We believe it provides a strong argument for
+building compilers that build to the LLVM IR, and then using the LLVM tools
+to compile
 down to the local assembly language. This approach maximizes
-multi-platform capability, and avoids duplicating common effort (like
-register allocation) across many compilers. Instead, the modular nature
+multi-platform capability, and avoids duplicating common effort, like
+register allocation, across many compilers. Instead, the modular nature
 of LLVM lets each compiler focus on processing its associated
 language, and leave low level, architecture specific details to the
 LLVM programming team. This separation of labor allows everyone to
