@@ -38,4 +38,4 @@ Copyright
 The bulk of the source is licensed under the GPLv3 license.
 See ./code/COPYING for details, as well has the header in each GPL licensed file.
 The report is licensed under the GNU Free Document License.
-See ./report/COPYING for details.
+See ./reports/COPYING for details.
