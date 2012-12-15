@@ -377,16 +377,20 @@ Our compiler design begins with the basic compiler design presented in
 \cite{siek-chang} for the Python ``P3'' language subset.  We then
 proceeded to re-factor this design to better exploit code reuse,
 remove deprecated interfaces, support multiple target types, and
-automatically catch a range of implementation errors. We kept the re-factored design common for all compilation targets
-through the end of the flatten pass.
+automatically catch a range of implementation errors. We kept the re-factored 
+design, through the end of the flatten pass, common for all compilation 
+targets.
 
-The major changes happen after flatten in the instruction selection
-and related passes. A significant difference between our current x86
+The major divergence for LLVM compilation occurs after flatten, in the 
+instruction selection and related passes. A significant difference between 
+our x86
 compiler and our LLVM compiler is that the LLVM compiler requires the
-AST to be in SSA form. In addition, LLVM uses variable names, not
-pre-defined registers, in its instructions. As such, the LLVM
-compilation requires an additional pass to convert to SSA form, but
-can forgo the pass that performs register allocation, since the LLVM compiler performs register allocation during its compilation of the bitcode. An alternate version of the instruction selection pass has also been added in support of to the LLVM Assembly format.
+AST to be in SSA form. In addition, LLVM uses and infinite number of variable 
+register names, rather than pre-defined registers, in its instructions. As 
+such, the LLVM compilation requires an additional pass to convert to SSA form,
+but can forgo the pass that performs register allocation, since the LLVM 
+compiler performs register allocation during its compilation of the bitcode.
+ An alternate version of the instruction selection pass was also added in support of to the LLVM Assembly format.
 
 \subsection{Module Flow}
 \label{sec:ModuleFlow}
