@@ -453,16 +453,6 @@ infrastructure inherent in Python 2.7+.
 \subsubsection{SSA}
 \label{sec:stage-SSA}
 
-%--- keep or not?
-Fortunately, we have already packaged all of
-our data types into one unique type: a pyobj. All values passed to the
-block must be first class values, so a pointer to a pyobj will be the
-only option available to handle polymorphism. The type field is
-followed by a list of pairs, one for each predecessor block of code in
-the current block, and the $\phi$ function will use the value
-corresponding to the block actually executed.
-%-----
-
 
 LLVM requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
@@ -505,12 +495,14 @@ it as follows:
 \end{packed_enum}
 
 This process ensures that each variable is assigned to only once while
-maintaining the semantics of the program. At the moment, we do not use
+maintaining the semantics of the program. It also makes use of pyobj
+pointers to handle python's explicit polymorphism. At the moment, we do not use
 any of the optimizations, such as those based on computing the
 dominator tree of the program as described by Brandis and
 M\"{o}ssenb\"{ock} \cite{brandis-mossenbock}, though we may implement such
 optimizations in the future, especially if the conversion pass is
 moved to an earlier point in the compilation.
+
 
 \subsubsection{Propagate}
 \label{sec:stage-Propagate}
