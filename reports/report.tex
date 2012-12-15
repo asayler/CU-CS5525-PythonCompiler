@@ -786,8 +786,8 @@ approaching a $1.6\times$ speedup. On the other hand, the degree of
 improvement is much reduced when performing method calls and attribute
 lookups. The native Python interpreter still outperforms our LLVM
 interpreter on most test cases, except that it is approximately equal
-to our compiler on a benchmark involving many simple function calls;
-possibly this is a domain highly suited to the structure of LLVM's IR
+to our compiler on a benchmark involving many simple function calls; 
+this is possibly a domain highly suited to the structure of LLVM's IR
 and bitcode. Meanwhile, interpreted LLVM bitcode is consistently much
 slower than either the x86 implementation or the compiled LLVM.
 
@@ -798,11 +798,11 @@ slower than either the x86 implementation or the compiled LLVM.
   \label{fig:ct}
 \end{figure*}
 
-In terms of compile times, we see that the LLVM compiler is far faster
+In terms of compile times, the LLVM compiler is far faster
 than the x86 compiler on all benchmarks, as shown in Figure
 \ref{fig:ct}. Our benchmarking setup includes the time taken by
 elements of the tool-chain besides just our own compiler, so the
-timings seen here are able to be compared. We suspect that the primary
+timings seen here are comparable. We suspect that the primary
 reason for the out-performance of the x86 compiler by the LLVM compiler
 is that LLVM performs register allocation internally, and presumably
 it is much more efficient at this process than our un-optimized
