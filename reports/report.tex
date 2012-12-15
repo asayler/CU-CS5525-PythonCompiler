@@ -309,7 +309,7 @@ This piece of code contains branching, so x is being assigned to
 multiple times. In addition, x could be an integer or a floating point
 number. To convert to SSA in this situation, compilers can add a
 \emph{phi} ($\phi$) node to select the proper version of x to use as
-the current version. See below:
+the current version:
 
 \begin{verbatim}
 if input():
@@ -332,14 +332,8 @@ assignment problems that result from control flow. The syntax is
 \end{verbatim} 
 
 where the ``ty'' field is the incoming type of the data to be chosen
-from. However, this indicates that the $\phi$ node can not handle
-explicit polymorphism. Fortunately, we have already packaged all of
-our data types into one unique type: a pyobj. All values passed to the
-block must be first class values, so a pointer to a pyobj will be the
-only option available to handle polymorphism. The type field is
-followed by a list of pairs, one for each predecessor block of code in
-the current block, and the $\phi$ function will use the value
-corresponding to the block actually executed.
+from. It is important to note that this indicates that the $\phi$ node can not 
+handle explicit polymorphism.
 
 \section{Approach}
 
@@ -453,6 +447,17 @@ infrastructure inherent in Python 2.7+.
 
 \subsubsection{SSA}
 \label{sec:stage-SSA}
+
+%--- keep or not?
+Fortunately, we have already packaged all of
+our data types into one unique type: a pyobj. All values passed to the
+block must be first class values, so a pointer to a pyobj will be the
+only option available to handle polymorphism. The type field is
+followed by a list of pairs, one for each predecessor block of code in
+the current block, and the $\phi$ function will use the value
+corresponding to the block actually executed.
+%-----
+
 
 LLVM requires Static Single Assignment form, meaning that each
 variable is assigned to exactly once.  We convert programs into SSA
